@@ -18,6 +18,10 @@ export class DashboardService {
     return this.http.get<number>(this.baseUrl + 'dashboard/miracles');
   }
 
+  getTotalPrayers(): Observable<number> {
+    return this.http.get<number>(this.baseUrl + 'dashboard/prayers');
+  }
+
   getTotalUsers(): Observable<number> {
     return this.http.get<number>(this.baseUrl + 'dashboard/users');
   }

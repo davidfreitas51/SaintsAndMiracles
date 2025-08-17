@@ -70,6 +70,24 @@ export class MiracleDetailsPageComponent implements OnInit {
 
   scrollTo(id: string): void {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (!el) return;
+
+    const headerHeight = 120; 
+    const targetY =
+      el.getBoundingClientRect().top + window.scrollY - headerHeight;
+    const startY = window.scrollY;
+    const distance = targetY - startY;
+    const duration = 200;
+    let startTime: number | null = null;
+
+    const animate = (time: number) => {
+      if (!startTime) startTime = time;
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      window.scrollTo(0, startY + distance * progress);
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
   }
 }

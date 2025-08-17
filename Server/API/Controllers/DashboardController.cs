@@ -5,7 +5,7 @@ namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRepository miraclesRepository) : ControllerBase
+public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRepository miraclesRepository, IPrayersRepository prayersRepository) : ControllerBase
 {
     [HttpGet("saints")]
     public async Task<IActionResult> TotalSaints()
@@ -19,6 +19,13 @@ public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRe
     {
         var totalMiracles = await miraclesRepository.GetTotalMiraclesAsync();
         return Ok(totalMiracles);
+    }
+
+    [HttpGet("prayers")]
+    public async Task<IActionResult> TotalPrayers()
+    {
+        var totalPrayers = await prayersRepository.GetTotalPrayersAsync();
+        return Ok(totalPrayers);
     }
 
     [HttpGet("users")]

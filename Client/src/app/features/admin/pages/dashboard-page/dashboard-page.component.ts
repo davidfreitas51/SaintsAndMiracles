@@ -37,8 +37,13 @@ export class DashboardPageComponent implements OnInit {
       error: (err) => console.error('Failed to load total miracles:', err),
     });
 
-    this.dashboardService.getTotalUsers().subscribe({
+    this.dashboardService.getTotalPrayers().subscribe({
       next: (total) => (this.summary[2].value = total),
+      error: (err) => console.error('Failed to load total prayers', err)
+    })
+
+    this.dashboardService.getTotalUsers().subscribe({
+      next: (total) => (this.summary[3].value = total),
       error: (err) => console.error('Failed to load total users:', err),
     });
   }
