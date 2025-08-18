@@ -1,6 +1,7 @@
 export enum TagType {
   Saint = 0,
   Miracle = 1,
+  Prayer = 2
 }
 
 export class EntityFilters {

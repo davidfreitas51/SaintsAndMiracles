@@ -23,19 +23,23 @@ public class TagsRepository(DataContext context) : ITagsRepository
             query = query.Where(t => t.TagType == tagTypeEnum);
         }
 
-
         var total = await query.CountAsync();
+
+        var pageNumber = filters.Page <= 0 ? 1 : filters.Page;
+        var pageSize = filters.PageSize <= 0 ? 10 : filters.PageSize;
 
         var items = await query
             .OrderBy(t => t.Name)
-            .Skip((filters.Page - 1) * filters.PageSize)
-            .Take(filters.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
         return new PagedResult<Tag>
         {
             Items = items,
-            TotalCount = total
+            TotalCount = total,
+            PageNumber = pageNumber,
+            PageSize = pageSize
         };
     }
 

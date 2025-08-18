@@ -84,10 +84,13 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
 
     switch (lastSegment) {
       case 'saints':
-        this.filters.type = TagType.Saint; 
+        this.filters.type = TagType.Saint;
         break;
       case 'miracles':
-        this.filters.type = TagType.Miracle; 
+        this.filters.type = TagType.Miracle;
+        break;
+      case 'prayers':
+        this.filters.type = TagType.Prayer;
         break;
       default:
         this.filters.type = undefined;
@@ -98,7 +101,6 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
   }
 
   loadEntities(): void {
@@ -109,8 +111,11 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
       .subscribe({
         next: (res) => {
           this.dataSource.data = res.items;
+
           if (this.paginator) {
             this.paginator.length = res.totalCount;
+            this.paginator.pageIndex = res.pageNumber - 1; 
+            this.paginator.pageSize = res.pageSize;
           }
         },
         error: (err) => {
@@ -193,7 +198,7 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
   }
 
   onPageChange(event: PageEvent): void {
-    this.filters.page = event.pageIndex + 1;
+    this.filters.page = event.pageIndex + 1; 
     this.filters.pageSize = event.pageSize;
     this.loadEntities();
   }

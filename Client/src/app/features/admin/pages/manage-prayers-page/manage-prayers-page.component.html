@@ -1,1 +1,31 @@
-<p>manage-prayers-page works!</p>
+<div>
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-6">
+      <h1 class="text-3xl font-bold text-primary-app">Prayers</h1>
+
+      <button (click)="manageTags()" mat-stroked-button color="primary">
+        <mat-icon>label</mat-icon>
+        <span class="ml-1">Manage Tags</span>
+      </button>
+    </div>
+
+    <a mat-fab extended [routerLink]="['/admin', 'prayers', 'create']">
+      <mat-icon>add</mat-icon>
+      Create new Prayer
+    </a>
+  </div>
+
+  <div class="w-full">
+    <app-admin-content-table
+      [data]="prayers"
+      [excludedColumns]="[
+        'image',
+        'tags',
+        'markdownPath',
+        'slug'
+      ]"
+      [deleteFn]="deletePrayer"
+      [loadData]="loadPrayers"
+    ></app-admin-content-table>
+  </div>
+</div>
