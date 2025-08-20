@@ -19,6 +19,8 @@ import { PrayersPageComponent } from './features/prayers/pages/prayers-page/pray
 import { PrayerDetailsPageComponent } from './features/prayers/pages/prayer-details-page/prayer-details-page.component';
 import { PrayerFormPageComponent } from './features/prayers/pages/prayer-form-page/prayer-form-page.component';
 import { ManagePrayersPageComponent } from './features/admin/pages/manage-prayers-page/manage-prayers-page.component';
+import { LoginPageComponent } from './features/account/pages/login-page/login-page.component';
+import { RegisterPageComponent } from './features/account/pages/register-page/register-page.component';
 
 export const routes: Routes = [
   {
@@ -93,6 +95,19 @@ export const routes: Routes = [
       {
         path: 'users',
         children: [],
+      },
+    ],
+  },
+  {
+    path: 'account',
+    children: [
+      {
+        path: 'login',
+        component: LoginPageComponent,
+      },
+      {
+        path: 'register',
+        component: RegisterPageComponent,
       },
     ],
   },
