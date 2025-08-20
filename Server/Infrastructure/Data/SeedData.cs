@@ -1,173 +1,153 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Core.Interfaces.Services;
 using Core.Models;
+using Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Data;
-
-public class SeedData
+public static class SeedData
 {
-    public static async Task SeedAsync(DataContext context)
+    private static string basePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data/SeedData");
+    private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions
     {
-        var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                   ?? throw new InvalidOperationException("Base path is null");
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+    public static async Task SeedAsync(
+        DataContext context,
+        RoleManager<IdentityRole> roleManager,
+        UserManager<AppUser> userManager,
+        ITokenService tokenService)
+    {
+        await context.Database.MigrateAsync();
 
-        var jsonOptions = new JsonSerializerOptions
+
+        await SeedRoles(roleManager);
+        await SeedBootstrapToken(context, userManager, tokenService);
+        await SeedTags(context);
+        await SeedSaints(context);
+        await SeedMiracles(context);
+        await SeedPrayers(context);
+    }
+
+    private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
+    {
+        var roles = new[] { "Employee", "Admin" };
+
+        foreach (var roleName in roles)
         {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new JsonStringEnumConverter() }
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                IdentityRole role = new IdentityRole
+                {
+                    Name = roleName,
+                    NormalizedName = roleName.ToUpperInvariant(),
+                    ConcurrencyStamp = Guid.NewGuid().ToString()
+                };
+
+                await roleManager.CreateAsync(role);
+            }
+        }
+    }
+
+    private static async Task SeedBootstrapToken(
+        DataContext context,
+        UserManager<AppUser> userManager,
+        ITokenService tokenService)
+    {
+        var hasAdmin = (await userManager.GetUsersInRoleAsync("Admin")).Any();
+        if (hasAdmin) return;
+
+        var clearToken = tokenService.GenerateClearToken();
+        var hash = tokenService.HashTokenBase64(clearToken);
+
+        var bootstrapToken = new AccountToken
+        {
+            Hash = hash,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+            ExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(1),
+            Purpose = "InitialAdminBootstrap",
+            IssuedTo = "System"
         };
 
-        var allTags = await context.Tags.ToListAsync();
+        context.AccountTokens.Add(bootstrapToken);
+        await context.SaveChangesAsync();
 
-        var normalizedGroups = allTags
-            .GroupBy(t => new
-            {
-                Name = t.Name.Trim().ToLowerInvariant(),
-                TagType = t.TagType.ToString().Trim().ToLowerInvariant()
-            })
-            .Where(g => g.Count() > 1)
-            .SelectMany(g => g.Skip(1))
-            .ToList();
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("=================================================");
+        Console.WriteLine(" NO ADMIN USERS FOUND ");
+        Console.WriteLine(" Use this bootstrap token to create the first admin account:");
+        Console.WriteLine();
+        Console.WriteLine(clearToken);
+        Console.WriteLine();
+        Console.WriteLine($" This token will expire at: {bootstrapToken.ExpiresAtUtc}");
+        Console.WriteLine("=================================================");
+        Console.ResetColor();
+    }
 
-        if (normalizedGroups.Any())
+    private static async Task SeedTags(DataContext context)
+    {
+        if (!context.Tags.Any())
         {
-            context.Tags.RemoveRange(normalizedGroups);
-            await context.SaveChangesAsync();
-        }
+            var filePath = Path.Combine(basePath, "tags.json");
+            var json = await File.ReadAllTextAsync(filePath);
 
-        if (!context.ReligiousOrders.Any())
-        {
-            var ordersData = await File.ReadAllTextAsync(Path.Combine(path, "Data/SeedData/religious-orders.json"));
-            var orders = JsonSerializer.Deserialize<List<ReligiousOrder>>(ordersData, jsonOptions);
+            var tags = JsonSerializer.Deserialize<List<Tag>>(json, jsonOptions);
 
-            if (orders is not null)
+            if (tags != null)
             {
-                context.ReligiousOrders.AddRange(orders);
+                context.Tags.AddRange(tags);
                 await context.SaveChangesAsync();
             }
         }
+    }
 
-        var tagsData = await File.ReadAllTextAsync(Path.Combine(path, "Data/SeedData/tags.json"));
-        var tags = JsonSerializer.Deserialize<List<Tag>>(tagsData, jsonOptions);
-
-        if (tags is not null)
-        {
-            var existingTags = await context.Tags.ToListAsync();
-
-            var uniqueTags = tags
-                .Where(tag =>
-                    !existingTags.Any(et =>
-                        et.Name.Trim().Equals(tag.Name.Trim(), StringComparison.OrdinalIgnoreCase) &&
-                        et.TagType.ToString().Trim().Equals(tag.TagType.ToString().Trim(), StringComparison.OrdinalIgnoreCase)
-                    )
-                )
-                .ToList();
-
-            if (uniqueTags.Any())
-            {
-                context.Tags.AddRange(uniqueTags);
-                await context.SaveChangesAsync();
-            }
-        }
-
-        var currentTags = await context.Tags.ToListAsync();
-
+    private static async Task SeedSaints(DataContext context)
+    {
         if (!context.Saints.Any())
         {
-            var saintsData = await File.ReadAllTextAsync(Path.Combine(path, "Data/SeedData/saints.json"));
-            var saints = JsonSerializer.Deserialize<List<Saint>>(saintsData, jsonOptions);
+            var filePath = Path.Combine(basePath, "saints.json");
+            var json = await File.ReadAllTextAsync(filePath);
+            var saints = JsonSerializer.Deserialize<List<Saint>>(json, jsonOptions);
 
-            if (saints is not null)
+            if (saints != null)
             {
-                var allOrders = await context.ReligiousOrders.ToListAsync();
-
-                foreach (var saint in saints)
-                {
-                    if (saint.ReligiousOrder != null)
-                    {
-                        saint.ReligiousOrder = allOrders.FirstOrDefault(o =>
-                            o.Name.Trim().Equals(saint.ReligiousOrder.Name.Trim(), StringComparison.OrdinalIgnoreCase));
-                    }
-
-                    if (saint.Tags?.Any() == true)
-                    {
-                        var linkedTags = new List<Tag>();
-                        foreach (var tag in saint.Tags)
-                        {
-                            var foundTag = currentTags.FirstOrDefault(t =>
-                                t.Name.Trim().Equals(tag.Name.Trim(), StringComparison.OrdinalIgnoreCase) &&
-                                t.TagType.ToString().Trim().Equals(tag.TagType.ToString().Trim(), StringComparison.OrdinalIgnoreCase));
-
-                            if (foundTag != null)
-                                linkedTags.Add(foundTag);
-                        }
-                        saint.Tags = linkedTags;
-                    }
-                }
-
                 context.Saints.AddRange(saints);
                 await context.SaveChangesAsync();
             }
         }
+    }
 
+    private static async Task SeedMiracles(DataContext context)
+    {
         if (!context.Miracles.Any())
         {
-            var miraclesData = await File.ReadAllTextAsync(Path.Combine(path, "Data/SeedData/miracles.json"));
-            var miracles = JsonSerializer.Deserialize<List<Miracle>>(miraclesData, jsonOptions);
-            if (miracles is not null)
+            var filePath = Path.Combine(basePath, "miracles.json");
+            var json = await File.ReadAllTextAsync(filePath);
+            var miracles = JsonSerializer.Deserialize<List<Miracle>>(json, jsonOptions);
+
+            if (miracles != null)
             {
-                var allTagsForMiracles = await context.Tags.ToListAsync();
-
-                foreach (var miracle in miracles)
-                {
-                    if (miracle.Tags?.Any() == true)
-                    {
-                        var linkedTags = new List<Tag>();
-                        foreach (var tag in miracle.Tags)
-                        {
-                            var foundTag = allTagsForMiracles.FirstOrDefault(t =>
-                                t.Name.Trim().Equals(tag.Name.Trim(), StringComparison.OrdinalIgnoreCase) &&
-                                t.TagType.ToString().Trim().Equals(tag.TagType.ToString().Trim(), StringComparison.OrdinalIgnoreCase));
-                            if (foundTag != null)
-                                linkedTags.Add(foundTag);
-                        }
-                        miracle.Tags = linkedTags;
-                    }
-                }
-
                 context.Miracles.AddRange(miracles);
                 await context.SaveChangesAsync();
             }
+        }
+    }
 
-            if (!context.Prayers.Any())
+    private static async Task SeedPrayers(DataContext context)
+    {
+        if (!context.Prayers.Any())
+        {
+            var filePath = Path.Combine(basePath, "prayers.json");
+            var json = await File.ReadAllTextAsync(filePath);
+            var prayers = JsonSerializer.Deserialize<List<Prayer>>(json, jsonOptions);
+
+            if (prayers != null)
             {
-                var prayersData = await File.ReadAllTextAsync(Path.Combine(path, "Data/SeedData/prayers.json"));
-                var prayers = JsonSerializer.Deserialize<List<Prayer>>(prayersData, jsonOptions);
-
-                if (prayers is not null)
-                {
-                    foreach (var prayer in prayers)
-                    {
-                        if (prayer.Tags?.Any() == true)
-                        {
-                            var linkedTags = new List<Tag>();
-                            foreach (var tag in prayer.Tags)
-                            {
-                                var foundTag = currentTags.FirstOrDefault(t =>
-                                    t.Name.Trim().Equals(tag.Name.Trim(), StringComparison.OrdinalIgnoreCase) &&
-                                    t.TagType.ToString().Trim().Equals(tag.TagType.ToString().Trim(), StringComparison.OrdinalIgnoreCase));
-                                if (foundTag != null)
-                                    linkedTags.Add(foundTag);
-                            }
-                            prayer.Tags = linkedTags;
-                        }
-                    }
-
-                    context.Prayers.AddRange(prayers);
-                    await context.SaveChangesAsync();
-                }
+                context.Prayers.AddRange(prayers);
+                await context.SaveChangesAsync();
             }
         }
     }

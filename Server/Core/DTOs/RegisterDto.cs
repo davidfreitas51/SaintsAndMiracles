@@ -15,4 +15,10 @@ public class RegisterDto
 
     [Required]
     public string Password { get; set; } = string.Empty;
+
+    [Required]
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+    [Required]
+    public string InviteToken { get; set; } = string.Empty;
 }

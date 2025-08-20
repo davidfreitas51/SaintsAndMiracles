@@ -1,17 +1,27 @@
+using System.Security.Claims;
 using Core.DTOs;
+using Core.Interfaces.Services;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AccountController(SignInManager<AppUser> signInManager) : ControllerBase
+
+public class AccountController(SignInManager<AppUser> signInManager, IInviteService inviteService) : ControllerBase
 {
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
     {
+        if (!await inviteService.ValidateAndConsumeAsync(registerDto.InviteToken))
+        {
+            return BadRequest("Invalid or expired token");
+        }
+
         var user = new AppUser
         {
             FirstName = registerDto.FirstName,
@@ -22,8 +32,45 @@ public class AccountController(SignInManager<AppUser> signInManager) : Controlle
 
         var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
 
-        if (!result.Succeeded) return BadRequest(result.Errors);
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        var roleResult = await signInManager.UserManager.AddToRoleAsync(user, "Admin");
+        if (!roleResult.Succeeded)
+            return BadRequest(roleResult.Errors);
 
         return Created();
+    }
+
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        await signInManager.SignOutAsync();
+        return NoContent();
+    }
+
+    [HttpGet("user-info")]
+    public async Task<IActionResult> GetUserInfo()
+    {
+        if (User.Identity?.IsAuthenticated is false) return NoContent();
+
+        var user = await signInManager.UserManager.Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+
+        if (user == null) return Unauthorized();
+
+        return Ok(new
+        {
+            user.FirstName,
+            user.LastName,
+            user.Email
+        });
+    }
+
+    [HttpPost("setup")]
+    public async Task<IActionResult> Setup()
+    {
+        return Ok();
     }
 }

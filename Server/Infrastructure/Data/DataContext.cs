@@ -11,6 +11,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<Prayer> Prayers { get; set; }
     public DbSet<ReligiousOrder> ReligiousOrders { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<AccountToken> AccountTokens { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,7 +29,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
 
         modelBuilder.Entity<Prayer>()
             .HasMany(p => p.Tags)
-            .WithMany(t => t.Prayers) 
-            .UsingEntity(j => j.ToTable("PrayerTags")); 
+            .WithMany(t => t.Prayers)
+            .UsingEntity(j => j.ToTable("PrayerTags"));
     }
 }

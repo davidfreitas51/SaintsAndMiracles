@@ -4,6 +4,7 @@ using Core.Interfaces.Services;
 using Core.Models;
 using Infrastructure.Data;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,21 +36,33 @@ builder.Services.AddScoped<IPrayersService, PrayersService>();
 builder.Services.AddScoped<IReligiousOrdersRepository, ReligiousOrdersRepository>();
 builder.Services.AddScoped<ITagsRepository, TagsRepository>();
 
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IInviteService, InviteService>();
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("defaultConnection"));
 });
 
 builder.Services.AddAuthorization();
-builder.Services.AddIdentityApiEndpoints<AppUser>().AddEntityFrameworkStores<DataContext>();
+
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<DataContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<AppUser>, DummyEmailSender>();
 
 var app = builder.Build();
 
-await using (var scope = app.Services.CreateAsyncScope())
+using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
-    await context.Database.MigrateAsync();
-    await SeedData.SeedAsync(context);
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<DataContext>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    var tokenService = services.GetRequiredService<ITokenService>();
+
+    await SeedData.SeedAsync(context, roleManager, userManager, tokenService);
 }
 
 app.UseCors();
@@ -58,3 +71,27 @@ app.MapControllers();
 app.MapGroup("api").MapIdentityApi<AppUser>();
 
 app.Run();
+
+public class DummyEmailSender : IEmailSender<AppUser>
+{
+    public Task SendConfirmationLinkAsync(AppUser user, string email, string confirmationLink)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SendEmailAsync(AppUser user, string subject, string htmlMessage)
+    {
+        // Do nothing
+        return Task.CompletedTask;
+    }
+
+    public Task SendPasswordResetCodeAsync(AppUser user, string email, string resetCode)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SendPasswordResetLinkAsync(AppUser user, string email, string resetLink)
+    {
+        throw new NotImplementedException();
+    }
+}
