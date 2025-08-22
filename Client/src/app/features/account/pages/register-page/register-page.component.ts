@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,7 +7,11 @@ import { MatCardModule } from '@angular/material/card';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { RegisterDto } from '../../interfaces/register-dto';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { AccountService } from '../../../../core/services/account.service';
+import { SnackbarService } from '../../../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-register-page',
@@ -20,12 +24,21 @@ import { RouterLink } from '@angular/router';
     MatCardModule,
     FooterComponent,
     HeaderComponent,
-    RouterLink
+    RouterLink,
+    MatIconModule,
+    CommonModule,
   ],
   templateUrl: './register-page.component.html',
-  styleUrl: './register-page.component.scss',
+  styleUrls: ['./register-page.component.scss'],
 })
 export class RegisterPageComponent {
+  private accountService = inject(AccountService);
+  private snackbarService = inject(SnackbarService)
+  private router = inject(Router)
+
+  hidePassword = true;
+  hideConfirmPassword = true;
+
   registerDto: RegisterDto = {
     firstName: '',
     lastName: '',
@@ -35,12 +48,32 @@ export class RegisterPageComponent {
     inviteToken: '',
   };
 
-  onSubmit() {
+  onSubmit(form: NgForm) {
+    form.form.markAllAsTouched(); 
+    form.form.updateValueAndValidity();
+
+    if (form.invalid) return;
+
     if (this.registerDto.password !== this.registerDto.confirmPassword) {
-      alert('Passwords do not match!');
+      this.snackbarService.error('Passwords do not match!');
       return;
     }
 
-    console.log('Registering user:', this.registerDto);
+    this.accountService.register(this.registerDto).subscribe({
+      next: () => {
+        // registration succeeded
+        this.snackbarService.success(
+          'Registration successful! You can now log in.'
+        );
+        this.router.navigateByUrl('/account/login');
+      },
+      error: (err) => {
+        // you can show a friendly error
+        this.snackbarService.error(
+          err?.error?.message ||
+            'Registration failed. Please check your inputs.'
+        );
+      },
+    });
   }
 }

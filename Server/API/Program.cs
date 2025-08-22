@@ -1,4 +1,5 @@
 using System.Text.Json;
+using API.Helpers;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
@@ -50,7 +51,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<AppUser>, DummyEmailSender>();
+builder.Services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
 
 var app = builder.Build();
 
@@ -71,27 +72,3 @@ app.MapControllers();
 app.MapGroup("api").MapIdentityApi<AppUser>();
 
 app.Run();
-
-public class DummyEmailSender : IEmailSender<AppUser>
-{
-    public Task SendConfirmationLinkAsync(AppUser user, string email, string confirmationLink)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task SendEmailAsync(AppUser user, string subject, string htmlMessage)
-    {
-        // Do nothing
-        return Task.CompletedTask;
-    }
-
-    public Task SendPasswordResetCodeAsync(AppUser user, string email, string resetCode)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task SendPasswordResetLinkAsync(AppUser user, string email, string resetLink)
-    {
-        throw new NotImplementedException();
-    }
-}

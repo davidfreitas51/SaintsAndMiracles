@@ -21,17 +21,26 @@
             />
           </mat-form-field>
 
-          <!-- Password -->
+          <!-- Password with toggle -->
           <mat-form-field appearance="fill">
             <mat-label>Password</mat-label>
             <input
               matInput
-              type="password"
+              [type]="hidePassword ? 'password' : 'text'"
               name="password"
               [(ngModel)]="loginDto.password"
               required
               minlength="6"
             />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="'Hide or show password'"
+            >
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
           </mat-form-field>
 
           <button

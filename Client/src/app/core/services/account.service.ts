@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -7,11 +7,17 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
+  private http = inject(HttpClient);
   public baseUrl = environment.apiUrl;
   private currentUserSource = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSource.asObservable();
 
-  constructor(private http: HttpClient) {}
+  register(values: any): Observable<void> {
+    console.log('Attempting registration with:', values);
+
+    return this.http.post<void>(this.baseUrl + 'register', values, {
+    });
+  }
 
   login(values: any): Observable<User> {
     console.log('Attempting login with:', values);
@@ -21,7 +27,6 @@ export class AccountService {
     return this.http
       .post<User>(this.baseUrl + 'login', values, {
         params,
-        withCredentials: true,
       })
       .pipe(
         tap((user: User) => {

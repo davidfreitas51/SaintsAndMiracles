@@ -6,15 +6,15 @@
       <mat-card
         class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white"
       >
-        <h2 class="text-xl font-semibold text-center mb-6">Register</h2>
+        <h2 class="text-2xl font-semibold text-center mb-6">Create Account</h2>
 
         <form
-          #registerForm="ngForm"
-          (ngSubmit)="onSubmit()"
+          #form="ngForm"
+          (ngSubmit)="onSubmit(form)"
           class="flex flex-col gap-4"
         >
           <!-- First Name -->
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" class="w-full">
             <mat-label>First Name</mat-label>
             <input
               matInput
@@ -22,11 +22,15 @@
               name="firstName"
               [(ngModel)]="registerDto.firstName"
               required
+              #firstName="ngModel"
             />
+            <mat-error *ngIf="firstName.invalid && firstName.touched">
+              First name is required
+            </mat-error>
           </mat-form-field>
 
           <!-- Last Name -->
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" class="w-full">
             <mat-label>Last Name</mat-label>
             <input
               matInput
@@ -34,11 +38,15 @@
               name="lastName"
               [(ngModel)]="registerDto.lastName"
               required
+              #lastName="ngModel"
             />
+            <mat-error *ngIf="lastName.invalid && lastName.touched">
+              Last name is required
+            </mat-error>
           </mat-form-field>
 
           <!-- Email -->
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" class="w-full">
             <mat-label>Email</mat-label>
             <input
               matInput
@@ -46,37 +54,88 @@
               name="email"
               [(ngModel)]="registerDto.email"
               required
+              email
+              #emailCtrl="ngModel"
             />
+            <mat-error *ngIf="emailCtrl.invalid && emailCtrl.touched">
+              <ng-container *ngIf="emailCtrl.errors?.['required']">
+                Email is required
+              </ng-container>
+              <ng-container *ngIf="emailCtrl.errors?.['email']">
+                Invalid email address
+              </ng-container>
+            </mat-error>
           </mat-form-field>
 
           <!-- Password -->
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" class="w-full">
             <mat-label>Password</mat-label>
             <input
               matInput
-              type="password"
+              [type]="hidePassword ? 'password' : 'text'"
               name="password"
               [(ngModel)]="registerDto.password"
               required
-              minlength="6"
+              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}"
+              #passwordCtrl="ngModel"
             />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hidePassword = !hidePassword"
+            >
+              <mat-icon>{{
+                hidePassword ? "visibility" : "visibility_off"
+              }}</mat-icon>
+            </button>
+            <mat-error *ngIf="passwordCtrl.invalid && passwordCtrl.touched">
+              <ng-container *ngIf="passwordCtrl.errors?.['required']"
+                >Password is required</ng-container
+              >
+              <ng-container *ngIf="passwordCtrl.errors?.['pattern']">
+                Must be at least 8 characters, include uppercase, lowercase,
+                number, and symbol
+              </ng-container>
+            </mat-error>
           </mat-form-field>
 
           <!-- Confirm Password -->
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" class="w-full">
             <mat-label>Confirm Password</mat-label>
             <input
               matInput
-              type="password"
+              [type]="hideConfirmPassword ? 'password' : 'text'"
               name="confirmPassword"
               [(ngModel)]="registerDto.confirmPassword"
               required
-              minlength="6"
+              #confirmCtrl="ngModel"
             />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hideConfirmPassword = !hideConfirmPassword"
+            >
+              <mat-icon>{{
+                hideConfirmPassword ? "visibility" : "visibility_off"
+              }}</mat-icon>
+            </button>
+            <mat-error *ngIf="confirmCtrl.invalid && confirmCtrl.touched">
+              Confirmation is required
+            </mat-error>
+            <mat-error
+              *ngIf="
+                registerDto.confirmPassword &&
+                registerDto.confirmPassword !== registerDto.password
+              "
+            >
+              Passwords do not match
+            </mat-error>
           </mat-form-field>
 
           <!-- Invite Token -->
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" class="w-full">
             <mat-label>Invite Token</mat-label>
             <input
               matInput
@@ -84,15 +143,20 @@
               name="inviteToken"
               [(ngModel)]="registerDto.inviteToken"
               required
+              #inviteToken="ngModel"
             />
+            <mat-error *ngIf="inviteToken.invalid && inviteToken.touched">
+              Invite token is required
+            </mat-error>
           </mat-form-field>
 
+          <!-- Submit Button -->
           <button
             mat-flat-button
             color="primary"
-            class="rounded-xl shadow-md mt-4"
             type="submit"
-            [disabled]="!registerForm.valid"
+            [disabled]="form.invalid"
+            class="rounded-xl shadow-md mt-4"
           >
             Register
           </button>
