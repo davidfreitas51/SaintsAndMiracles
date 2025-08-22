@@ -1,1 +1,115 @@
-<p>register-page works!</p>
+<div class="min-h-screen flex flex-col">
+  <app-header></app-header>
+
+  <main class="flex-grow relative">
+    <div class="p-4 pt-10 w-full max-w-screen-sm mx-auto">
+      <mat-card
+        class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white"
+      >
+        <h2 class="text-xl font-semibold text-center mb-6">Register</h2>
+
+        <form
+          #registerForm="ngForm"
+          (ngSubmit)="onSubmit()"
+          class="flex flex-col gap-4"
+        >
+          <!-- First Name -->
+          <mat-form-field appearance="fill">
+            <mat-label>First Name</mat-label>
+            <input
+              matInput
+              type="text"
+              name="firstName"
+              [(ngModel)]="registerDto.firstName"
+              required
+            />
+          </mat-form-field>
+
+          <!-- Last Name -->
+          <mat-form-field appearance="fill">
+            <mat-label>Last Name</mat-label>
+            <input
+              matInput
+              type="text"
+              name="lastName"
+              [(ngModel)]="registerDto.lastName"
+              required
+            />
+          </mat-form-field>
+
+          <!-- Email -->
+          <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              type="email"
+              name="email"
+              [(ngModel)]="registerDto.email"
+              required
+            />
+          </mat-form-field>
+
+          <!-- Password -->
+          <mat-form-field appearance="fill">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              type="password"
+              name="password"
+              [(ngModel)]="registerDto.password"
+              required
+              minlength="6"
+            />
+          </mat-form-field>
+
+          <!-- Confirm Password -->
+          <mat-form-field appearance="fill">
+            <mat-label>Confirm Password</mat-label>
+            <input
+              matInput
+              type="password"
+              name="confirmPassword"
+              [(ngModel)]="registerDto.confirmPassword"
+              required
+              minlength="6"
+            />
+          </mat-form-field>
+
+          <!-- Invite Token -->
+          <mat-form-field appearance="fill">
+            <mat-label>Invite Token</mat-label>
+            <input
+              matInput
+              type="text"
+              name="inviteToken"
+              [(ngModel)]="registerDto.inviteToken"
+              required
+            />
+          </mat-form-field>
+
+          <button
+            mat-flat-button
+            color="primary"
+            class="rounded-xl shadow-md mt-4"
+            type="submit"
+            [disabled]="!registerForm.valid"
+          >
+            Register
+          </button>
+        </form>
+
+        <div class="text-center text-sm text-gray-600 mt-6">
+          Already have an account?
+          <a
+            routerLink="/account/login"
+            class="text-primary-app font-semibold hover:underline"
+          >
+            Login here
+          </a>
+        </div>
+      </mat-card>
+    </div>
+  </main>
+
+  <app-footer></app-footer>
+</div>
