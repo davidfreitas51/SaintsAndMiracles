@@ -10,10 +10,11 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
     public async Task SendConfirmationLinkAsync(AppUser user, string email, string confirmationLink)
     {
         string subject = "Confirm your email";
-        string body = $"Hello {user.FirstName},<br><br>" +
-                      $"Please confirm your email by clicking the link below:<br>" +
-                      $"<a href='{confirmationLink}'>Confirm Email</a><br><br>" +
-                      "Thank you!";
+        string template = LoadTemplate("ConfirmationEmail.html");
+
+        string body = template
+            .Replace("{{FirstName}}", user.FirstName)
+            .Replace("{{ConfirmationLink}}", confirmationLink);
 
         await SendEmailAsync(email, subject, body);
     }
@@ -21,9 +22,11 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
     public async Task SendPasswordResetCodeAsync(AppUser user, string email, string resetCode)
     {
         string subject = "Password Reset Code";
-        string body = $"Hello {user.FirstName},<br><br>" +
-                      $"Your password reset code is: <b>{resetCode}</b><br><br>" +
-                      "If you didn't request this, ignore this email.";
+        string template = LoadTemplate("ResetPasswordCode.html");
+
+        string body = template
+            .Replace("{{FirstName}}", user.FirstName)
+            .Replace("{{ResetCode}}", resetCode);
 
         await SendEmailAsync(email, subject, body);
     }
@@ -31,13 +34,21 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
     public async Task SendPasswordResetLinkAsync(AppUser user, string email, string resetLink)
     {
         string subject = "Reset your password";
-        string body = $"Hello {user.FirstName},<br><br>" +
-                      $"You can reset your password by clicking the link below:<br>" +
-                      $"<a href='{resetLink}'>Reset Password</a><br><br>" +
-                      "If you didn't request this, ignore this email.";
+        string template = LoadTemplate("ResetPasswordLink.html");
+
+        string body = template
+            .Replace("{{FirstName}}", user.FirstName)
+            .Replace("{{ResetLink}}", resetLink);
 
         await SendEmailAsync(email, subject, body);
     }
+    private string LoadTemplate(string templateName)
+    {
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", templateName);
+        return File.ReadAllText(path);
+    }
+
+
     private async Task SendEmailAsync(string toEmail, string subject, string body)
     {
         var smtpHost = _configuration["Smtp:Host"];
