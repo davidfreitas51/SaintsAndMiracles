@@ -1,0 +1,11 @@
+<div class="confirmation-container">
+  <ng-container *ngIf="success; else failed">
+    <h1>Email Confirmed 🎉</h1>
+    <p>Your email has been successfully verified. You can now log in.</p>
+  </ng-container>
+
+  <ng-template #failed>
+    <h1>Confirmation Failed ❌</h1>
+    <p>The confirmation link is invalid or expired.</p>
+  </ng-template>
+</div>

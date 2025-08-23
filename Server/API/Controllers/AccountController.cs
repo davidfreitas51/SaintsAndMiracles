@@ -12,7 +12,7 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 
-public class AccountController(SignInManager<AppUser> signInManager, IInviteService inviteService) : ControllerBase
+public class AccountController(SignInManager<AppUser> signInManager, IInviteService inviteService, IEmailSender<AppUser> emailSender) : ControllerBase
 {
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
@@ -39,9 +39,33 @@ public class AccountController(SignInManager<AppUser> signInManager, IInviteServ
         if (!roleResult.Succeeded)
             return BadRequest(roleResult.Errors);
 
-        return Created();
+        var token = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
+
+        var confirmationLink = Url.Action(
+            "ConfirmEmail",
+            "Account",
+            new { userId = user.Id, token },
+            Request.Scheme);
+
+        await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink);
+
+        return Created("", new { Message = "User created. Please check your email to confirm." });
     }
 
+    [HttpGet("ConfirmEmail")]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        var user = await signInManager.UserManager.FindByIdAsync(userId);
+        if (user == null)
+            return Redirect("http://localhost:4200/account/email-confirmed?success=false");
+
+        var result = await signInManager.UserManager.ConfirmEmailAsync(user, token);
+
+        if (!result.Succeeded)
+            return Redirect("http://localhost:4200/account/email-confirmed?success=false");
+
+        return Redirect("http://localhost:4200/account/email-confirmed?success=true");
+    }
 
     [HttpPost("logout")]
     [Authorize]

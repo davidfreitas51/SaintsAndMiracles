@@ -13,9 +13,7 @@ export class AccountService {
   currentUser$ = this.currentUserSource.asObservable();
 
   register(values: any): Observable<void> {
-    console.log('Attempting registration with:', values);
-
-    return this.http.post<void>(this.baseUrl + 'register', values, {
+    return this.http.post<void>(this.baseUrl + 'account/register', values, {
     });
   }
 

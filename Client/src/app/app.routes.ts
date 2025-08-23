@@ -21,6 +21,7 @@ import { PrayerFormPageComponent } from './features/prayers/pages/prayer-form-pa
 import { ManagePrayersPageComponent } from './features/admin/pages/manage-prayers-page/manage-prayers-page.component';
 import { LoginPageComponent } from './features/account/pages/login-page/login-page.component';
 import { RegisterPageComponent } from './features/account/pages/register-page/register-page.component';
+import { EmailConfirmedPageComponent } from './features/account/pages/email-confirmed-page/email-confirmed-page.component';
 
 export const routes: Routes = [
   {
@@ -108,6 +109,10 @@ export const routes: Routes = [
       {
         path: 'register',
         component: RegisterPageComponent,
+      },
+      {
+        path: 'email-confirmed',
+        component: EmailConfirmedPageComponent, 
       },
     ],
   },

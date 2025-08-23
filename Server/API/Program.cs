@@ -47,7 +47,12 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddIdentity<AppUser, IdentityRole>()
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = true;
+
+    options.Password.RequiredLength = 8;
+})
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
 
@@ -69,6 +74,5 @@ using (var scope = app.Services.CreateScope())
 app.UseCors();
 app.UseStaticFiles();
 app.MapControllers();
-app.MapGroup("api").MapIdentityApi<AppUser>();
 
 app.Run();

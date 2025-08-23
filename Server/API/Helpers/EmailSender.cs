@@ -42,12 +42,12 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
 
         await SendEmailAsync(email, subject, body);
     }
+
     private string LoadTemplate(string templateName)
     {
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplates", templateName);
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "Helpers", "EmailTemplates", templateName);
         return File.ReadAllText(path);
     }
-
 
     private async Task SendEmailAsync(string toEmail, string subject, string body)
     {
