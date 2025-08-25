@@ -14,8 +14,8 @@ export class AccountsService {
     return this.http.delete<void>(`${this.baseUrl}accounts/${id}`);
   }
 
-  public logout() {
-    this.http.post<void>(`${this.baseUrl}accounts/logout`, null);
+  public logout(): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}accounts/logout`, null);
   }
 
   public generateInviteToken(): Observable<string> {

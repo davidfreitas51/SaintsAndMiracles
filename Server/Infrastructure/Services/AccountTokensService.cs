@@ -26,7 +26,19 @@ public class AccountTokensService(DataContext context, ITokenService tokenServic
         return clearToken; 
     }
 
-    public async Task<bool> ValidateAndConsumeAsync(string providedToken)
+    public async Task<bool> ValidateAsync(string providedToken)
+    {
+        var invites = await context.AccountTokens
+            .Where(i => !i.IsUsed && i.ExpiresAtUtc > DateTime.UtcNow)
+            .ToListAsync();
+
+        var match = invites.FirstOrDefault(i =>
+            tokenService.VerifyToken(providedToken, i.Hash));
+
+        return match != null;
+    }
+
+    public async Task<bool> ConsumeAsync(string providedToken)
     {
         var invites = await context.AccountTokens
             .Where(i => !i.IsUsed && i.ExpiresAtUtc > DateTime.UtcNow)
@@ -41,4 +53,5 @@ public class AccountTokensService(DataContext context, ITokenService tokenServic
         await context.SaveChangesAsync();
         return true;
     }
+
 }

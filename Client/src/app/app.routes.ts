@@ -96,15 +96,18 @@ export const routes: Routes = [
       },
       {
         path: 'accounts',
-        children: [
-          { path: '', component: ManageAccountsPageComponent}
-        ],
+        children: [{ path: '', component: ManageAccountsPageComponent }],
       },
     ],
   },
   {
     path: 'account',
     children: [
+      {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+      },
       {
         path: 'login',
         component: LoginPageComponent,
@@ -115,7 +118,7 @@ export const routes: Routes = [
       },
       {
         path: 'email-confirmed',
-        component: EmailConfirmedPageComponent, 
+        component: EmailConfirmedPageComponent,
       },
     ],
   },

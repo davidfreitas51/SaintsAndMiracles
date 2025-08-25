@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Claims;
 using Core.DTOs;
 using Core.Interfaces.Services;
@@ -17,9 +18,23 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
     {
-        if (!await accountTokensService.ValidateAndConsumeAsync(registerDto.InviteToken))
+        // 1. Validar token sem consumi-lo ainda
+        if (!await accountTokensService.ValidateAsync(registerDto.InviteToken))
         {
-            return BadRequest("Invalid or expired token");
+            return BadRequest(new ApiErrorResponse
+            {
+                Message = "Invalid or expired token"
+            });
+        }
+
+        // 2. Verificar se o e-mail já está em uso
+        var existingUser = await signInManager.UserManager.FindByEmailAsync(registerDto.Email);
+        if (existingUser != null)
+        {
+            return BadRequest(new ApiErrorResponse
+            {
+                Message = "Email is already registered"
+            });
         }
 
         var user = new AppUser
@@ -30,27 +45,50 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
             UserName = registerDto.Email
         };
 
+        // 3. Criar usuário
         var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
-
         if (!result.Succeeded)
-            return BadRequest(result.Errors);
+        {
+            var errors = result.Errors.Select(e => e.Description);
+            return BadRequest(new ApiErrorResponse
+            {
+                Message = "User registration failed",
+                Details = errors
+            });
+        }
 
+        // 4. Adicionar role
         var roleResult = await signInManager.UserManager.AddToRoleAsync(user, "Admin");
         if (!roleResult.Succeeded)
-            return BadRequest(roleResult.Errors);
+        {
+            var errors = roleResult.Errors.Select(e => e.Description);
+            return BadRequest(new ApiErrorResponse
+            {
+                Message = "Failed to assign role",
+                Details = errors
+            });
+        }
 
+        // 5. Consumir token somente após sucesso
+        await accountTokensService.ConsumeAsync(registerDto.InviteToken);
+
+        // 6. Gerar token de confirmação de e-mail
         var token = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
 
         var confirmationLink = Url.Action(
             "ConfirmEmail",
             "Accounts",
-            new { userId = user.Id, token },
-            Request.Scheme);
+            new { userId = user.Id, token = encodedToken },
+            Request.Scheme
+        );
 
         await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink);
 
+        // 7. Retornar sucesso
         return Created("", new { Message = "User created. Please check your email to confirm." });
     }
+
 
     [HttpGet("ConfirmEmail")]
     public async Task<IActionResult> ConfirmEmail(string userId, string token)

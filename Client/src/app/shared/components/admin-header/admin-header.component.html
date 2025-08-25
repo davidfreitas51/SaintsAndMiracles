@@ -13,24 +13,22 @@
       class="hidden md:flex gap-6 uppercase text-lg font-semibold"
       style="color: var(--color-secondary) !important;"
     >
-      <a
-        routerLink="/"
+      <span
         routerLinkActive="text-accent-app font-bold"
-        class="hover:darken transition cursor-pointer"
         style="color: var(--color-secondary) !important;"
       >
         Admin Dashboard
-      </a>
+      </span>
     </nav>
 
     <div class="hidden md:flex gap-4 items-center">
-      <a
-        routerLink="/account/register"
+      <button
         class="py-3 px-6 border rounded hover:bg-secondary-app hover:text-primary-app transition text-lg font-semibold"
         style="color: var(--color-secondary) !important; border-color: var(--color-secondary) !important;"
+        (click)="handleLogout()"
       >
         Logout
-      </a>
+      </button>
     </div>
   </div>
 </header>

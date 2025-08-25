@@ -32,10 +32,11 @@ import { AccountsService } from '../../../../core/services/accounts.service';
   styleUrls: ['./register-page.component.scss'],
 })
 export class RegisterPageComponent {
-  private snackbarService = inject(SnackbarService)
-  private accountsService = inject(AccountsService)
-  private router = inject(Router)
+  private snackbarService = inject(SnackbarService);
+  private accountsService = inject(AccountsService);
+  private router = inject(Router);
 
+  backendErrors: string[] = [];
   hidePassword = true;
   hideConfirmPassword = true;
 
@@ -49,7 +50,7 @@ export class RegisterPageComponent {
   };
 
   onSubmit(form: NgForm) {
-    form.form.markAllAsTouched(); 
+    form.form.markAllAsTouched();
     form.form.updateValueAndValidity();
 
     if (form.invalid) return;
@@ -67,10 +68,16 @@ export class RegisterPageComponent {
         this.router.navigateByUrl('/account/login');
       },
       error: (err) => {
-        this.snackbarService.error(
-          err?.error?.message ||
-            'Registration failed. Please check your inputs.'
-        );
+        const details: string[] = err?.error?.details || [];
+
+        if (details.length > 0) {
+          details.forEach((d) => this.snackbarService.error(d));
+        } else {
+          this.snackbarService.error(
+            err?.error?.message ||
+              'Registration failed. Please check your inputs.'
+          );
+        }
       },
     });
   }
