@@ -18,7 +18,6 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
     {
-        // 1. Validar token sem consumi-lo ainda
         if (!await accountTokensService.ValidateAsync(registerDto.InviteToken))
         {
             return BadRequest(new ApiErrorResponse
@@ -27,7 +26,6 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
             });
         }
 
-        // 2. Verificar se o e-mail já está em uso
         var existingUser = await signInManager.UserManager.FindByEmailAsync(registerDto.Email);
         if (existingUser != null)
         {
@@ -45,7 +43,6 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
             UserName = registerDto.Email
         };
 
-        // 3. Criar usuário
         var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded)
         {
@@ -57,7 +54,6 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
             });
         }
 
-        // 4. Adicionar role
         var roleResult = await signInManager.UserManager.AddToRoleAsync(user, "Admin");
         if (!roleResult.Succeeded)
         {
@@ -69,23 +65,19 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
             });
         }
 
-        // 5. Consumir token somente após sucesso
         await accountTokensService.ConsumeAsync(registerDto.InviteToken);
 
-        // 6. Gerar token de confirmação de e-mail
         var token = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = WebUtility.UrlEncode(token);
 
         var confirmationLink = Url.Action(
             "ConfirmEmail",
             "Accounts",
-            new { userId = user.Id, token = encodedToken },
+            new { userId = user.Id, token },
             Request.Scheme
         );
 
         await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink);
 
-        // 7. Retornar sucesso
         return Created("", new { Message = "User created. Please check your email to confirm." });
     }
 
@@ -144,7 +136,7 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
 
             var confirmationLink = Url.Action(
                 "ConfirmEmail",
-                "Account",
+                "Accounts",
                 new { userId = user.Id, token },
                 Request.Scheme);
 
@@ -172,5 +164,30 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
     {
         var token = await accountTokensService.GenerateInviteAsync();
         return Ok(token);
+    }
+
+    [HttpPost("Resend-confirmation")]
+    public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationDto resendConfirmation)
+    {
+        var user = await signInManager.UserManager.FindByEmailAsync(resendConfirmation.Email);
+        if (user == null)
+            return NotFound(new ApiErrorResponse { Message = "User not found" });
+
+        if (await signInManager.UserManager.IsEmailConfirmedAsync(user))
+            return BadRequest(new ApiErrorResponse { Message = "Email already confirmed" });
+
+        var token = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
+
+        var confirmationLink = Url.Action(
+            "ConfirmEmail",
+            "Accounts",
+            new { userId = user.Id, token = encodedToken },
+            Request.Scheme
+        );
+
+        await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink);
+
+        return Ok(new { Message = "Confirmation email resent" });
     }
 }

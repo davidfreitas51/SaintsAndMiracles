@@ -11,11 +11,8 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 import { User } from '../../../../interfaces/user';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { MatIconModule } from '@angular/material/icon';
-
-interface LoginDto {
-  email: string;
-  password: string;
-}
+import { LoginDto } from '../../interfaces/login-dto';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-login-page',
@@ -29,25 +26,43 @@ interface LoginDto {
     HeaderComponent,
     FooterComponent,
     MatIconModule,
-    RouterLink
+    RouterLink,
+    MatCheckboxModule,
   ],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss',
 })
 export class LoginPageComponent {
   private router = inject(Router);
-  private accountsService = inject(AccountsService)
+  private accountsService = inject(AccountsService);
   private snackbarService = inject(SnackbarService);
 
   hidePassword = true;
-  loginDto: LoginDto = { email: '', password: '' };
+  loginDto: LoginDto = { email: '', password: '', rememberMe: false };
 
   onSubmit() {
-    if (!this.loginDto.email || !this.loginDto.password) {
-      alert('Please fill in all fields');
-      return;
-    }
+    if (!this.loginDto.email || !this.loginDto.password) return;
 
+    this.accountsService.login(this.loginDto).subscribe({
+      next: (user: User) => {
+        this.snackbarService.success('Login successful');
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        const msg = err?.error || err?.message || 'Invalid credentials';
 
+        if (msg.includes('Email not confirmed')) {
+          this.accountsService
+            .resendConfirmation(this.loginDto.email)
+            .subscribe(() => {
+              this.snackbarService.error(
+                'Your email is not confirmed. A new confirmation email has been sent.'
+              );
+            });
+        } else {
+          this.snackbarService.error(msg);
+        }
+      },
+    });
   }
 }
