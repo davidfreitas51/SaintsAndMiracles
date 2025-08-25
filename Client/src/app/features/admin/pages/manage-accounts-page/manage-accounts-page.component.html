@@ -1,0 +1,25 @@
+<div>
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-6">
+      <h1 class="text-3xl font-bold text-primary-app">Accounts</h1>
+    </div>
+
+    <a mat-fab extended [routerLink]="['/admin', 'accounts', 'create']">
+      <mat-icon>add</mat-icon>
+      Create new Account
+    </a>
+  </div>
+
+  <div class="w-full">
+    <app-admin-content-table
+      [data]="accounts"
+      [excludedColumns]="[
+        'passwordHash',
+        'securityStamp',
+        'concurrencyStamp'
+      ]"
+      [deleteFn]="deleteUser"
+      [loadData]="loadUsers"
+    ></app-admin-content-table>
+  </div>
+</div>

@@ -61,14 +61,12 @@ export class RegisterPageComponent {
 
     this.accountService.register(this.registerDto).subscribe({
       next: () => {
-        // registration succeeded
         this.snackbarService.success(
-          'Registration successful! You can now log in.'
+          'Registration successful! Please confirm your email before login'
         );
         this.router.navigateByUrl('/account/login');
       },
       error: (err) => {
-        // you can show a friendly error
         this.snackbarService.error(
           err?.error?.message ||
             'Registration failed. Please check your inputs.'

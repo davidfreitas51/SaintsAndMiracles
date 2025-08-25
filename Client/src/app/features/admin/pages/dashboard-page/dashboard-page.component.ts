@@ -16,7 +16,7 @@ export class DashboardPageComponent implements OnInit {
     { label: 'Total Saints', value: 0 },
     { label: 'Total Miracles', value: 0 },
     { label: 'Total Prayers', value: 0 },
-    { label: 'Total Users', value: 0 },
+    { label: 'Total Accounts', value: 0 },
   ];
 
   tableColumns: string[] = ['name', 'status', 'lastActive'];
@@ -42,9 +42,9 @@ export class DashboardPageComponent implements OnInit {
       error: (err) => console.error('Failed to load total prayers', err)
     })
 
-    this.dashboardService.getTotalUsers().subscribe({
+    this.dashboardService.getTotalAccounts().subscribe({
       next: (total) => (this.summary[3].value = total),
-      error: (err) => console.error('Failed to load total users:', err),
+      error: (err) => console.error('Failed to load total accounts:', err),
     });
   }
 }

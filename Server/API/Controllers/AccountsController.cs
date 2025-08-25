@@ -12,7 +12,7 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 
-public class AccountController(SignInManager<AppUser> signInManager, IInviteService inviteService, IEmailSender<AppUser> emailSender) : ControllerBase
+public class AccountsController(SignInManager<AppUser> signInManager, IInviteService inviteService, IEmailSender<AppUser> emailSender) : ControllerBase
 {
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
@@ -92,9 +92,41 @@ public class AccountController(SignInManager<AppUser> signInManager, IInviteServ
         });
     }
 
-    [HttpPost("setup")]
-    public async Task<IActionResult> Setup()
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginDto loginDto)
     {
-        return Ok();
+        var user = await signInManager.UserManager.FindByEmailAsync(loginDto.Email);
+
+        if (user == null)
+            return Unauthorized("Invalid email or password");
+
+        if (!await signInManager.UserManager.IsEmailConfirmedAsync(user))
+        {
+            var token = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var confirmationLink = Url.Action(
+                "ConfirmEmail",
+                "Account",
+                new { userId = user.Id, token },
+                Request.Scheme);
+
+            await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink);
+
+            return Unauthorized("Email not confirmed. A new confirmation email has been sent.");
+        }
+
+        var result = await signInManager.PasswordSignInAsync(user, loginDto.Password, loginDto.RememberMe, lockoutOnFailure: false);
+
+        if (!result.Succeeded)
+            return Unauthorized("Invalid email or password");
+
+        return Ok(new
+        {
+            Message = "Login successful",
+            user.FirstName,
+            user.LastName,
+            user.Email
+        });
     }
+
 }

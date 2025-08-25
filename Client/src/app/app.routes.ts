@@ -22,6 +22,7 @@ import { ManagePrayersPageComponent } from './features/admin/pages/manage-prayer
 import { LoginPageComponent } from './features/account/pages/login-page/login-page.component';
 import { RegisterPageComponent } from './features/account/pages/register-page/register-page.component';
 import { EmailConfirmedPageComponent } from './features/account/pages/email-confirmed-page/email-confirmed-page.component';
+import { ManageAccountsPageComponent } from './features/admin/pages/manage-accounts-page/manage-accounts-page.component';
 
 export const routes: Routes = [
   {
@@ -94,8 +95,10 @@ export const routes: Routes = [
         ],
       },
       {
-        path: 'users',
-        children: [],
+        path: 'accounts',
+        children: [
+          { path: '', component: ManageAccountsPageComponent}
+        ],
       },
     ],
   },
