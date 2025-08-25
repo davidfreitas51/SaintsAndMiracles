@@ -4,9 +4,9 @@
       <h1 class="text-3xl font-bold text-primary-app">Accounts</h1>
     </div>
 
-    <a mat-fab extended [routerLink]="['/admin', 'accounts', 'create']">
+    <a mat-fab extended (click)="openRegisterAccountDialog()">
       <mat-icon>add</mat-icon>
-      Create new Account
+      Generate new invite token
     </a>
   </div>
 

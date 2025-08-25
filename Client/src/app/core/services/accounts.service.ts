@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -8,13 +8,23 @@ import { environment } from '../../../environments/environment';
 })
 export class AccountsService {
   private http = inject(HttpClient);
-  public baseUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl;
 
   public deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}accounts/${id}`);
   }
 
-  public logoutUser() {
+  public logout() {
     this.http.post<void>(`${this.baseUrl}accounts/logout`, null);
+  }
+
+  public generateInviteToken(): Observable<string> {
+    return this.http.post(`${this.baseUrl}accounts/invite`, null, {
+      responseType: 'text',
+    });
+  }
+
+  register(values: any): Observable<void> {
+    return this.http.post<void>(this.baseUrl + 'accounts/register', values);
   }
 }

@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { EntityFilters } from '../../../../interfaces/entity-filters';
 import { AccountsService } from '../../../../core/services/accounts.service';
 import { User } from '../../../../interfaces/user';
+import { GenerateTokenDialogComponent } from '../../components/generate-token-dialog/generate-token-dialog.component';
 
 @Component({
   selector: 'app-manage-accounts-page',
@@ -23,7 +24,7 @@ import { User } from '../../../../interfaces/user';
 })
 export class ManageAccountsPageComponent {
   private usersService = inject(AccountsService);
-  readonly dialog = inject(MatDialog);
+  private dialog = inject(MatDialog);
 
   entityFilter: EntityFilters = new EntityFilters();
 
@@ -40,4 +41,12 @@ export class ManageAccountsPageComponent {
   };
 
   deleteUser = (id: number) => this.usersService.deleteUser(id);
+
+  openRegisterAccountDialog() {
+    this.dialog.open(GenerateTokenDialogComponent, {
+      height: '500px',
+      width: '600px',
+      panelClass: 'generate-token-dialog',
+    });
+  }
 }

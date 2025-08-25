@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>Generate Invite Token</h2>
+
+<mat-dialog-content class="space-y-4">
+  <p>
+    <strong>How account creation works:</strong>
+  </p>
+
+  <ul class="list-disc ml-6 mt-2">
+    <li>Only administrators can have an account.</li>
+    <li>Every account created is an <em>admin account</em>.</li>
+    <li>To create an account, you must generate an invite token.</li>
+    <li>Share the token securely with the new admin.</li>
+    <li>The new admin can only register if they have a valid invite token.</li>
+  </ul>
+
+  <div class="flex flex-col gap-4">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="generateToken()"
+      [disabled]="inviteToken"
+    >
+      <mat-icon>vpn_key</mat-icon>
+      Generate Invite Token
+    </button>
+
+    <ng-container *ngIf="inviteToken">
+      <div class="p-3 border rounded bg-gray-100 flex items-center justify-between">
+        <code class="text-sm break-all">{{ inviteToken }}</code>
+        <button mat-icon-button (click)="copyToClipboard()">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      </div>
+
+      <p class="text-sm text-red-600 mt-1">
+        ⚠️ This token is sensitive. Do not share it publicly.  
+        It will expire in <strong>24 hours</strong>.
+      </p>
+    </ng-container>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Close</button>
+</mat-dialog-actions>

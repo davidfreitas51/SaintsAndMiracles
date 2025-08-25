@@ -10,8 +10,8 @@ import { RegisterDto } from '../../interfaces/register-dto';
 import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { AccountService } from '../../../../core/services/account.service';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
+import { AccountsService } from '../../../../core/services/accounts.service';
 
 @Component({
   selector: 'app-register-page',
@@ -32,8 +32,8 @@ import { SnackbarService } from '../../../../core/services/snackbar.service';
   styleUrls: ['./register-page.component.scss'],
 })
 export class RegisterPageComponent {
-  private accountService = inject(AccountService);
   private snackbarService = inject(SnackbarService)
+  private accountsService = inject(AccountsService)
   private router = inject(Router)
 
   hidePassword = true;
@@ -59,7 +59,7 @@ export class RegisterPageComponent {
       return;
     }
 
-    this.accountService.register(this.registerDto).subscribe({
+    this.accountsService.register(this.registerDto).subscribe({
       next: () => {
         this.snackbarService.success(
           'Registration successful! Please confirm your email before login'

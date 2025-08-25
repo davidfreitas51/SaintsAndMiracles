@@ -38,7 +38,7 @@ builder.Services.AddScoped<IReligiousOrdersRepository, ReligiousOrdersRepository
 builder.Services.AddScoped<ITagsRepository, TagsRepository>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IInviteService, InviteService>();
+builder.Services.AddScoped<IAccountTokensService, AccountTokensService>();
 
 builder.Services.AddDbContext<DataContext>(options =>
 {

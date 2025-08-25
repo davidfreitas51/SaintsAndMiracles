@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Services;
 
-public class InviteService(DataContext context, ITokenService tokenService) : IInviteService
+public class AccountTokensService(DataContext context, ITokenService tokenService) : IAccountTokensService
 {
 
     public async Task<string> GenerateInviteAsync(TimeSpan? lifetime = null)

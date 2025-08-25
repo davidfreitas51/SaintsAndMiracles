@@ -5,7 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router, RouterLink } from '@angular/router';
-import { AccountService } from '../../../../core/services/account.service';
+import { AccountsService } from '../../../../core/services/accounts.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { User } from '../../../../interfaces/user';
@@ -35,8 +35,8 @@ interface LoginDto {
   styleUrl: './login-page.component.scss',
 })
 export class LoginPageComponent {
-  private accountService = inject(AccountService);
   private router = inject(Router);
+  private accountsService = inject(AccountsService)
   private snackbarService = inject(SnackbarService);
 
   hidePassword = true;
@@ -48,16 +48,6 @@ export class LoginPageComponent {
       return;
     }
 
-    this.accountService.login(this.loginDto).subscribe({
-      next: (user: User) => {
-        this.accountService.setCurrentUser(user);
-        this.router.navigateByUrl('/admin');
-      },
-      error: () => {
-        this.snackbarService.error(
-          'Invalid email or password. Please check your credentials'
-        );
-      },
-    });
+
   }
 }

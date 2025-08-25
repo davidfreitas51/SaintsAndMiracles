@@ -12,12 +12,12 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 
-public class AccountsController(SignInManager<AppUser> signInManager, IInviteService inviteService, IEmailSender<AppUser> emailSender) : ControllerBase
+public class AccountsController(SignInManager<AppUser> signInManager, IAccountTokensService accountTokensService, IEmailSender<AppUser> emailSender) : ControllerBase
 {
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
     {
-        if (!await inviteService.ValidateAndConsumeAsync(registerDto.InviteToken))
+        if (!await accountTokensService.ValidateAndConsumeAsync(registerDto.InviteToken))
         {
             return BadRequest("Invalid or expired token");
         }
@@ -43,7 +43,7 @@ public class AccountsController(SignInManager<AppUser> signInManager, IInviteSer
 
         var confirmationLink = Url.Action(
             "ConfirmEmail",
-            "Account",
+            "Accounts",
             new { userId = user.Id, token },
             Request.Scheme);
 
@@ -92,7 +92,7 @@ public class AccountsController(SignInManager<AppUser> signInManager, IInviteSer
         });
     }
 
-    [HttpPost("login")]
+    [HttpPost("Login")]
     public async Task<IActionResult> Login(LoginDto loginDto)
     {
         var user = await signInManager.UserManager.FindByEmailAsync(loginDto.Email);
@@ -129,4 +129,10 @@ public class AccountsController(SignInManager<AppUser> signInManager, IInviteSer
         });
     }
 
+    [HttpPost("Invite")]
+    public async Task<IActionResult> GenerateInviteToken()
+    {
+        var token = await accountTokensService.GenerateInviteAsync();
+        return Ok(token);
+    }
 }
