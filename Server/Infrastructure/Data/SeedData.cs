@@ -15,6 +15,7 @@ public static class SeedData
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
     };
+
     public static async Task SeedAsync(
         DataContext context,
         RoleManager<IdentityRole> roleManager,
@@ -22,7 +23,6 @@ public static class SeedData
         ITokenService tokenService)
     {
         await context.Database.MigrateAsync();
-
 
         await SeedRoles(roleManager);
         await SeedBootstrapToken(context, userManager, tokenService);
@@ -40,25 +40,19 @@ public static class SeedData
         {
             if (!await roleManager.RoleExistsAsync(roleName))
             {
-                IdentityRole role = new IdentityRole
+                await roleManager.CreateAsync(new IdentityRole
                 {
                     Name = roleName,
                     NormalizedName = roleName.ToUpperInvariant(),
                     ConcurrencyStamp = Guid.NewGuid().ToString()
-                };
-
-                await roleManager.CreateAsync(role);
+                });
             }
         }
     }
 
-    private static async Task SeedBootstrapToken(
-        DataContext context,
-        UserManager<AppUser> userManager,
-        ITokenService tokenService)
+    private static async Task SeedBootstrapToken(DataContext context, UserManager<AppUser> userManager, ITokenService tokenService)
     {
-        var hasAdmin = (await userManager.GetUsersInRoleAsync("Admin")).Any();
-        if (hasAdmin) return;
+        if ((await userManager.GetUsersInRoleAsync("Admin")).Any()) return;
 
         var clearToken = tokenService.GenerateClearToken();
         var hash = tokenService.HashTokenBase64(clearToken);
@@ -79,9 +73,7 @@ public static class SeedData
         Console.WriteLine("=================================================");
         Console.WriteLine(" NO ADMIN USERS FOUND ");
         Console.WriteLine(" Use this bootstrap token to create the first admin account:");
-        Console.WriteLine();
         Console.WriteLine(clearToken);
-        Console.WriteLine();
         Console.WriteLine($" This token will expire at: {bootstrapToken.ExpiresAtUtc}");
         Console.WriteLine("=================================================");
         Console.ResetColor();
@@ -89,18 +81,26 @@ public static class SeedData
 
     private static async Task SeedTags(DataContext context)
     {
-        if (!context.Tags.Any())
+        var filePath = Path.Combine(basePath, "tags.json");
+        var json = await File.ReadAllTextAsync(filePath);
+        var tags = JsonSerializer.Deserialize<List<Tag>>(json, jsonOptions);
+        if (tags == null || !tags.Any()) return;
+
+        var existingTags = await context.Tags
+            .Select(t => new { t.Name, t.TagType })
+            .ToListAsync();
+
+        var existingSet = new HashSet<string>(existingTags
+            .Select(t => $"{t.Name.ToLowerInvariant()}|{(int)t.TagType}"));
+
+        var tagsToAdd = tags
+            .Where(tag => !existingSet.Contains($"{tag.Name.ToLowerInvariant()}|{(int)tag.TagType}"))
+            .ToList();
+
+        if (tagsToAdd.Any())
         {
-            var filePath = Path.Combine(basePath, "tags.json");
-            var json = await File.ReadAllTextAsync(filePath);
-
-            var tags = JsonSerializer.Deserialize<List<Tag>>(json, jsonOptions);
-
-            if (tags != null)
-            {
-                context.Tags.AddRange(tags);
-                await context.SaveChangesAsync();
-            }
+            context.Tags.AddRange(tagsToAdd);
+            await context.SaveChangesAsync();
         }
     }
 
@@ -111,12 +111,30 @@ public static class SeedData
             var filePath = Path.Combine(basePath, "saints.json");
             var json = await File.ReadAllTextAsync(filePath);
             var saints = JsonSerializer.Deserialize<List<Saint>>(json, jsonOptions);
+            if (saints == null || !saints.Any()) return;
 
-            if (saints != null)
+            var allTags = await context.Tags.ToListAsync();
+
+            foreach (var saint in saints)
             {
-                context.Saints.AddRange(saints);
-                await context.SaveChangesAsync();
+                if (saint.Tags == null) continue;
+
+                var assignedTags = new List<Tag>();
+                foreach (var tag in saint.Tags)
+                {
+                    var existingTag = allTags.FirstOrDefault(t =>
+                        t.Name.Equals(tag.Name, StringComparison.OrdinalIgnoreCase) &&
+                        t.TagType == tag.TagType);
+
+                    if (existingTag != null)
+                        assignedTags.Add(existingTag);
+                }
+
+                saint.Tags = assignedTags;
             }
+
+            context.Saints.AddRange(saints);
+            await context.SaveChangesAsync();
         }
     }
 
@@ -127,12 +145,30 @@ public static class SeedData
             var filePath = Path.Combine(basePath, "miracles.json");
             var json = await File.ReadAllTextAsync(filePath);
             var miracles = JsonSerializer.Deserialize<List<Miracle>>(json, jsonOptions);
+            if (miracles == null || !miracles.Any()) return;
 
-            if (miracles != null)
+            var allTags = await context.Tags.ToListAsync();
+
+            foreach (var miracle in miracles)
             {
-                context.Miracles.AddRange(miracles);
-                await context.SaveChangesAsync();
+                if (miracle.Tags == null) continue;
+
+                var assignedTags = new List<Tag>();
+                foreach (var tag in miracle.Tags)
+                {
+                    var existingTag = allTags.FirstOrDefault(t =>
+                        t.Name.Equals(tag.Name, StringComparison.OrdinalIgnoreCase) &&
+                        t.TagType == tag.TagType);
+
+                    if (existingTag != null)
+                        assignedTags.Add(existingTag);
+                }
+
+                miracle.Tags = assignedTags;
             }
+
+            context.Miracles.AddRange(miracles);
+            await context.SaveChangesAsync();
         }
     }
 
@@ -143,12 +179,30 @@ public static class SeedData
             var filePath = Path.Combine(basePath, "prayers.json");
             var json = await File.ReadAllTextAsync(filePath);
             var prayers = JsonSerializer.Deserialize<List<Prayer>>(json, jsonOptions);
+            if (prayers == null || !prayers.Any()) return;
 
-            if (prayers != null)
+            var allTags = await context.Tags.ToListAsync();
+
+            foreach (var prayer in prayers)
             {
-                context.Prayers.AddRange(prayers);
-                await context.SaveChangesAsync();
+                if (prayer.Tags == null) continue;
+
+                var assignedTags = new List<Tag>();
+                foreach (var tag in prayer.Tags)
+                {
+                    var existingTag = allTags.FirstOrDefault(t =>
+                        t.Name.Equals(tag.Name, StringComparison.OrdinalIgnoreCase) &&
+                        t.TagType == tag.TagType);
+
+                    if (existingTag != null)
+                        assignedTags.Add(existingTag);
+                }
+
+                prayer.Tags = assignedTags;
             }
+
+            context.Prayers.AddRange(prayers);
+            await context.SaveChangesAsync();
         }
     }
 }
