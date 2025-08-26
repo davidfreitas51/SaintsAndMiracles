@@ -46,7 +46,7 @@ export class LoginPageComponent {
     this.accountsService.login(this.loginDto).subscribe({
       next: (user: User) => {
         this.snackbarService.success('Login successful');
-        this.router.navigate(['/']);
+        this.router.navigate(['/admin']);
       },
       error: (err) => {
         const msg = err?.error || err?.message || 'Invalid credentials';

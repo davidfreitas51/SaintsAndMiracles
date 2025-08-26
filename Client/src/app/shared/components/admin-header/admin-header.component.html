@@ -17,48 +17,41 @@
     </a>
 
     <!-- User Menu -->
-    <div class="hidden md:flex gap-4 items-center relative">
-      <button
-        (click)="toggleMenu()"
-        class="flex items-center gap-2 py-2 px-4 rounded hover:bg-secondary-app transition-colors overflow-visible"
-        style="color: var(--color-secondary) !important"
-      >
-        <span
-          class="uppercase text-md font-semibold"
-          style="color: var(--color-secondary) !important"
-        >
-          {{ userName }}
-        </span>
-        <mat-icon style="font-size: 28px; line-height: 1"
-          >account_circle</mat-icon
-        >
-      </button>
-
-      <div
-        *ngIf="menuOpen"
-        (mouseleave)="closeMenu()"
-        class="absolute right-0 top-full mt-1 w-48 bg-white shadow-lg rounded z-50"
-      >
-        <a
-          routerLink="/account/settings"
-          class="block px-4 py-2 hover:bg-gray-200 transition-colors"
-          (click)="closeMenu()"
-        >
-          Account Settings
-        </a>
-        <a
-          routerLink="/account/security"
-          class="block px-4 py-2 hover:bg-gray-200 transition-colors"
-          (click)="closeMenu()"
-        >
-          Change Password
-        </a>
+    <div
+      class="hidden md:flex gap-4 items-center relative"
+      (mouseleave)="closeMenu()"
+    >
+      <!-- Button + Dropdown wrapper -->
+      <div class="relative">
         <button
-          (click)="handleLogout()"
-          class="w-full text-left px-4 py-2 hover:bg-gray-200 transition-colors"
+          (click)="toggleMenu()"
+          class="flex items-center gap-2 py-3 px-4 rounded transition-colors bg-primary-app text-secondary-app hover:bg-hover hover:text-primary-app min-h-[48px] overflow-visible"
         >
-          Logout
+          <span class="uppercase text-md font-semibold">
+            {{ userName }}
+          </span>
+          <mat-icon>account_circle</mat-icon>
         </button>
+
+        <!-- Dropdown -->
+        <div
+          *ngIf="menuOpen"
+          class="absolute right-0 top-full w-48 bg-white shadow-lg rounded z-50"
+        >
+          <a
+            routerLink="/account/settings"
+            class="block px-4 py-2 hover:bg-gray-200 transition-colors"
+            (click)="closeMenu()"
+          >
+            Account Settings
+          </a>
+          <button
+            (click)="handleLogout()"
+            class="w-full text-left px-4 py-2 hover:bg-gray-200 transition-colors"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   </div>
