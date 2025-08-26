@@ -1,6 +1,13 @@
-<header class="border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app">
+<header
+  class="border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app"
+>
   <div class="flex items-center justify-between max-w-screen-2xl mx-auto">
-    <a routerLink="/" class="flex items-center" style="color: var(--color-secondary) !important;">
+    <!-- Logo -->
+    <a
+      routerLink="/"
+      class="flex items-center"
+      style="color: var(--color-secondary) !important"
+    >
       <img
         src="assets/SaintsNMiracles-logo.png"
         alt="Saints & Miracles Logo"
@@ -9,26 +16,50 @@
       <span class="sr-only">Home</span>
     </a>
 
-    <nav
-      class="hidden md:flex gap-6 uppercase text-lg font-semibold"
-      style="color: var(--color-secondary) !important;"
-    >
-      <span
-        routerLinkActive="text-accent-app font-bold"
-        style="color: var(--color-secondary) !important;"
-      >
-        Admin Dashboard
-      </span>
-    </nav>
-
-    <div class="hidden md:flex gap-4 items-center">
+    <!-- User Menu -->
+    <div class="hidden md:flex gap-4 items-center relative">
       <button
-        class="py-3 px-6 border rounded hover:bg-secondary-app hover:text-primary-app transition text-lg font-semibold"
-        style="color: var(--color-secondary) !important; border-color: var(--color-secondary) !important;"
-        (click)="handleLogout()"
+        (click)="toggleMenu()"
+        class="flex items-center gap-2 py-2 px-4 rounded hover:bg-secondary-app transition-colors overflow-visible"
+        style="color: var(--color-secondary) !important"
       >
-        Logout
+        <span
+          class="uppercase text-md font-semibold"
+          style="color: var(--color-secondary) !important"
+        >
+          {{ userName }}
+        </span>
+        <mat-icon style="font-size: 28px; line-height: 1"
+          >account_circle</mat-icon
+        >
       </button>
+
+      <div
+        *ngIf="menuOpen"
+        (mouseleave)="closeMenu()"
+        class="absolute right-0 top-full mt-1 w-48 bg-white shadow-lg rounded z-50"
+      >
+        <a
+          routerLink="/account/settings"
+          class="block px-4 py-2 hover:bg-gray-200 transition-colors"
+          (click)="closeMenu()"
+        >
+          Account Settings
+        </a>
+        <a
+          routerLink="/account/security"
+          class="block px-4 py-2 hover:bg-gray-200 transition-colors"
+          (click)="closeMenu()"
+        >
+          Change Password
+        </a>
+        <button
+          (click)="handleLogout()"
+          class="w-full text-left px-4 py-2 hover:bg-gray-200 transition-colors"
+        >
+          Logout
+        </button>
+      </div>
     </div>
   </div>
 </header>
