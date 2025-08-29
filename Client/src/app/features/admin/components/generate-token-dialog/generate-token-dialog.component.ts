@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
-import { AccountsService } from '../../../../core/services/accounts.service';
+import { RegistrationService } from '../../../../core/services/registration.service';
 
 @Component({
   selector: 'app-generate-token-dialog',
@@ -17,13 +17,13 @@ import { AccountsService } from '../../../../core/services/accounts.service';
 export class GenerateTokenDialogComponent {
   private clipboard = inject(Clipboard);
   private snackbarService = inject(SnackbarService)
-  private accountService = inject(AccountsService)
+  private registrationService = inject(RegistrationService)
   readonly dialogRef = inject(MatDialogRef<GenerateTokenDialogComponent>);
 
   inviteToken: string | null = null;
 
   generateToken() {
-    this.accountService.generateInviteToken().subscribe({
+    this.registrationService.generateInviteToken().subscribe({
       next: (token) => {
         this.inviteToken = token
       },

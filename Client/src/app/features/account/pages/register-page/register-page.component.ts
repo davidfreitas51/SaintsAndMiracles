@@ -11,7 +11,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
-import { AccountsService } from '../../../../core/services/accounts.service';
+import { RegistrationService } from '../../../../core/services/registration.service';
 
 @Component({
   selector: 'app-register-page',
@@ -33,7 +33,7 @@ import { AccountsService } from '../../../../core/services/accounts.service';
 })
 export class RegisterPageComponent {
   private snackbarService = inject(SnackbarService);
-  private accountsService = inject(AccountsService);
+  private registrationService = inject(RegistrationService)
   private router = inject(Router);
 
   backendErrors: string[] = [];
@@ -60,7 +60,7 @@ export class RegisterPageComponent {
       return;
     }
 
-    this.accountsService.register(this.registerDto).subscribe({
+    this.registrationService.register(this.registerDto).subscribe({
       next: () => {
         this.snackbarService.success(
           'Registration successful! Please confirm your email before login'

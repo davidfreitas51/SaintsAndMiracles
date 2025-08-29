@@ -1,9 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { AccountsService } from '../../../core/services/accounts.service';
 import { Router, RouterLink } from '@angular/router';
 import { SnackbarService } from '../../../core/services/snackbar.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { AuthenticationService } from '../../../core/services/authentication.service';
+import { UserSessionService } from '../../../core/services/user-session.service';
 
 @Component({
   selector: 'app-admin-header',
@@ -12,7 +13,8 @@ import { CommonModule } from '@angular/common';
   styleUrl: './admin-header.component.scss',
 })
 export class AdminHeaderComponent implements OnInit {
-  private accountService = inject(AccountsService);
+  private authenticationService = inject(AuthenticationService)
+  private userSessionService = inject(UserSessionService)
   private snackBarService = inject(SnackbarService);
   private router = inject(Router);
 
@@ -20,7 +22,7 @@ export class AdminHeaderComponent implements OnInit {
   menuOpen = false;
 
   ngOnInit(): void {
-    this.accountService.currentUser$.subscribe({
+    this.userSessionService.currentUser$.subscribe({
       next: (user) => {
         if (user) {
           this.userName = `${user.firstName} ${user.lastName}`;
@@ -38,7 +40,7 @@ export class AdminHeaderComponent implements OnInit {
   }
 
   handleLogout() {
-    this.accountService.logout().subscribe({
+    this.authenticationService.logout().subscribe({
       next: () => {
         this.router.navigate(['/']);
         this.snackBarService.success("You've logged out");
