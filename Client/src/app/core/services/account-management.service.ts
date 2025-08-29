@@ -19,7 +19,7 @@ export class AccountManagementService {
 
   private checkCurrentUser(): Observable<CurrentUser | null> {
     return this.http
-      .get<CurrentUser>(`${this.baseUrl}account-management/current-user`, {
+      .get<CurrentUser>(`${this.baseUrl}accountManagement/current-user`, {
         withCredentials: true,
       })
       .pipe(

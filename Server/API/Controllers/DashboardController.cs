@@ -3,6 +3,7 @@ using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -31,11 +32,11 @@ public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRe
         var totalPrayers = await prayersRepository.GetTotalPrayersAsync();
         return Ok(totalPrayers);
     }
-
     [HttpGet("accounts")]
     public async Task<IActionResult> TotalAccounts()
     {
-        var totalAccounts = await Task.FromResult(userManager.Users.Count());
+        var totalAccounts = await userManager.Users.CountAsync(u => u.EmailConfirmed);
         return Ok(totalAccounts);
     }
+
 }

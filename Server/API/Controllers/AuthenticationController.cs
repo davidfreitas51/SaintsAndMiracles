@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Core.DTOs;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +25,7 @@ public class AuthenticationController(SignInManager<AppUser> signInManager, IEma
 
             var confirmationLink = Url.Action(
                 "ConfirmEmail",
-                "Accounts",
+                "Registration",
                 new { userId = user.Id, token },
                 Request.Scheme);
 
@@ -37,7 +38,7 @@ public class AuthenticationController(SignInManager<AppUser> signInManager, IEma
 
         if (!result.Succeeded)
             return Unauthorized("Invalid email or password");
-
+        
         return Ok(new
         {
             Message = "Login successful",

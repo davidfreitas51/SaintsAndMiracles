@@ -14,6 +14,8 @@ export class AuthenticationService {
   private baseUrl = environment.apiUrl;
   private session = inject(UserSessionService);
 
+  constructor() { }
+  
   public login(login: LoginDto): Observable<CurrentUser> {
     const params = new HttpParams().set('useCookies', true);
 
