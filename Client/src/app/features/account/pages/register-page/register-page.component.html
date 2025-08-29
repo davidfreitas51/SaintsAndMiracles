@@ -86,7 +86,7 @@
               (click)="hidePassword = !hidePassword"
             >
               <mat-icon>{{
-                hidePassword ? "visibility" : "visibility_off"
+                hidePassword ? "visibility_off" : "visibility"
               }}</mat-icon>
             </button>
             <mat-error *ngIf="passwordCtrl.invalid && passwordCtrl.touched">
@@ -118,7 +118,7 @@
               (click)="hideConfirmPassword = !hideConfirmPassword"
             >
               <mat-icon>{{
-                hideConfirmPassword ? "visibility" : "visibility_off"
+                hideConfirmPassword ? "visibility_off" : "visibility"
               }}</mat-icon>
             </button>
             <mat-error *ngIf="confirmCtrl.invalid && confirmCtrl.touched">

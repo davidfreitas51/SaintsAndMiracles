@@ -1,11 +1,29 @@
-<div class="confirmation-container">
-  <ng-container *ngIf="success; else failed">
-    <h1>Email Confirmed 🎉</h1>
-    <p>Your email has been successfully verified. You can now log in.</p>
-  </ng-container>
+<div class="confirmation-container flex flex-col min-h-screen">
+  <app-header></app-header>
 
-  <ng-template #failed>
-    <h1>Confirmation Failed ❌</h1>
-    <p>The confirmation link is invalid or expired.</p>
-  </ng-template>
+  <main class="flex-1 flex items-center justify-center px-4">
+    <div class="text-center max-w-md bg-white shadow-lg rounded-2xl p-8">
+      <ng-container *ngIf="success; else failed">
+        <h1 class="text-2xl font-bold text-green-600 mb-4">Email Confirmed 🎉</h1>
+        <p class="text-gray-700 mb-6">
+          Your email has been successfully verified. You can now log in.
+        </p>
+        <a
+          routerLink="/account/login"
+          class="inline-block bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+        >
+          Go to Login
+        </a>
+      </ng-container>
+
+      <ng-template #failed>
+        <h1 class="text-2xl font-bold text-red-600 mb-4">Confirmation Failed ❌</h1>
+        <p class="text-gray-700">
+          The confirmation link is invalid or expired.
+        </p>
+      </ng-template>
+    </div>
+  </main>
+
+  <app-footer></app-footer>
 </div>

@@ -49,6 +49,16 @@
             </button>
           </mat-form-field>
 
+          <!-- Forgot password -->
+          <div class="text-right -mt-2 mb-2">
+            <a
+              routerLink="/account/forgot-password"
+              class="text-primary-app text-sm hover:underline"
+            >
+              Forgot your password?
+            </a>
+          </div>
+
           <!-- Remember me -->
           <mat-checkbox name="rememberMe" [(ngModel)]="loginDto.rememberMe">
             Remember me

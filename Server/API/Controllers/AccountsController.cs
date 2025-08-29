@@ -204,4 +204,43 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
         };
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+    {
+        var user = await signInManager.UserManager.FindByEmailAsync(model.Email);
+        if (user == null || !(await signInManager.UserManager.IsEmailConfirmedAsync(user)))
+        {
+            // Don't reveal that the user does not exist or isn't confirmed
+            return Ok(new { Message = "If the email exists, a reset link has been sent." });
+        }
+
+        var token = await signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
+
+        var resetLink = Url.Action(
+            "ResetPassword",
+            "Accounts",
+            new { email = user.Email, token = encodedToken },
+            Request.Scheme);
+
+        await emailSender.SendPasswordResetLinkAsync(user, user.Email, resetLink);
+
+        return Ok(new { Message = "If the email exists, a reset link has been sent." });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+    {
+        var user = await signInManager.UserManager.FindByEmailAsync(model.Email);
+        if (user == null) return BadRequest(new { Message = "Invalid request" });
+
+        var result = await signInManager.UserManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { Message = "Password reset failed", Errors = result.Errors.Select(e => e.Description) });
+        }
+
+        return Ok(new { Message = "Password has been reset successfully" });
+    }
+
 }
