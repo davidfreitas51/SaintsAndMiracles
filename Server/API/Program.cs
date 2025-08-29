@@ -5,6 +5,7 @@ using Core.Interfaces.Services;
 using Core.Models;
 using Infrastructure.Data;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,7 +40,7 @@ builder.Services.AddScoped<ITagsRepository, TagsRepository>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAccountTokensService, AccountTokensService>();
-
+builder.Services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("defaultConnection"));
@@ -55,8 +56,33 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 })
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.Name = "AuthCookie";
 
-builder.Services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
+    options.LoginPath = "/api/accounts/login";
+    options.LogoutPath = "/api/accounts/logout";
+
+    options.ExpireTimeSpan = TimeSpan.FromDays(2);
+    options.SlidingExpiration = true;
+
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
+
+        var issuedUtc = context.Properties.IssuedUtc;
+        if (issuedUtc.HasValue && issuedUtc.Value.AddDays(14) < DateTimeOffset.UtcNow)
+        {
+            context.RejectPrincipal();
+            await context.HttpContext.SignOutAsync();
+        }
+    };
+});
+
+
 
 var app = builder.Build();
 
@@ -70,9 +96,10 @@ using (var scope = app.Services.CreateScope())
 
     await SeedData.SeedAsync(context, roleManager, userManager, tokenService);
 }
-
-app.UseCors();
 app.UseStaticFiles();
+app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

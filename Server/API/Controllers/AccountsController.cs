@@ -160,6 +160,7 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
     }
 
     [HttpPost("Invite")]
+    [Authorize]
     public async Task<IActionResult> GenerateInviteToken()
     {
         var token = await accountTokensService.GenerateInviteAsync();
@@ -190,4 +191,17 @@ public class AccountsController(SignInManager<AppUser> signInManager, IAccountTo
 
         return Ok(new { Message = "Confirmation email resent" });
     }
+
+    [Authorize]
+    [HttpGet("current-user")]
+    public ActionResult<CurrentUserDto> GetCurrentUser()
+    {
+        return new CurrentUserDto
+        {
+            FirstName = User.FindFirst("firstName")?.Value ?? "",
+            LastName = User.FindFirst("lastName")?.Value ?? "",
+            Email = User.FindFirst(ClaimTypes.Email)?.Value ?? ""
+        };
+    }
+
 }

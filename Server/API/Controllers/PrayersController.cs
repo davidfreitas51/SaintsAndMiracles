@@ -2,6 +2,7 @@ using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models.Filters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -34,6 +35,7 @@ public class PrayersController(
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreatePrayer([FromBody] NewPrayerDto newPrayer)
     {
         var created = await prayersService.CreatePrayerAsync(newPrayer);
@@ -43,6 +45,7 @@ public class PrayersController(
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdatePrayer(int id, [FromBody] NewPrayerDto updatedPrayer)
     {
         var updated = await prayersService.UpdatePrayerAsync(id, updatedPrayer);
@@ -52,6 +55,7 @@ public class PrayersController(
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> DeletePrayer(int id)
     {
         var prayer = await prayersRepository.GetByIdAsync(id);

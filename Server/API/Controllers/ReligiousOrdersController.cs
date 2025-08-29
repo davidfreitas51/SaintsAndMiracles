@@ -1,6 +1,7 @@
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -24,6 +25,7 @@ public class ReligiousOrdersController(IReligiousOrdersRepository ordersReposito
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] NewReligiousOrderDto dto)
     {
         var order = new ReligiousOrder { Name = dto.Name };
@@ -35,6 +37,7 @@ public class ReligiousOrdersController(IReligiousOrdersRepository ordersReposito
     }
 
     [HttpPut("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] NewReligiousOrderDto dto)
     {
         var order = await ordersRepository.GetByIdAsync(id);
@@ -47,6 +50,7 @@ public class ReligiousOrdersController(IReligiousOrdersRepository ordersReposito
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
         var order = await ordersRepository.GetByIdAsync(id);

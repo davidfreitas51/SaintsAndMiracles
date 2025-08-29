@@ -23,6 +23,7 @@ import { LoginPageComponent } from './features/account/pages/login-page/login-pa
 import { RegisterPageComponent } from './features/account/pages/register-page/register-page.component';
 import { EmailConfirmedPageComponent } from './features/account/pages/email-confirmed-page/email-confirmed-page.component';
 import { ManageAccountsPageComponent } from './features/admin/pages/manage-accounts-page/manage-accounts-page.component';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -59,6 +60,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
+    canActivate: [AuthGuard],
     component: AdminPageComponent,
     children: [
       {

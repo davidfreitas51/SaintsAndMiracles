@@ -1,6 +1,7 @@
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -24,6 +25,7 @@ public class TagsController(ITagsRepository tagsRepository) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] NewTagDto dto)
     {
         var tag = new Tag { Name = dto.Name, TagType = dto.TagType };
@@ -33,6 +35,7 @@ public class TagsController(ITagsRepository tagsRepository) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] NewTagDto dto)
     {
         var tag = await tagsRepository.GetByIdAsync(id);
@@ -45,6 +48,7 @@ public class TagsController(ITagsRepository tagsRepository) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
         var tag = await tagsRepository.GetByIdAsync(id);

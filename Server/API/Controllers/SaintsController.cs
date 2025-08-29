@@ -1,4 +1,5 @@
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -31,6 +32,7 @@ public class SaintsController(
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateSaint([FromBody] NewSaintDto newSaint)
     {
         var created = await saintsService.CreateSaintAsync(newSaint);
@@ -40,6 +42,7 @@ public class SaintsController(
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateSaint(int id, [FromBody] NewSaintDto updatedSaint)
     {
         var updated = await saintsService.UpdateSaintAsync(id, updatedSaint);
@@ -49,6 +52,7 @@ public class SaintsController(
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> DeleteSaint(int id)
     {
         var saint = await saintsRepository.GetByIdAsync(id);

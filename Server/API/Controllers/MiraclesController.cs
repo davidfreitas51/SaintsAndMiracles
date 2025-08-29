@@ -1,6 +1,7 @@
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -33,6 +34,7 @@ public class MiraclesController(
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateMiracle([FromBody] NewMiracleDto newMiracle)
     {
         var created = await miraclesService.CreateMiracleAsync(newMiracle);
@@ -42,6 +44,7 @@ public class MiraclesController(
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateMiracle(int id, [FromBody] NewMiracleDto updatedMiracle)
     {
         var updated = await miraclesService.UpdateMiracleAsync(id, updatedMiracle);
@@ -51,6 +54,7 @@ public class MiraclesController(
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> DeleteMiracle(int id)
     {
         var miracle = await miraclesRepository.GetByIdAsync(id);

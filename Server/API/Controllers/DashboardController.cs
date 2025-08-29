@@ -1,5 +1,7 @@
 using Core.Interfaces;
+using Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -7,7 +9,7 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 [Authorize]
 [ApiController]
-public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRepository miraclesRepository, IPrayersRepository prayersRepository) : ControllerBase
+public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRepository miraclesRepository, IPrayersRepository prayersRepository, UserManager<AppUser> userManager) : ControllerBase
 {
     [HttpGet("saints")]
     public async Task<IActionResult> TotalSaints()
@@ -30,9 +32,10 @@ public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRe
         return Ok(totalPrayers);
     }
 
-    [HttpGet("users")]
-    public async Task<IActionResult> TotalUsers()
+    [HttpGet("accounts")]
+    public async Task<IActionResult> TotalAccounts()
     {
-        return Ok(0);
+        var totalAccounts = await Task.FromResult(userManager.Users.Count());
+        return Ok(totalAccounts);
     }
 }
