@@ -1,5 +1,5 @@
 <header
-  class="border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app"
+  class="relative border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app"
 >
   <div class="relative flex items-center max-w-screen-2xl mx-auto">
     <a routerLink="/" class="my-auto flex items-center gap-2 h-full">
@@ -59,7 +59,7 @@
       </a>
     </nav>
 
-    <!-- Mobile menu button (right) -->
+    <!-- Mobile menu button -->
     <button
       mat-icon-button
       class="ml-auto md:hidden hover:darken transition"
@@ -70,6 +70,7 @@
     </button>
   </div>
 
+  <!-- Mobile menu -->
   <mat-menu
     #mobileMenu="matMenu"
     class="bg-primary-app w-48 text-secondary-app"
@@ -124,6 +125,13 @@
       Admin
     </button>
   </mat-menu>
+
+  <!-- Progress bar at bottom -->
+  <mat-progress-bar
+    *ngIf="loading$ | async"
+    mode="indeterminate"
+    class="absolute bottom-0 left-0 w-full"
+  ></mat-progress-bar>
 </header>
 
 <div class="h-20"></div>

@@ -1,5 +1,5 @@
 <header
-  class="border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app"
+  class="relative border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app"
 >
   <div class="flex items-center justify-between max-w-screen-2xl mx-auto">
     <!-- Logo -->
@@ -55,6 +55,13 @@
       </div>
     </div>
   </div>
+
+  <!-- Progress bar at bottom -->
+  <mat-progress-bar
+    *ngIf="loading$ | async"
+    mode="indeterminate"
+    class="absolute bottom-0 left-0 w-full"
+  ></mat-progress-bar>
 </header>
 
 <div class="h-20"></div>
