@@ -24,6 +24,8 @@ import { RegisterPageComponent } from './features/account/pages/register-page/re
 import { EmailConfirmedPageComponent } from './features/account/pages/email-confirmed-page/email-confirmed-page.component';
 import { ManageAccountsPageComponent } from './features/admin/pages/manage-accounts-page/manage-accounts-page.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { ForgotPasswordPageComponent } from './features/account/pages/forgot-password-page/forgot-password-page.component';
+import { ResetPasswordPageComponent } from './features/account/pages/reset-password-page/reset-password-page.component';
 
 export const routes: Routes = [
   {
@@ -122,6 +124,14 @@ export const routes: Routes = [
         path: 'email-confirmed',
         component: EmailConfirmedPageComponent,
       },
+      {
+        path: 'forgot-password',
+        component: ForgotPasswordPageComponent
+      },
+      {
+        path: 'reset-password',
+        component: ResetPasswordPageComponent
+      }
     ],
   },
 ];

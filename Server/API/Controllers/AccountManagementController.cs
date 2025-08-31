@@ -10,8 +10,10 @@ namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AccountManagementController(UserManager<AppUser> userManager) : ControllerBase
+public class AccountManagementController(UserManager<AppUser> userManager, IEmailSender<AppUser> emailSender, IConfiguration configuration) : ControllerBase
 {
+    private readonly string frontendBaseUrl = configuration["Frontend:BaseUrl"];
+    
     [Authorize]
     [HttpGet("me")]
     public ActionResult Me()
@@ -19,7 +21,7 @@ public class AccountManagementController(UserManager<AppUser> userManager) : Con
         return Ok();
     }
 
-    
+
     [Authorize]
     [HttpGet("current-user")]
     public async Task<ActionResult<CurrentUserDto>> GetCurrentUser()
@@ -42,6 +44,41 @@ public class AccountManagementController(UserManager<AppUser> userManager) : Con
             return Unauthorized();
 
         return Ok(user);
+    }
+
+    [Authorize]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user == null) return Ok();
+
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+        var resetLink = $"{frontendBaseUrl}/account/reset-password?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}";
+
+        await emailSender.SendPasswordResetLinkAsync(user, user.Email, resetLink);
+
+        return Ok();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+        {
+            return BadRequest("Invalid request");
+        }
+
+        var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return Ok();
     }
 
 }

@@ -38,7 +38,7 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
 
         string body = template
             .Replace("{{FirstName}}", user.FirstName)
-            .Replace("{{ResetLink}}", resetLink);
+            .Replace("{{ResetPasswordLink}}", resetLink);
 
         await SendEmailAsync(email, subject, body);
     }

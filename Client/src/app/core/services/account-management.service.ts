@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { Observable, tap } from 'rxjs';
 import { CurrentUser } from '../../interfaces/current-user';
 import { UserSessionService } from './user-session.service';
+import { ResetPasswordDto } from '../../features/account/interfaces/reset-password-dto';
 
 @Injectable({
   providedIn: 'root',
@@ -19,9 +20,7 @@ export class AccountManagementService {
 
   private checkCurrentUser(): Observable<CurrentUser | null> {
     return this.http
-      .get<CurrentUser>(`${this.baseUrl}accountManagement/current-user`, {
-        withCredentials: true,
-      })
+      .get<CurrentUser>(`${this.baseUrl}accountManagement/current-user`, {})
       .pipe(
         tap({
           next: (user) => this.session.setUser(user),
@@ -31,8 +30,21 @@ export class AccountManagementService {
   }
 
   public deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}accounts/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<void>(`${this.baseUrl}accounts/${id}`, {});
+  }
+
+  public requestPasswordReset(email: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}accountManagement/forgot-password`,
+      { email }
+    );
+  }
+
+  resetPassword(dto: ResetPasswordDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}accountManagement/reset-password`,
+      dto,
+      { withCredentials: true }
+    );
   }
 }
