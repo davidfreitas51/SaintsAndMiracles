@@ -76,7 +76,7 @@
               name="password"
               [(ngModel)]="registerDto.password"
               required
-              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}"
+              [pattern]="passwordPattern"
               #passwordCtrl="ngModel"
             />
             <button

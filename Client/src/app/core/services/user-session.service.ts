@@ -1,8 +1,8 @@
-import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, map, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { CurrentUser } from '../../interfaces/current-user';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CurrentUser } from '../../interfaces/current-user';
 
 @Injectable({ providedIn: 'root' })
 export class UserSessionService {
@@ -11,15 +11,30 @@ export class UserSessionService {
   private baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
 
-  constructor() {
-    this.http
+  private initialized = false;
+
+  public initUser(): Observable<CurrentUser | null> {
+    if (this.initialized) {
+      return of(this.currentUserSubject.value);
+    }
+
+    this.initialized = true;
+
+    return this.http
       .get<CurrentUser>(`${this.baseUrl}accountManagement/current-user`, {
         withCredentials: true,
       })
-      .subscribe({
-        next: (user) => this.currentUserSubject.next(user),
-        error: () => this.currentUserSubject.next(null),
-      });
+      .pipe(
+        tap((user) => {
+          this.currentUserSubject.next(user);
+          console.log('Usuário inicializado:', user);
+        }),
+        catchError(() => {
+          this.currentUserSubject.next(null);
+          console.log('Nenhum usuário logado');
+          return of(null);
+        })
+      );
   }
 
   public setUser(user: CurrentUser | null): void {
@@ -30,24 +45,25 @@ export class UserSessionService {
     return this.currentUserSubject.value;
   }
 
-  public isLoggedIn(): boolean {
-    return this.currentUserSubject.value !== null;
-  }
-
-  public refreshCurrentUser() {
+  public refreshCurrentUser(): Observable<CurrentUser | null> {
     return this.http
       .get<CurrentUser>(`${this.baseUrl}accountManagement/current-user`, {
         withCredentials: true,
       })
       .pipe(
-        map((user) => {
+        tap((user) => {
           this.currentUserSubject.next(user);
-          return user;
+          console.log('RefreshCurrentUser:', user);
         }),
         catchError(() => {
           this.currentUserSubject.next(null);
+          console.log('RefreshCurrentUser: não autorizado');
           return of(null);
         })
       );
+  }
+
+  public isLoggedIn(): boolean {
+    return !!this.currentUserSubject.value;
   }
 }

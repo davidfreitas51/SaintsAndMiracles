@@ -37,24 +37,21 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.Name = "AuthCookie";
 
-    options.LoginPath = "/api/accounts/login";
-    options.LogoutPath = "/api/accounts/logout";
-
-    options.ExpireTimeSpan = TimeSpan.FromDays(2);
-    options.SlidingExpiration = true;
-
-    options.Events.OnValidatePrincipal = async context =>
+    options.Events.OnRedirectToLogin = context =>
     {
-        await SecurityStampValidator.ValidatePrincipalAsync(context);
-
-        var issuedUtc = context.Properties.IssuedUtc;
-        if (issuedUtc.HasValue && issuedUtc.Value.AddDays(14) < DateTimeOffset.UtcNow)
-        {
-            context.RejectPrincipal();
-            await context.HttpContext.SignOutAsync();
-        }
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
     };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = 403;
+        return Task.CompletedTask;
+    };
+
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
 });
+
 
 var app = builder.Build();
 
@@ -62,8 +59,8 @@ var app = builder.Build();
 await app.SeedDatabaseAsync();
 
 // Middlewares
-app.UseStaticFiles();
 app.UseCors();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 

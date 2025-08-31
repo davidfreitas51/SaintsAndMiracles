@@ -11,14 +11,22 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     req = req.clone({ withCredentials: true });
   }
 
-  return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 404 && req.url.includes('/accountManagement/me') === false) {
-        router.navigate(['/account/login'], {
-          queryParams: { returnUrl: router.url },
-        });
-      }
-      return throwError(() => error);
-    })
-  );
+return next(req).pipe(
+  catchError((error: HttpErrorResponse) => {
+    const url = req.url.toLowerCase();
+
+    if (
+      error.status === 401 &&
+      !url.includes('/accountManagement/me') &&
+      !url.includes('/accountManagement/current-user')
+    ) {
+      router.navigate(['/account/login'], {
+        queryParams: { returnUrl: router.url },
+      });
+    }
+
+    return throwError(() => error);
+  })
+);
+
 };

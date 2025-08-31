@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { MatIconModule } from '@angular/material/icon';
+import { PASSWORD_PATTERN } from '../../constants/constants';
 
 @Component({
   selector: 'app-reset-password-page',
@@ -24,7 +25,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
   ],
   templateUrl: './reset-password-page.component.html',
   styleUrls: ['./reset-password-page.component.scss'],
@@ -32,8 +33,10 @@ import { MatIconModule } from '@angular/material/icon';
 export class ResetPasswordPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private accountManagementService = inject(AccountManagementService);
-  private snackBar = inject(SnackbarService);
+  private snackBarService = inject(SnackbarService);
   private router = inject(Router);
+
+  passwordPattern = PASSWORD_PATTERN;
 
   resetPasswordDto = {
     email: '',
@@ -58,18 +61,26 @@ export class ResetPasswordPageComponent implements OnInit {
       this.resetPasswordDto.newPassword !==
       this.resetPasswordDto.confirmPassword
     ) {
-      this.snackBar.error('Passwords do not match.');
+      this.snackBarService.error('Passwords do not match.');
       return;
     }
 
-    this.accountManagementService.resetPassword(this.resetPasswordDto).subscribe({
-      next: () => {
-        this.snackBar.success('Password successfully reset.');
-        this.router.navigate(['/account/login']);
-      },
-      error: (err) => {
-        this.snackBar.error('Failed to reset password. Please try again.');
-      },
-    });
+    this.accountManagementService
+      .resetPassword(this.resetPasswordDto)
+      .subscribe({
+        next: () => {
+          this.snackBarService.success('Password successfully reset.');
+          this.router.navigate(['/account/login']);
+        },
+        error: (err) => {
+          if (err.error?.Errors?.length) {
+            this.snackBarService.error(err.error.Errors.join(' '));
+          } else {
+            this.snackBarService.error(
+              'Failed to reset password. Please try again.'
+            );
+          }
+        },
+      });
   }
 }

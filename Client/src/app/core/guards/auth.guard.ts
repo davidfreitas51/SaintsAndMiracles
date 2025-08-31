@@ -1,22 +1,20 @@
-import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { catchError, map, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { UserSessionService } from '../services/user-session.service';
 
-export const AuthGuard: CanActivateFn = () => {
-  const http = inject(HttpClient);
-  const router = inject(Router);
+@Injectable({ providedIn: 'root' })
+export class AuthGuard implements CanActivate {
+  constructor(private session: UserSessionService, private router: Router) {}
 
-  return http
-    .get(`${environment.apiUrl}accountManagement/me`, { withCredentials: true })
-    .pipe(
-      map(() => true), 
-      catchError(() => {
-        router.navigate(['/account/login'], {
-          queryParams: { returnUrl: router.url },
-        });
-        return of(false);
+  canActivate(): Observable<boolean> {
+    return this.session.initUser().pipe(
+      map((user) => {
+        if (user) return true;
+        this.router.navigate(['/account/login']);
+        return false;
       })
     );
-};
+  }
+}

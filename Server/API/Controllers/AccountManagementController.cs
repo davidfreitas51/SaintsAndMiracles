@@ -46,7 +46,6 @@ public class AccountManagementController(UserManager<AppUser> userManager, IEmai
         return Ok(user);
     }
 
-    [Authorize]
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
@@ -67,18 +66,16 @@ public class AccountManagementController(UserManager<AppUser> userManager, IEmai
     {
         var user = await userManager.FindByEmailAsync(dto.Email);
         if (user == null)
-        {
-            return BadRequest("Invalid request");
-        }
+            return BadRequest(new { Message = "Invalid request" });
 
         var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
 
         if (!result.Succeeded)
         {
-            return BadRequest(result.Errors);
+            var errors = result.Errors.Select(e => e.Description).ToArray();
+            return BadRequest(new { Message = "Password reset failed", Errors = errors });
         }
 
         return Ok();
     }
-
 }
