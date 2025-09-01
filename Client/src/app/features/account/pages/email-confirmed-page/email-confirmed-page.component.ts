@@ -12,12 +12,14 @@ import { FooterComponent } from "../../../../shared/components/footer/footer.com
 })
 export class EmailConfirmedPageComponent implements OnInit {
   success = false;
+  logout = false;
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.success = params['success'] === 'true';
+      this.logout = params['logout'] === 'true';
     });
   }
 }

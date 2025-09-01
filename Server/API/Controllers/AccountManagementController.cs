@@ -10,7 +10,7 @@ namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AccountManagementController(UserManager<AppUser> userManager, IEmailSender<AppUser> emailSender, IConfiguration configuration) : ControllerBase
+public class AccountManagementController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSender<AppUser> emailSender, IConfiguration configuration) : ControllerBase
 {
     private readonly string frontendBaseUrl = configuration["Frontend:BaseUrl"];
 
@@ -108,4 +108,58 @@ public class AccountManagementController(UserManager<AppUser> userManager, IEmai
             user.Email
         });
     }
+
+    [Authorize]
+    [HttpPost("request-email-change")]
+    public async Task<IActionResult> RequestEmailChange([FromBody] ChangeEmailRequestDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Unauthorized();
+
+        if (user.Email == dto.NewEmail)
+            return BadRequest(new { Message = "New email must be different from current email." });
+
+        var existingUser = await userManager.FindByEmailAsync(dto.NewEmail);
+        if (existingUser != null)
+            return BadRequest(new { Message = "This email is already registered by another user." });
+
+        var token = await userManager.GenerateChangeEmailTokenAsync(user, dto.NewEmail);
+
+        var confirmationLink = Url.Action(
+            "ConfirmEmailChange",
+            "AccountManagement",
+            new { userId = user.Id, email = dto.NewEmail, token },
+            Request.Scheme
+        );
+
+        await emailSender.SendConfirmationLinkAsync(user, dto.NewEmail, confirmationLink);
+
+        return Ok(new { Message = "Confirmation email sent to new address." });
+    }
+
+    [Authorize]
+    [HttpGet("confirm-email-change")]
+    public async Task<IActionResult> ConfirmEmailChange(string userId, string email, string token)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=false");
+
+        var result = await userManager.ChangeEmailAsync(user, email, token);
+        if (!result.Succeeded)
+            return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=false");
+
+        user.UserName = email;
+        await userManager.UpdateAsync(user);
+
+        await signInManager.SignOutAsync();
+
+        return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=true&logout=true");
+    }
+
 }

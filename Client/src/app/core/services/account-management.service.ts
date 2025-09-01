@@ -43,6 +43,14 @@ export class AccountManagementService {
       );
   }
 
+  public requestEmailChange(newEmail: string) {
+    return this.http.post<void>(
+      `${this.baseUrl}accountManagement/request-email-change`,
+      { newEmail },
+      { withCredentials: true }
+    );
+  }
+
   public deleteUser(id: number) {
     return this.http.delete<void>(`${this.baseUrl}accounts/${id}`, {});
   }

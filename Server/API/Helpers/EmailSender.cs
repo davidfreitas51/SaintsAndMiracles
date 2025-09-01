@@ -9,15 +9,35 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
 {
     public async Task SendConfirmationLinkAsync(AppUser user, string email, string confirmationLink)
     {
-        string subject = "Confirm your email";
         string template = LoadTemplate("ConfirmationEmail.html");
+
+        string title, message, buttonText;
+
+        if (user.EmailConfirmed)
+        {
+            title = "Confirm Your New Email";
+            message = "You requested to change your email. Click the button below to confirm your new email.";
+            buttonText = "Confirm New Email";
+        }
+        else
+        {
+            title = "Confirm Your Email";
+            message = "Please confirm your email by clicking the button below.";
+            buttonText = "Confirm Email";
+        }
 
         string body = template
             .Replace("{{FirstName}}", user.FirstName)
-            .Replace("{{ConfirmationLink}}", confirmationLink);
+            .Replace("{{ConfirmationLink}}", confirmationLink)
+            .Replace("{{EmailActionTitle}}", title)
+            .Replace("{{EmailActionMessage}}", message)
+            .Replace("{{EmailActionButtonText}}", buttonText);
+
+        string subject = title;
 
         await SendEmailAsync(email, subject, body);
     }
+
 
     public async Task SendPasswordResetCodeAsync(AppUser user, string email, string resetCode)
     {

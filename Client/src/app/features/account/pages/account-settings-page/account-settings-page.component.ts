@@ -78,6 +78,23 @@ export class AccountSettingsPageComponent implements OnInit {
 
   updateEmail(): void {
     if (this.emailForm.invalid) return;
+
+    const newEmail = this.emailForm.value.email;
+    this.accountService.requestEmailChange(newEmail).subscribe({
+      next: () =>
+        this.snackBarService.success(
+          'Confirmation email sent! Check your inbox to confirm the new email.'
+        ),
+      error: (err) => {
+        let errorMessage = 'Failed to send confirmation email.';
+
+        if (err.error?.message) {
+          errorMessage = err.error.message;
+        }
+
+        this.snackBarService.error(errorMessage);
+      },
+    });
   }
 
   updatePassword(): void {
