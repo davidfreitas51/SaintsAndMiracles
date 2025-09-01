@@ -1,114 +1,141 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { Observable, switchMap, map } from 'rxjs';
 import { Saint } from '../../features/saints/interfaces/saint';
-import { Observable, switchMap, map, from, of } from 'rxjs';
-import { NewSaintDto as NewSaintDto } from '../../features/saints/interfaces/new-saint-dto';
+import { NewSaintDto } from '../../features/saints/interfaces/new-saint-dto';
 import { SaintFilters } from '../../features/saints/interfaces/saint-filter';
 import { SaintWithMarkdown } from '../../features/saints/interfaces/saint-with-markdown';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class SaintsService {
   private http = inject(HttpClient);
-  public baseUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl;
 
   getSaints(
-    saintFilters: SaintFilters
+    filters: SaintFilters
   ): Observable<{ items: Saint[]; totalCount: number }> {
     let params = new HttpParams();
 
-    Object.entries(saintFilters).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(filters)) {
       if (
-        value !== null &&
-        value !== undefined &&
-        value !== '' &&
-        !(Array.isArray(value) && value.length === 0)
-      ) {
-        if (Array.isArray(value)) {
-          value.forEach((val) => {
-            params = params.append(key, val.toString());
-          });
-        } else {
-          params = params.set(key, value.toString());
-        }
+        value === null ||
+        value === undefined ||
+        value === '' ||
+        (Array.isArray(value) && value.length === 0)
+      )
+        continue;
+
+      if (Array.isArray(value)) {
+        value.forEach((val) => (params = params.append(key, val.toString())));
+      } else {
+        params = params.set(key, value.toString());
       }
-    });
+    }
 
     return this.http.get<{ items: Saint[]; totalCount: number }>(
-      this.baseUrl + 'saints',
+      `${this.baseUrl}saints`,
       { params }
     );
   }
 
-  public getSaint(slug: string): Observable<Saint> {
-    return this.http.get<Saint>(this.baseUrl + 'saints/' + slug);
+  getSaint(slug: string): Observable<Saint> {
+    return this.http.get<Saint>(`${this.baseUrl}saints/${slug}`);
   }
 
-  public getCountries(): Observable<string[]> {
-    return this.http.get<string[]>(this.baseUrl + 'saints/countries');
+  getCountries(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}saints/countries`);
   }
 
-  public createSaint(formValue: any): Observable<void> {
-    const feastDayIso = formValue.feastDay
-      ? this.formatFeastDayToIso(formValue.feastDay)
-      : null;
-
+  createSaint(formValue: any): Observable<void> {
     const saintDto: NewSaintDto = {
-      name: formValue.name,
-      country: formValue.country,
-      century: +formValue.century,
-      image: formValue.image,
-      description: formValue.description,
-      markdownContent: formValue.markdownContent,
+      ...formValue,
+      century: Number(formValue.century),
       title: formValue.title || null,
-      feastDay: feastDayIso,
       patronOf: formValue.patronOf || null,
       religiousOrderId: formValue.religiousOrder || null,
       tagIds: formValue.currentTags || [],
+      feastDay: this.formatFeastDayToIso(formValue.feastDay),
     };
-    return this.http.post<void>(this.baseUrl + 'saints', saintDto);
+
+    return this.http.post<void>(`${this.baseUrl}saints`, saintDto);
   }
 
-  public deleteSaint(id: number): Observable<void> {
-    return this.http.delete<void>(this.baseUrl + 'saints/' + id);
-  }
-
-  public updateSaint(
+  updateSaint(
     id: string,
     formValue: NewSaintDto & { feastDay?: string }
   ): Observable<void> {
-    const formattedFeastDay = formValue.feastDay
-      ? this.formatFeastDayToIso(formValue.feastDay)
-      : null;
-
     const payload = {
       ...formValue,
-      feastDay: formattedFeastDay,
+      feastDay: this.formatFeastDayToIso(formValue.feastDay),
     };
 
     return this.http.put<void>(`${this.baseUrl}saints/${id}`, payload);
   }
 
-  public getSaintWithMarkdown(slug: string): Observable<SaintWithMarkdown> {
+  deleteSaint(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}saints/${id}`);
+  }
+
+  getSaintWithMarkdown(slug: string): Observable<SaintWithMarkdown> {
     return this.getSaint(slug).pipe(
       switchMap((saint) =>
         this.http
-          .get(environment.assetsUrl + saint.markdownPath, {
+          .get(`${environment.assetsUrl}${saint.markdownPath}`, {
             responseType: 'text',
           })
-          .pipe(map((rawMarkdown) => ({ saint, markdown: rawMarkdown })))
+          .pipe(map((markdown) => ({ saint, markdown })))
       )
     );
   }
 
-  private formatFeastDayToIso(feastDay: string): string | null {
-    if (!feastDay || feastDay.length !== 4) return null;
+  getSaintsOfTheDay(): Observable<Saint[]> {
+    return this.http.get<Saint[]>(`${this.baseUrl}saints/of-the-day`);
+  }
 
-    const day = feastDay.slice(0, 2);
-    const month = feastDay.slice(2, 4);
+  private parseFeastDay(
+    feastDay?: string | null
+  ): { day: number; month: number } | null {
+    if (!feastDay) return null;
 
-    return `0001-${month}-${day}`;
+    const digits = feastDay.replace(/\D/g, '');
+
+    let day: number, month: number;
+
+    if (digits.length === 4) {
+      day = parseInt(digits.slice(0, 2), 10);
+      month = parseInt(digits.slice(2, 4), 10);
+    } else {
+      const m = /^(\d{1,2})[\/\-.](\d{1,2})$/.exec(feastDay);
+      if (!m) return null;
+      day = parseInt(m[1], 10);
+      month = parseInt(m[2], 10);
+    }
+
+    if (Number.isNaN(day) || Number.isNaN(month)) return null;
+    if (day < 1 || day > 31) return null;
+    if (month < 1 || month > 12) return null;
+
+    return { day, month };
+  }
+
+  private formatFeastDayToIso(feastDay?: string | null): string | null {
+    const parts = this.parseFeastDay(feastDay);
+    if (!parts) return null;
+    const dd = String(parts.day).padStart(2, '0');
+    const mm = String(parts.month).padStart(2, '0');
+    return `0001-${mm}-${dd}`;
+  }
+
+  public formatFeastDayFromIso(
+    feastDayIso: string | null,
+    opts?: { raw?: boolean }
+  ): string | null {
+    if (!feastDayIso) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(feastDayIso);
+    if (!m) return null;
+    const dd = m[3];
+    const mm = m[2];
+    return opts?.raw ? `${dd}${mm}` : `${dd}/${mm}`;
   }
 }

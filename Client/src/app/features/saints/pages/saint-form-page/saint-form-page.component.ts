@@ -1,42 +1,45 @@
 import {
   Component,
   OnInit,
+  AfterViewInit,
   ChangeDetectorRef,
-  inject,
   ViewChild,
   ElementRef,
-  AfterViewInit,
+  inject,
 } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
   FormGroup,
+  Validators,
   FormsModule,
   ReactiveFormsModule,
-  Validators,
 } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
+import { CommonModule } from '@angular/common';
+import { NgxMaskDirective } from 'ngx-mask';
+import { MarkdownComponent, provideMarkdown } from 'ngx-markdown';
+
 import { SaintsService } from '../../../../core/services/saints.service';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
-import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
-import { environment } from '../../../../../environments/environment';
-import { CommonModule } from '@angular/common';
-import { CountryCodePipe } from '../../../../shared/pipes/country-code.pipe';
-import { MatDialog } from '@angular/material/dialog';
-import { CropDialogComponent } from '../../../../shared/components/crop-dialog/crop-dialog.component';
-import { ReligiousOrder } from '../../../../interfaces/religious-order';
-import { Tag } from '../../../../interfaces/tag';
 import { TagsService } from '../../../../core/services/tags.service';
 import { ReligiousOrdersService } from '../../../../core/services/religious-orders.service';
-import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
-import { MatMenuModule } from '@angular/material/menu';
-import { NgxMaskDirective } from 'ngx-mask';
-import { NewSaintDto } from '../../interfaces/new-saint-dto';
-import { provideMarkdown, MarkdownComponent } from 'ngx-markdown';
+
+import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
+import { CountryCodePipe } from '../../../../shared/pipes/country-code.pipe';
 import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNumbersValidator';
+import { CropDialogComponent } from '../../../../shared/components/crop-dialog/crop-dialog.component';
+
+import { environment } from '../../../../../environments/environment';
+import { ReligiousOrder } from '../../../../interfaces/religious-order';
+import { Tag } from '../../../../interfaces/tag';
+import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
+import { NewSaintDto } from '../../interfaces/new-saint-dto';
 
 @Component({
   selector: 'app-saint-form-page',
@@ -45,17 +48,17 @@ import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNu
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatIconModule,
-    MatButtonModule,
     FormsModule,
-    MatSelectModule,
     RouterModule,
-    RomanPipe,
     CommonModule,
-    CountryCodePipe,
+    MatButtonModule,
+    MatIconModule,
+    MatSelectModule,
     MatMenuModule,
     NgxMaskDirective,
     MarkdownComponent,
+    RomanPipe,
+    CountryCodePipe,
   ],
   providers: [provideMarkdown()],
 })
@@ -65,6 +68,11 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
   private religiousOrdersService = inject(ReligiousOrdersService);
   private snackBarService = inject(SnackbarService);
   private dialog = inject(MatDialog);
+
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private fb = inject(FormBuilder);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('descriptionTextarea')
   descriptionTextarea!: ElementRef<HTMLTextAreaElement>;
@@ -81,16 +89,19 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
   imageLoading = false;
   centuries = Array.from({ length: 20 }, (_, i) => i + 1);
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
-
   ngOnInit(): void {
-    const filter = new EntityFilters({ type: TagType.Saint });
-    filter.pageSize = 9999;
+    this.loadTagsAndOrders();
+    this.initForm();
+    this.listenDescriptionChanges();
+    this.checkEditMode();
+  }
+
+  ngAfterViewInit() {
+    this.autoResizeOnLoad();
+  }
+
+  private loadTagsAndOrders(): void {
+    const filter = new EntityFilters({ type: TagType.Saint, pageSize: 9999 });
 
     this.tagsService
       .getTags(filter)
@@ -98,7 +109,9 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
     this.religiousOrdersService
       .getOrders(filter)
       .subscribe((res) => (this.religiousOrders = res.items));
+  }
 
+  private initForm(): void {
     this.form = this.fb.group({
       name: ['', [Validators.required, notOnlyNumbersValidator()]],
       country: ['', Validators.required],
@@ -107,96 +120,70 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
       description: ['', Validators.required],
       markdownContent: ['', Validators.required],
       title: [''],
-      feastDay: [''],
+      feastDay: [''], // sempre no formato dd/MM
       patronOf: [''],
       religiousOrder: [''],
     });
+  }
 
+  private listenDescriptionChanges(): void {
     this.form
       .get('description')
       ?.valueChanges.subscribe(() =>
         setTimeout(() => this.autoResizeOnLoad(), 0)
       );
+  }
 
+  private checkEditMode(): void {
     this.route.paramMap.subscribe((params) => {
       this.saintId = params.get('id');
       this.isEditMode = !!this.saintId;
 
-      if (this.isEditMode && this.saintId) {
-        this.saintsService.getSaintWithMarkdown(this.saintId).subscribe({
-          next: ({ saint, markdown }) => {
-            this.currentTags = saint.tags.map((tag) => tag.name);
-            this.form.patchValue({
-              name: saint.name,
-              country: saint.country,
-              century: saint.century,
-              image: saint.image,
-              description: saint.description,
-              markdownContent: markdown,
-              title: saint.title,
-              patronOf: saint.patronOf,
-              feastDay: this.formatFeastDayToInput(saint.feastDay || null),
-              religiousOrder: saint.religiousOrder?.id,
-            });
-            this.cdr.detectChanges();
-            setTimeout(
-              () =>
-                this.descriptionTextarea?.nativeElement &&
-                this.autoResizeOnLoad(),
-              100
-            );
-          },
-          error: () => {
-            this.snackBarService.error('Error loading saint for update');
-            this.router.navigate(['admin/saints']);
-          },
-        });
-      } else {
+      if (!this.isEditMode || !this.saintId) {
         this.cdr.detectChanges();
+        return;
       }
+
+      this.saintsService.getSaintWithMarkdown(this.saintId).subscribe({
+        next: ({ saint, markdown }) => {
+          this.currentTags = saint.tags.map((tag) => tag.name);
+          this.form.patchValue({
+            name: saint.name,
+            country: saint.country,
+            century: saint.century,
+            image: saint.image,
+            description: saint.description,
+            markdownContent: markdown,
+            title: saint.title,
+            patronOf: saint.patronOf,
+            feastDay: this.saintsService.formatFeastDayFromIso(
+              saint.feastDay || ''
+            ),
+            religiousOrder: saint.religiousOrder?.id,
+          });
+          this.cdr.detectChanges();
+          setTimeout(() => this.autoResizeOnLoad(), 100);
+        },
+        error: () => {
+          this.snackBarService.error('Error loading saint for update');
+          this.router.navigate(['admin/saints']);
+        },
+      });
     });
   }
 
-  formatFeastDayToInput(isoDate: string | null): string {
-    if (!isoDate) return '';
-    const parts = isoDate.split('-');
-    if (parts.length !== 3) return '';
-    return `${parts[2]}/${parts[1]}`;
-  }
-
-  ngAfterViewInit() {
-    this.autoResizeOnLoad();
-  }
-
-  onSubmit() {
+  onSubmit(): void {
     if (this.imageLoading) return;
 
-    const tagIds: number[] = this.currentTags
+    const tagIds = this.currentTags
       .map((tagName) => this.tagsList.find((t) => t.name === tagName))
       .filter((t): t is Tag => !!t)
       .map((t) => t.id);
 
-    let formattedFeastDay: string | undefined;
-    const feastDayValue = this.form.value.feastDay;
-    if (feastDayValue) {
-      const [day, month] = feastDayValue.split('/');
-      if (day && month) {
-        formattedFeastDay = `0001-${month.padStart(2, '0')}-${day.padStart(
-          2,
-          '0'
-        )}`;
-      }
-    }
-
     const saintData: NewSaintDto & { feastDay?: string } = {
-      name: this.form.value.name,
-      country: this.form.value.country,
+      ...this.form.value,
       century: +this.form.value.century,
-      image: this.form.value.image,
-      description: this.form.value.description,
-      markdownContent: this.form.value.markdownContent,
       title: this.form.value.title || undefined,
-      feastDay: formattedFeastDay,
       patronOf: this.form.value.patronOf || undefined,
       religiousOrderId: this.form.value.religiousOrder || undefined,
       tagIds,
@@ -239,14 +226,12 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
         this.croppedImage = result;
         this.form.patchValue({ image: result });
         this.form.get('image')?.updateValueAndValidity();
-      } else {
-        console.error('Unexpected result format:', result);
       }
       input.value = '';
     });
   }
 
-  autoResizeOnLoad() {
+  autoResizeOnLoad(): void {
     const textarea = this.descriptionTextarea?.nativeElement;
     if (!textarea) return;
     textarea.style.height = 'auto';
@@ -271,7 +256,7 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
       : this.imageBaseUrl + img;
   }
 
-  addTag(tag: string) {
+  addTag(tag: string): void {
     const trimmed = tag.trim();
     if (
       trimmed &&
@@ -282,7 +267,7 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
     }
   }
 
-  removeTag(tag: string) {
+  removeTag(tag: string): void {
     this.currentTags = this.currentTags.filter((t) => t !== tag);
   }
 
@@ -297,7 +282,6 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
 
     const { selectionStart, selectionEnd, value } = textarea;
     const selectedText = value.substring(selectionStart, selectionEnd);
-
     const newText = start + selectedText + end;
 
     control.setValue(

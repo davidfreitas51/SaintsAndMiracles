@@ -70,4 +70,16 @@ public class SaintsController(
         var countries = await saintsRepository.GetCountriesAsync();
         return Ok(countries);
     }
+
+    [HttpGet("of-the-day")]
+    public async Task<IActionResult> GetSaintOfTheDay()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var saints = await saintsRepository.GetByFeastDayAsync(today);
+        if (saints is null || !saints.Any())
+            return NoContent();
+
+        return Ok(saints);
+    }
 }
