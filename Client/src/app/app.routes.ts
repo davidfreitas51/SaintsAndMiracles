@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { AboutUsPageComponent } from './pages/about-us-page/about-us-page.component';
 import { AdminPageComponent } from './features/admin/pages/admin-page/admin-page.component';
-import { LandingPageComponent } from './pages/landing-page/landing-page.component';
+import { HomePageComponent } from './pages/home-page/home-page.component';
 
 import { MiracleDetailsPageComponent } from './features/miracles/pages/miracle-details-page/miracle-details-page.component';
 import { MiraclesPageComponent } from './features/miracles/pages/miracles-page/miracles-page.component';
@@ -31,7 +31,7 @@ import { AccountSettingsPageComponent } from './features/account/pages/account-s
 export const routes: Routes = [
   {
     path: '',
-    component: LandingPageComponent,
+    component: HomePageComponent,
   },
   {
     path: 'about',
