@@ -14,6 +14,7 @@ import { UserSessionService } from '../../../../core/services/user-session.servi
 import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { PASSWORD_PATTERN } from '../../constants/constants';
 
 @Component({
   selector: 'app-account-settings-page',
@@ -35,6 +36,10 @@ export class AccountSettingsPageComponent implements OnInit {
   public emailForm!: FormGroup;
   public passwordForm!: FormGroup;
 
+  hideCurrentPassword = true;
+  hideNewPassword = true;
+  hideConfirmPassword = true;
+
   private accountManagementService = inject(AccountManagementService);
   private userSessionService = inject(UserSessionService);
   private snackBarService = inject(SnackbarService);
@@ -54,26 +59,33 @@ export class AccountSettingsPageComponent implements OnInit {
       }
     });
 
-    this.passwordForm = this.fb.group({
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required],
-    });
+    this.passwordForm = this.fb.group(
+      {
+        currentPassword: ['', Validators.required],
+        newPassword: [
+          '',
+          [Validators.required, Validators.pattern(PASSWORD_PATTERN)],
+        ],
+        confirmPassword: ['', Validators.required],
+      },
+    );
   }
 
   updateProfile(): void {
     if (this.profileForm.invalid) return;
 
-    this.accountManagementService.updateProfile(this.profileForm.value).subscribe({
-      next: (user) => {
-        this.snackBarService.success('Profile updated successfully!');
-        this.userSessionService.setUser(user);
-      },
-      error: (err) => {
-        console.error(err);
-        this.snackBarService.error('Failed to update profile.');
-      },
-    });
+    this.accountManagementService
+      .updateProfile(this.profileForm.value)
+      .subscribe({
+        next: (user) => {
+          this.snackBarService.success('Profile updated successfully!');
+          this.userSessionService.setUser(user);
+        },
+        error: (err) => {
+          console.error(err);
+          this.snackBarService.error('Failed to update profile.');
+        },
+      });
   }
 
   updateEmail(): void {
@@ -87,11 +99,7 @@ export class AccountSettingsPageComponent implements OnInit {
         ),
       error: (err) => {
         let errorMessage = 'Failed to send confirmation email.';
-
-        if (err.error?.message) {
-          errorMessage = err.error.message;
-        }
-
+        if (err.error?.message) errorMessage = err.error.message;
         this.snackBarService.error(errorMessage);
       },
     });
