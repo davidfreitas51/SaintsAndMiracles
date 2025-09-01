@@ -13,7 +13,7 @@ namespace API.Controllers;
 public class AccountManagementController(UserManager<AppUser> userManager, IEmailSender<AppUser> emailSender, IConfiguration configuration) : ControllerBase
 {
     private readonly string frontendBaseUrl = configuration["Frontend:BaseUrl"];
-    
+
     [Authorize]
     [HttpGet("me")]
     public ActionResult Me()
@@ -77,5 +77,35 @@ public class AccountManagementController(UserManager<AppUser> userManager, IEmai
         }
 
         return Ok();
+    }
+
+    [Authorize]
+    [HttpPut("update-profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (email == null)
+            return Unauthorized();
+
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null)
+            return Unauthorized();
+
+        user.FirstName = dto.FirstName;
+        user.LastName = dto.LastName;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToArray();
+            return BadRequest(new { Message = "Profile update failed", Errors = errors });
+        }
+
+        return Ok(new
+        {
+            user.FirstName,
+            user.LastName,
+            user.Email
+        });
     }
 }

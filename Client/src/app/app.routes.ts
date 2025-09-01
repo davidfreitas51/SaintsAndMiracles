@@ -26,6 +26,7 @@ import { ManageAccountsPageComponent } from './features/admin/pages/manage-accou
 import { AuthGuard } from './core/guards/auth.guard';
 import { ForgotPasswordPageComponent } from './features/account/pages/forgot-password-page/forgot-password-page.component';
 import { ResetPasswordPageComponent } from './features/account/pages/reset-password-page/reset-password-page.component';
+import { AccountSettingsPageComponent } from './features/account/pages/account-settings-page/account-settings-page.component';
 
 export const routes: Routes = [
   {
@@ -131,6 +132,11 @@ export const routes: Routes = [
       {
         path: 'reset-password',
         component: ResetPasswordPageComponent
+      },
+      {
+        path: 'settings',
+        component: AccountSettingsPageComponent,
+        canActivate: [AuthGuard]
       }
     ],
   },

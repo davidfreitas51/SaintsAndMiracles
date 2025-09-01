@@ -1,0 +1,145 @@
+<app-admin-header></app-admin-header>
+
+<div class="flex flex-col gap-6 max-w-3xl mx-auto p-6">
+  <!-- Profile Card -->
+  <mat-card class="shadow rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4">Profile</h2>
+    <form
+      [formGroup]="profileForm"
+      class="flex flex-col gap-6"
+      (ngSubmit)="updateProfile()"
+    >
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <label class="block">
+          <span class="block pb-2 font-semibold"
+            >First Name <span class="text-red-600">*</span></span
+          >
+          <input
+            type="text"
+            class="w-full border rounded px-3 py-2"
+            placeholder="First name"
+            formControlName="firstName"
+          />
+        </label>
+
+        <label class="block">
+          <span class="block pb-2 font-semibold"
+            >Last Name <span class="text-red-600">*</span></span
+          >
+          <input
+            type="text"
+            class="w-full border rounded px-3 py-2"
+            placeholder="Last name"
+            formControlName="lastName"
+          />
+        </label>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          mat-flat-button
+          type="submit"
+          [disabled]="profileForm.invalid"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2"
+        >
+          <mat-icon class="text-white">save</mat-icon>
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </mat-card>
+
+  <!-- Email Card -->
+  <mat-card class="shadow rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4">Email</h2>
+    <form
+      [formGroup]="emailForm"
+      class="flex flex-col gap-6"
+      (ngSubmit)="updateEmail()"
+    >
+      <label class="block">
+        <span class="block pb-2 font-semibold"
+          >Email <span class="text-red-600">*</span></span
+        >
+        <input
+          type="email"
+          class="w-full border rounded px-3 py-2"
+          placeholder="Email address"
+          formControlName="email"
+        />
+      </label>
+
+      <div class="flex justify-end">
+        <button
+          mat-flat-button
+          type="submit"
+          [disabled]="emailForm.invalid"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2"
+        >
+          <mat-icon class="text-white">mail</mat-icon>
+          Update Email
+        </button>
+      </div>
+    </form>
+  </mat-card>
+
+  <!-- Password Card -->
+  <mat-card class="shadow rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4">Password</h2>
+    <form
+      [formGroup]="passwordForm"
+      class="flex flex-col gap-6"
+      (ngSubmit)="updatePassword()"
+    >
+      <label class="block">
+        <span class="block pb-2 font-semibold"
+          >Current Password <span class="text-red-600">*</span></span
+        >
+        <input
+          type="password"
+          class="w-full border rounded px-3 py-2"
+          placeholder="Enter current password"
+          formControlName="currentPassword"
+        />
+      </label>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <label class="block">
+          <span class="block pb-2 font-semibold"
+            >New Password <span class="text-red-600">*</span></span
+          >
+          <input
+            type="password"
+            class="w-full border rounded px-3 py-2"
+            placeholder="Enter new password"
+            formControlName="newPassword"
+          />
+        </label>
+
+        <label class="block">
+          <span class="block pb-2 font-semibold"
+            >Confirm New Password <span class="text-red-600">*</span></span
+          >
+          <input
+            type="password"
+            class="w-full border rounded px-3 py-2"
+            placeholder="Confirm new password"
+            formControlName="confirmPassword"
+          />
+        </label>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          mat-flat-button
+          type="submit"
+          [disabled]="passwordForm.invalid"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2"
+        >
+          <mat-icon class="text-white">lock</mat-icon>
+          Change Password
+        </button>
+      </div>
+    </form>
+  </mat-card>
+</div>

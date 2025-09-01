@@ -1,10 +1,12 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable, inject } from "@angular/core";
-import { tap } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { ResetPasswordDto } from "../../features/account/interfaces/reset-password-dto";
-import { CurrentUser } from "../../interfaces/current-user";
-import { UserSessionService } from "./user-session.service";
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { ResetPasswordDto } from '../../features/account/interfaces/reset-password-dto';
+import { CurrentUser } from '../../interfaces/current-user';
+import { UserSessionService } from './user-session.service';
+import { UpdateProfileDto } from '../../features/account/interfaces/update-profile-dto';
+
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +25,20 @@ export class AccountManagementService {
         tap({
           next: (user) => this.session.setUser(user),
           error: () => this.session.setUser(null),
+        })
+      );
+  }
+
+  public updateProfile(dto: UpdateProfileDto) {
+    return this.http
+      .put<CurrentUser>(
+        `${this.baseUrl}accountManagement/update-profile`,
+        dto,
+        {}
+      )
+      .pipe(
+        tap({
+          next: (user) => this.session.setUser(user),
         })
       );
   }

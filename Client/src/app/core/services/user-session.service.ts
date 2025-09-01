@@ -27,11 +27,9 @@ export class UserSessionService {
       .pipe(
         tap((user) => {
           this.currentUserSubject.next(user);
-          console.log('Usuário inicializado:', user);
         }),
         catchError(() => {
           this.currentUserSubject.next(null);
-          console.log('Nenhum usuário logado');
           return of(null);
         })
       );
