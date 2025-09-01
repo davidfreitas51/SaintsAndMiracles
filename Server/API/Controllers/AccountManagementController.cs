@@ -162,4 +162,26 @@ public class AccountManagementController(UserManager<AppUser> userManager, SignI
         return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=true&logout=true");
     }
 
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Unauthorized();
+
+        var result = await userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToArray();
+            return BadRequest(new { Message = "Password change failed", Errors = errors });
+        }
+
+        return Ok(new { Message = "Password changed successfully" });
+    }
 }

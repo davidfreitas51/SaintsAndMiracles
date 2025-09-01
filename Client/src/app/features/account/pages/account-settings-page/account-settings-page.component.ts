@@ -35,7 +35,7 @@ export class AccountSettingsPageComponent implements OnInit {
   public emailForm!: FormGroup;
   public passwordForm!: FormGroup;
 
-  private accountService = inject(AccountManagementService);
+  private accountManagementService = inject(AccountManagementService);
   private userSessionService = inject(UserSessionService);
   private snackBarService = inject(SnackbarService);
   private fb = inject(FormBuilder);
@@ -64,7 +64,7 @@ export class AccountSettingsPageComponent implements OnInit {
   updateProfile(): void {
     if (this.profileForm.invalid) return;
 
-    this.accountService.updateProfile(this.profileForm.value).subscribe({
+    this.accountManagementService.updateProfile(this.profileForm.value).subscribe({
       next: (user) => {
         this.snackBarService.success('Profile updated successfully!');
         this.userSessionService.setUser(user);
@@ -80,7 +80,7 @@ export class AccountSettingsPageComponent implements OnInit {
     if (this.emailForm.invalid) return;
 
     const newEmail = this.emailForm.value.email;
-    this.accountService.requestEmailChange(newEmail).subscribe({
+    this.accountManagementService.requestEmailChange(newEmail).subscribe({
       next: () =>
         this.snackBarService.success(
           'Confirmation email sent! Check your inbox to confirm the new email.'
@@ -99,5 +99,29 @@ export class AccountSettingsPageComponent implements OnInit {
 
   updatePassword(): void {
     if (this.passwordForm.invalid) return;
+
+    const { currentPassword, newPassword, confirmPassword } =
+      this.passwordForm.value;
+
+    if (newPassword !== confirmPassword) {
+      this.snackBarService.error('New passwords do not match.');
+      return;
+    }
+
+    this.accountManagementService
+      .changePassword({ currentPassword, newPassword })
+      .subscribe({
+        next: () => {
+          this.snackBarService.success('Password changed successfully.');
+          this.passwordForm.reset();
+        },
+        error: (err) => {
+          let errorMessage = 'Failed to change password.';
+          if (err.error?.message) errorMessage = err.error.message;
+          else if (err.error?.Errors)
+            errorMessage = err.error.Errors.join(', ');
+          this.snackBarService.error(errorMessage);
+        },
+      });
   }
 }

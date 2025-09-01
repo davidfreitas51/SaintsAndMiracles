@@ -51,6 +51,13 @@ export class AccountManagementService {
     );
   }
 
+  public changePassword(dto: { currentPassword: string; newPassword: string }) {
+    return this.http.post(
+      `${this.baseUrl}accountManagement/change-password`,
+      dto
+    );
+  }
+
   public deleteUser(id: number) {
     return this.http.delete<void>(`${this.baseUrl}accounts/${id}`, {});
   }
