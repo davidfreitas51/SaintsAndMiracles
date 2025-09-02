@@ -150,44 +150,52 @@
       </ng-container>
     </div>
 
-    <!-- Featured Miracles -->
     <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
       <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-        Featured Miracles
+        Saints of this Month
       </h2>
+
+      <!-- Scrollable container -->
       <div
-        class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+        #scrollContainer
+        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-2"
       >
         <mat-card
-          class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
+          *ngFor="let saint of saintsOfThisMonth"
+          class="flex-shrink-0 w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
+          (click)="goToSaint(saint.slug)"
         >
-          <div class="flex justify-center mb-2">
-            <img
-              src="assets/images/miracle1.jpg"
-              alt="Eucharistic Miracle"
-              class="w-16 h-16 object-cover rounded-full border border-gray-300"
-            />
+          <!-- Image -->
+          <img
+            [src]="imageBaseUrl + saint.image"
+            [alt]="saint.name"
+            class="w-24 h-24 object-cover rounded-xl border border-gray-300 mb-3"
+          />
+
+          <!-- Content -->
+          <h3 class="text-base font-bold mb-1 text-center">
+            {{ saint.name }}
+          </h3>
+
+          <div class="text-xs text-gray-500 mb-2 text-center">
+            <span><strong>Century:</strong> {{ saint.century | roman }}</span
+            ><br />
+            <span class="flex justify-center items-center">
+              <strong class="mr-1">Country:</strong>
+              {{ saint.country }}
+              <img
+                *ngIf="saint.country | countryCode as code"
+                [src]="'https://flagcdn.com/w20/' + code + '.png'"
+                [alt]="saint.country + ' flag'"
+                class="ml-1 w-4 h-4 object-contain"
+              />
+            </span>
           </div>
-          <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1">
-              Eucharistic Miracle of Lanciano
-            </h3>
-            <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
-            >
-              <span>Italy – VIII century</span>
-            </div>
-            <p class="text-xs text-gray-600 line-clamp-3 flex-1">
-              Miracle where the bread and wine became flesh and blood.
-            </p>
-            <a
-              [routerLink]="['/miracles', 'miracle-lanciano']"
-              class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
-              >Read More</a
-            >
-          </div>
+
+          <p class="text-gray-600 text-xs line-clamp-3 text-center">
+            {{ saint.description }}
+          </p>
         </mat-card>
-        <!-- Add more featured miracles similarly -->
       </div>
     </div>
 

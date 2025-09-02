@@ -1,5 +1,5 @@
 <header
-  class="relative border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app"
+  class="fixed top-0 left-0 right-0 z-50 bg-primary-app border-b shadow-md px-4 py-3 w-full"
 >
   <div class="relative flex items-center max-w-screen-2xl mx-auto">
     <a routerLink="/" class="my-auto flex items-center gap-2 h-full">
@@ -11,6 +11,7 @@
       <span class="sr-only">Home</span>
     </a>
 
+    <!-- Desktop navigation -->
     <nav
       class="hidden md:flex gap-6 uppercase text-lg font-semibold text-secondary-app absolute left-1/2 transform -translate-x-1/2"
     >
@@ -86,19 +87,19 @@
     </button>
     <button
       mat-menu-item
-      [routerLink]="'/miracles'"
-      routerLinkActive="active"
-      class="text-lg font-semibold hover:darken"
-    >
-      Miracles
-    </button>
-    <button
-      mat-menu-item
       [routerLink]="'/saints'"
       routerLinkActive="active"
       class="text-lg font-semibold hover:darken"
     >
       Saints
+    </button>
+    <button
+      mat-menu-item
+      [routerLink]="'/miracles'"
+      routerLinkActive="active"
+      class="text-lg font-semibold hover:darken"
+    >
+      Miracles
     </button>
     <button
       mat-menu-item
@@ -126,10 +127,11 @@
     </button>
   </mat-menu>
 
-  <!-- Progress bar at bottom -->
   <mat-progress-bar
     *ngIf="loading$ | async"
     mode="indeterminate"
     class="absolute bottom-0 left-0 w-full"
   ></mat-progress-bar>
 </header>
+
+<div class="h-22"></div>
