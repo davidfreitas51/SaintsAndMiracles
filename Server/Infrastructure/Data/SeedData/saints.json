@@ -14,7 +14,7 @@
     "Tags": [
       { "Name": "Founder", "TagType": "Saint" },
       { "Name": "Monk", "TagType": "Saint" },
-      { "Name": "Universal Feast", "TagType": "Saint" }
+      { "Name": "Saint of the Day", "TagType": "Saint" }
     ]
   },
   {
@@ -33,7 +33,7 @@
       { "Name": "Mystic", "TagType": "Saint" },
       { "Name": "Doctor of the Church", "TagType": "Saint" },
       { "Name": "Nun", "TagType": "Saint" },
-      { "Name": "Universal Feast", "TagType": "Saint" }
+      { "Name": "Saint of the Day", "TagType": "Saint" }
     ]
   },
   {
@@ -51,7 +51,7 @@
     "Tags": [
       { "Name": "Philosopher", "TagType": "Saint" },
       { "Name": "Doctor of the Church", "TagType": "Saint" },
-      { "Name": "Universal Feast", "TagType": "Saint" }
+      { "Name": "Saint of the Day", "TagType": "Saint" }
     ]
   },
   {
@@ -68,7 +68,8 @@
     "Slug": "joan-of-arc",
     "Tags": [
       { "Name": "Martyr", "TagType": "Saint" },
-      { "Name": "Heroine", "TagType": "Saint" }
+      { "Name": "Heroine", "TagType": "Saint" },
+      { "Name": "Saint of the Day", "TagType": "Saint" }
     ]
   },
   {
@@ -85,7 +86,8 @@
     "Slug": "padre-pio",
     "Tags": [
       { "Name": "Mystic", "TagType": "Saint" },
-      { "Name": "Stigmatist", "TagType": "Saint" }
+      { "Name": "Stigmatist", "TagType": "Saint" },
+      { "Name": "Saint of the Day", "TagType": "Saint" }
     ]
   }
 ]

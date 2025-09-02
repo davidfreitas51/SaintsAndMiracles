@@ -150,7 +150,7 @@ public class SaintsRepository(DataContext context) : ISaintsRepository
             .Where(s => s.FeastDay.HasValue &&
                         s.FeastDay.Value.Month == feastDay.Month &&
                         s.FeastDay.Value.Day == feastDay.Day &&
-                        s.Tags.Any(t => t.Name == "Universal Feast"))
+                        s.Tags.Any(t => t.Name == "Saint of the Day"))
             .FirstOrDefaultAsync();
     }
 }

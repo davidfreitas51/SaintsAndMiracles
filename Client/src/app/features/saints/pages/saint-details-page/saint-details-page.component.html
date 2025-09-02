@@ -16,20 +16,24 @@
           />
           <div class="space-y-2 text-gray-800">
             <!-- Nome -->
-            <h1 class="text-4xl font-bold">Saint {{ saint.name }}</h1>
+            <h1 class="text-4xl font-bold">
+              {{
+                saint.name.startsWith("Our Lady")
+                  ? saint.name
+                  : "Saint " + saint.name
+              }}
+            </h1>
 
             <!-- Tags -->
             <div class="flex flex-wrap gap-2 mt-1">
               @for (tag of saint.tags; track $index) {
-                <span
-                  class="text-xs font-medium px-3 py-1 rounded-full bg-green-600 text-white shadow-sm"
-                >
-                  {{ tag.name }}
-                </span>
+              <span
+                class="text-xs font-medium px-3 py-1 rounded-full bg-green-600 text-white shadow-sm"
+              >
+                {{ tag.name }}
+              </span>
               }
-              
             </div>
-            
 
             <!-- Contexto histórico e país -->
             <div class="flex items-center text-sm text-gray-600 gap-4 mt-2">
@@ -45,30 +49,22 @@
               </span>
             </div>
             @if (saint.title) {
-              <p class="text-sm text-gray-600">
-                Title: <strong>{{ saint.title }}</strong>
-              </p>
+            <p class="text-sm text-gray-600">
+              Title: <strong>{{ saint.title }}</strong>
+            </p>
+            } @if (saint.feastDay) {
+            <p class="text-sm text-gray-600">
+              Feast Day: <strong>{{ saint.feastDay | date : "MMMM d" }}</strong>
+            </p>
+            } @if (saint.patronOf) {
+            <p class="text-sm text-gray-600">
+              Patron of: <strong>{{ saint.patronOf }}</strong>
+            </p>
+            } @if (saint.religiousOrder && saint.religiousOrder.name) {
+            <p class="text-sm text-gray-600">
+              Religious Order: <strong>{{ saint.religiousOrder.name }}</strong>
+            </p>
             }
-            
-            @if (saint.feastDay) {
-              <p class="text-sm text-gray-600">
-                Feast Day: <strong>{{ (saint.feastDay | date: 'MMMM d') }}</strong>
-              </p>
-            }
-            
-            @if (saint.patronOf) {
-              <p class="text-sm text-gray-600">
-                Patron of: <strong>{{ saint.patronOf }}</strong>
-              </p>
-            }
-            
-            @if (saint.religiousOrder && saint.religiousOrder.name) {
-              <p class="text-sm text-gray-600">
-                Religious Order: <strong>{{ saint.religiousOrder.name }}</strong>
-              </p>
-            }
-            
-
           </div>
         </div>
 

@@ -150,15 +150,18 @@
       </ng-container>
     </div>
 
-    <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
+    <div
+      *ngIf="saintsOfThisMonth.length > 0"
+      class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
+    >
       <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
         Saints of this Month
       </h2>
 
-      <!-- Scrollable container -->
+      <!-- Scrollable container with extra padding so shadows are visible -->
       <div
         #scrollContainer
-        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-2"
+        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-4 pb-5"
       >
         <mat-card
           *ngFor="let saint of saintsOfThisMonth"

@@ -53,7 +53,7 @@ export class HomePageComponent implements OnInit {
 
   private loadUniversalFeastOfTheDay() {
     this.loading = true;
-    this.saintsService.getUniversalFeastOfTheDay().subscribe({
+    this.saintsService.getSaintOfTheDay().subscribe({
       next: (saint) => {
         this.universalFeastOfTheDay = saint;
         this.loading = false;

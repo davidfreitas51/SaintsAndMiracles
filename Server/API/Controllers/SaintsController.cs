@@ -71,7 +71,7 @@ public class SaintsController(
         return Ok(countries);
     }
 
-    [HttpGet("universal-feast-of-the-day")]
+    [HttpGet("of-the-day")]
     public async Task<IActionResult> GetUniversalFeastOfTheDay()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
