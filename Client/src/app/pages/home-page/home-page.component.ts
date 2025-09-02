@@ -7,6 +7,9 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { RomanPipe } from "../../shared/pipes/roman.pipe";
+import { environment } from '../../../environments/environment';
+import { CountryCodePipe } from "../../shared/pipes/country-code.pipe";
 
 @Component({
   selector: 'app-home-page',
@@ -19,27 +22,27 @@ import { MatButtonModule } from '@angular/material/button';
     CommonModule,
     MatCardModule,
     MatButtonModule,
-  ],
+    RomanPipe,
+    CountryCodePipe
+],
 })
 export class HomePageComponent implements OnInit {
   private saintsService = inject(SaintsService);
+  imageBaseUrl = environment.assetsUrl;
 
-  saintsOfTheDay: Saint[] = [];
+  universalFeastOfTheDay: Saint | null = null;
   loading = false;
-  error: string | null = null;
 
   ngOnInit(): void {
     this.loading = true;
-    this.saintsService.getSaintsOfTheDay().subscribe({
-      next: (saints) => {
-        this.saintsOfTheDay = saints;
+    this.saintsService.getUniversalFeastOfTheDay().subscribe({
+      next: (saint) => {
+        this.universalFeastOfTheDay = saint;
         this.loading = false;
-        console.log(this.saintsOfTheDay);
+        console.log(this.universalFeastOfTheDay);
       },
       error: (err) => {
-        console.error('Failed to load saints of the day:', err);
-        this.error =
-          'Could not load saints of the day. Please try again later.';
+        console.error('Failed to load universal feast saint:', err);
         this.loading = false;
       },
     });

@@ -89,8 +89,10 @@ export class SaintsService {
     );
   }
 
-  getSaintsOfTheDay(): Observable<Saint[]> {
-    return this.http.get<Saint[]>(`${this.baseUrl}saints/of-the-day`);
+  getUniversalFeastOfTheDay(): Observable<Saint | null> {
+    return this.http.get<Saint | null>(
+      `${this.baseUrl}saints/universal-feast-of-the-day`
+    );
   }
 
   private parseFeastDay(

@@ -71,15 +71,16 @@ public class SaintsController(
         return Ok(countries);
     }
 
-    [HttpGet("of-the-day")]
-    public async Task<IActionResult> GetSaintOfTheDay()
+    [HttpGet("universal-feast-of-the-day")]
+    public async Task<IActionResult> GetUniversalFeastOfTheDay()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        var saints = await saintsRepository.GetByFeastDayAsync(today);
-        if (saints is null || !saints.Any())
+        var saint = await saintsRepository.GetUniversalFeastByFeastDayAsync(today);
+
+        if (saint is null)
             return NoContent();
 
-        return Ok(saints);
+        return Ok(saint);
     }
 }

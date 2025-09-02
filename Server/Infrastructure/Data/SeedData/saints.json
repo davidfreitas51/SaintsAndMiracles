@@ -13,7 +13,8 @@
     "Slug": "francis-of-assisi",
     "Tags": [
       { "Name": "Founder", "TagType": "Saint" },
-      { "Name": "Monk", "TagType": "Saint" }
+      { "Name": "Monk", "TagType": "Saint" },
+      { "Name": "Universal Feast", "TagType": "Saint" }
     ]
   },
   {
@@ -31,7 +32,8 @@
     "Tags": [
       { "Name": "Mystic", "TagType": "Saint" },
       { "Name": "Doctor of the Church", "TagType": "Saint" },
-      { "Name": "Nun", "TagType": "Saint" }
+      { "Name": "Nun", "TagType": "Saint" },
+      { "Name": "Universal Feast", "TagType": "Saint" }
     ]
   },
   {
@@ -48,7 +50,8 @@
     "Slug": "augustine-of-hippo",
     "Tags": [
       { "Name": "Philosopher", "TagType": "Saint" },
-      { "Name": "Doctor of the Church", "TagType": "Saint" }
+      { "Name": "Doctor of the Church", "TagType": "Saint" },
+      { "Name": "Universal Feast", "TagType": "Saint" }
     ]
   },
   {

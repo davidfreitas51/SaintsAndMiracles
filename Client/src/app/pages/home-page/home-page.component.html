@@ -44,120 +44,115 @@
       </div>
     </div>
 
-    <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
-      <!-- Saints of the Day -->
-      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-        Saints of the Day
+    <!-- Devotion Explanation -->
+    <div class="mt-12 px-6 text-center max-w-3xl mx-auto space-y-6">
+      <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">
+        Why do we look to the Saints?
       </h2>
-      <div
-        class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+      <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
+        The Saints remind us that holiness is not reserved for a few, but a
+        calling for all. They lived in different times, cultures, and
+        struggles—yet each sought to follow Christ with courage and love.
+      </p>
+      <blockquote
+        class="border-l-4 border-blue-500 pl-4 italic text-gray-600 text-base sm:text-lg"
       >
-        <!-- Example hardcoded cards -->
-        <mat-card
-          class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
-        >
-          <div class="flex justify-center mb-2">
-            <img
-              src="assets/images/saint1.jpg"
-              alt="Saint Teresa"
-              class="w-16 h-16 object-cover rounded-full border border-gray-300"
-            />
-          </div>
-          <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1">Saint Teresa of Ávila</h3>
-            <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
-            >
-              <img
-                src="https://flagcdn.com/w20/es.png"
-                alt="Spain flag"
-                class="w-4 h-4 object-contain"
-              />
-              <span>Spain – XVI</span>
-            </div>
-            <p class="text-xs text-gray-600 line-clamp-3 flex-1">
-              Doctor of the Church, mystic, and reformer of the Carmelite Order.
-            </p>
-            <a
-              [routerLink]="['/saints', 'saint-teresa']"
-              class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
-            >
-              Read More
-            </a>
-          </div>
-        </mat-card>
+        “Be holy, for I am holy.” (1 Peter 1:16)
+      </blockquote>
+      <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
+        They were human and fallible, yet they sought righteousness. Fragile,
+        tempted, often misunderstood, they persevered, letting God’s grace
+        transform their weaknesses into strength.
+      </p>
+      <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
+        Asking for their intercession is walking together as one family in
+        Christ, inviting those already in Heaven to pray with us and guide us on
+        the path they once walked.
+      </p>
 
-        <mat-card
-          class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
-        >
-          <div class="flex justify-center mb-2">
-            <img
-              src="assets/images/saint2.jpg"
-              alt="Saint Francis"
-              class="w-16 h-16 object-cover rounded-full border border-gray-300"
-            />
-          </div>
-          <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1">Saint Francis of Assisi</h3>
-            <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
-            >
-              <img
-                src="https://flagcdn.com/w20/it.png"
-                alt="Italy flag"
-                class="w-4 h-4 object-contain"
-              />
-              <span>Italy – XII</span>
-            </div>
-            <p class="text-xs text-gray-600 line-clamp-3 flex-1">
-              Patron saint of animals and the environment.
-            </p>
-            <a
-              [routerLink]="['/saints', 'saint-francis']"
-              class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
-            >
-              Read More
-            </a>
-          </div>
-        </mat-card>
-
-        <mat-card
-          class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
-        >
-          <div class="flex justify-center mb-2">
-            <img
-              src="assets/images/saint3.jpg"
-              alt="Saint John Bosco"
-              class="w-16 h-16 object-cover rounded-full border border-gray-300"
-            />
-          </div>
-          <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1">Saint John Bosco</h3>
-            <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
-            >
-              <img
-                src="https://flagcdn.com/w20/it.png"
-                alt="Italy flag"
-                class="w-4 h-4 object-contain"
-              />
-              <span>Italy – XIX</span>
-            </div>
-            <p class="text-xs text-gray-600 line-clamp-3 flex-1">
-              Priest, educator, and founder of the Salesian order.
-            </p>
-            <a
-              [routerLink]="['/saints', 'saint-john-bosco']"
-              class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
-            >
-              Read More
-            </a>
-          </div>
-        </mat-card>
+      <div class="bg-yellow-50 p-6 rounded-2xl shadow-sm">
+        <p class="text-gray-800 text-base sm:text-lg leading-relaxed">
+          SaintsNMiracles exists to share their stories and the miracles around
+          them, helping us learn to love God more deeply, see real people
+          overcome weakness, and witness that God continues to act in history.
+        </p>
+        <p class="text-gray-800 text-base sm:text-lg leading-relaxed mt-3">
+          From
+          <span class="font-semibold text-blue-600"
+            >Joan of Arc in the Hundred Years’ War</span
+          >
+          to
+          <span class="font-semibold text-blue-600"
+            >Padre Pio in World War II</span
+          >, Saints show us that God never abandons His people. They are
+          friends, companions, and living witnesses of faith.
+        </p>
       </div>
+    </div>
 
-      <!-- Featured Miracles -->
-      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mt-10 mb-6">
+    <!-- Today's Saint -->
+    <div class="p-6 pt-12 w-full max-w-4xl mx-auto">
+      <ng-container *ngIf="universalFeastOfTheDay">
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-8">
+          Today's Saint
+        </h2>
+
+        <a
+          [routerLink]="['/saints', universalFeastOfTheDay.slug]"
+          class="block w-full"
+        >
+          <mat-card
+            class="flex flex-col md:flex-row items-center p-8 md:p-12 rounded-3xl shadow-xl hover:shadow-2xl transition h-full cursor-pointer w-full"
+          >
+            <!-- Left image -->
+            <div class="flex-shrink-0 mb-6 md:mb-0 md:mr-8">
+              <img
+                [src]="imageBaseUrl + universalFeastOfTheDay.image"
+                [alt]="universalFeastOfTheDay.name"
+                class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-cover rounded-xl border border-gray-300"
+              />
+            </div>
+
+            <!-- Right content -->
+            <div class="flex flex-col flex-1 text-center md:text-left">
+              <h3 class="text-xl sm:text-2xl md:text-3xl font-bold mb-3">
+                {{ universalFeastOfTheDay.name }}
+              </h3>
+
+              <!-- Century and Country with proper flag -->
+              <div
+                class="flex flex-col sm:flex-row sm:items-center text-sm sm:text-base text-gray-500 gap-3 mb-4"
+              >
+                <span
+                  ><strong>Century:</strong>
+                  {{ universalFeastOfTheDay.century | roman }}</span
+                >
+                <span class="flex items-center">
+                  <strong class="mr-1">Country:</strong>
+                  {{ universalFeastOfTheDay.country }}
+                  <img
+                    *ngIf="universalFeastOfTheDay.country | countryCode as code"
+                    [src]="'https://flagcdn.com/w20/' + code + '.png'"
+                    [alt]="universalFeastOfTheDay.country + ' flag'"
+                    class="ml-1 w-4 h-4 object-contain"
+                  />
+                </span>
+              </div>
+
+              <p
+                class="text-base sm:text-lg text-gray-600 line-clamp-5 flex-1 mb-5"
+              >
+                {{ universalFeastOfTheDay.description }}
+              </p>
+            </div>
+          </mat-card>
+        </a>
+      </ng-container>
+    </div>
+
+    <!-- Featured Miracles -->
+    <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
         Featured Miracles
       </h2>
       <div
@@ -188,16 +183,17 @@
             <a
               [routerLink]="['/miracles', 'miracle-lanciano']"
               class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
+              >Read More</a
             >
-              Read More
-            </a>
           </div>
         </mat-card>
         <!-- Add more featured miracles similarly -->
       </div>
+    </div>
 
-      <!-- Daily Prayer -->
-      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mt-10 mb-6">
+    <!-- Daily Prayer -->
+    <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
         Daily Prayer
       </h2>
       <mat-card class="p-4 rounded-2xl shadow-md max-w-2xl mx-auto">
@@ -209,9 +205,8 @@
         <a
           routerLink="/prayers/1"
           class="text-primary-app font-semibold text-xs hover:underline"
+          >Read Full Prayer</a
         >
-          Read Full Prayer
-        </a>
       </mat-card>
     </div>
   </main>
