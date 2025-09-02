@@ -15,4 +15,7 @@ public class Miracle
     public string? LocationDetails { get; set; }
 
     public List<Tag> Tags { get; set; } = [];
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

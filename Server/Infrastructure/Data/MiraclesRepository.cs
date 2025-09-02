@@ -80,12 +80,15 @@ public class MiraclesRepository(DataContext context) : IMiraclesRepository
 
     public async Task<bool> CreateAsync(Miracle newMiracle)
     {
+        newMiracle.CreatedAt = DateTime.UtcNow;
+        newMiracle.UpdatedAt = DateTime.UtcNow;
         await context.Miracles.AddAsync(newMiracle);
         return await context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> UpdateAsync(Miracle miracle)
     {
+        miracle.UpdatedAt = DateTime.UtcNow;
         context.Miracles.Update(miracle);
         return await context.SaveChangesAsync() > 0;
     }
@@ -119,5 +122,13 @@ public class MiraclesRepository(DataContext context) : IMiraclesRepository
     public async Task<bool> SlugExistsAsync(string slug)
     {
         return await context.Miracles.AnyAsync(m => m.Slug == slug);
+    }
+
+    public async Task<List<Miracle>> GetRecentMiraclesAsync(int count)
+    {
+        return await context.Set<Miracle>()
+            .OrderByDescending(p => p.UpdatedAt)
+            .Take(count)
+            .ToListAsync();
     }
 }

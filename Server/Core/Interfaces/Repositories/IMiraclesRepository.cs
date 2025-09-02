@@ -13,4 +13,5 @@ public interface IMiraclesRepository
     Task DeleteAsync(int id);
     Task<IReadOnlyList<string>> GetCountriesAsync();
     Task<int> GetTotalMiraclesAsync();
+    Task<List<Miracle>> GetRecentMiraclesAsync(int count);
 }

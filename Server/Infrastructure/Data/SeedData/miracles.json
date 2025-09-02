@@ -12,7 +12,9 @@
     "Tags": [
       { "Name": "Marian", "TagType": "Miracle" },
       { "Name": "Apparition", "TagType": "Miracle" }
-    ]
+    ],
+    "CreatedAt": "2025-09-02T15:00:00Z",
+    "UpdatedAt": "2025-09-02T15:00:00Z"
   },
   {
     "Title": "The Eucharistic Miracle of Lanciano",
@@ -24,7 +26,9 @@
     "Slug": "the-eucharistic-miracle-of-lanciano",
     "Date": "",
     "LocationDetails": "Lanciano",
-    "Tags": [{ "Name": "Eucharistic", "TagType": "Miracle" }]
+    "Tags": [{ "Name": "Eucharistic", "TagType": "Miracle" }],
+    "CreatedAt": "2025-09-02T15:00:00Z",
+    "UpdatedAt": "2025-09-02T15:00:00Z"
   },
   {
     "Title": "Healing at Lourdes",
@@ -39,7 +43,9 @@
     "Tags": [
       { "Name": "Healing", "TagType": "Miracle" },
       { "Name": "Marian", "TagType": "Miracle" }
-    ]
+    ],
+    "CreatedAt": "2025-09-02T15:00:00Z",
+    "UpdatedAt": "2025-09-02T15:00:00Z"
   },
   {
     "Title": "The Miracle of Bolsena",
@@ -51,7 +57,9 @@
     "Slug": "the-miracle-of-bolsena",
     "Date": "",
     "LocationDetails": "Bolsena",
-    "Tags": [{ "Name": "Eucharistic", "TagType": "Miracle" }]
+    "Tags": [{ "Name": "Eucharistic", "TagType": "Miracle" }],
+    "CreatedAt": "2025-09-02T15:00:00Z",
+    "UpdatedAt": "2025-09-02T15:00:00Z"
   },
   {
     "Title": "Our Lady of Guadalupe",
@@ -66,6 +74,8 @@
     "Tags": [
       { "Name": "Marian", "TagType": "Miracle" },
       { "Name": "Apparition", "TagType": "Miracle" }
-    ]
+    ],
+    "CreatedAt": "2025-09-02T15:00:00Z",
+    "UpdatedAt": "2025-09-02T15:00:00Z"
   }
 ]

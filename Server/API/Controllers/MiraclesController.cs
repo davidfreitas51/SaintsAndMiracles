@@ -72,4 +72,11 @@ public class MiraclesController(
         var countries = await miraclesRepository.GetCountriesAsync();
         return Ok(countries);
     }
+
+    [HttpGet("recent")]
+    public async Task<IActionResult> GetRecentMiracles([FromQuery] int count = 5)
+    {
+        var miracles = await miraclesRepository.GetRecentMiraclesAsync(count);
+        return Ok(miracles);
+    }
 }

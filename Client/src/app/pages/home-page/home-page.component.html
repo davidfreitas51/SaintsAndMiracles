@@ -149,7 +149,7 @@
       class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
     >
       <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-        Saints of this Month
+        Saints of {{ currentMonth }}
       </h2>
       <div
         #scrollContainer
@@ -186,6 +186,37 @@
       </div>
     </div>
 
+    <div
+      *ngIf="recentMiracles.length > 0"
+      class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
+    >
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
+        Recently Updated Miracles
+      </h2>
+      <div
+        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-4 pb-5"
+      >
+        <mat-card
+          *ngFor="let miracle of recentMiracles"
+          class="flex-shrink-0 w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
+          (click)="goToMiracle(miracle.slug)"
+        >
+          <img
+            [src]="imageBaseUrl + miracle.image"
+            [alt]="miracle.title"
+            class="w-24 h-24 object-cover rounded-xl border border-gray-300 mb-3"
+          />
+          <h3 class="text-base font-bold mb-1 text-center">
+            {{ miracle.title }}
+          </h3>
+
+          <p class="text-gray-600 text-xs line-clamp-3 text-center">
+            {{ miracle.description }}
+          </p>
+        </mat-card>
+      </div>
+    </div>
+
     <!-- Recently Updated Prayers -->
     <div
       *ngIf="recentPrayers.length > 0"
@@ -210,7 +241,7 @@
           <h3 class="text-base font-bold mb-1 text-center">
             {{ prayer.title }}
           </h3>
-          
+
           <p class="text-gray-600 text-xs line-clamp-3 text-center">
             {{ prayer.description }}
           </p>

@@ -19,7 +19,7 @@ export class MiraclesService {
     filters: MiracleFilters
   ): Observable<{ items: Miracle[]; totalCount: number }> {
     let params = new HttpParams();
-    
+
     Object.entries(filters).forEach(([key, value]) => {
       if (
         value !== null &&
@@ -52,7 +52,7 @@ export class MiraclesService {
   }
 
   public createMiracle(formValue: any): Observable<void> {
-    console.log(formValue.locationDetails)
+    console.log(formValue.locationDetails);
     const miracleDto: NewMiracleDto = {
       title: formValue.title,
       country: formValue.country,
@@ -93,6 +93,12 @@ export class MiraclesService {
   public getMarkdownContent(path: string): Observable<string> {
     return this.http.get(environment.assetsUrl + path, {
       responseType: 'text',
+    });
+  }
+
+  public getRecentMiracles(count: number = 5): Observable<Miracle[]> {
+    return this.http.get<Miracle[]>(`${this.baseUrl}miracles/recent`, {
+      params: new HttpParams().set('count', count),
     });
   }
 }

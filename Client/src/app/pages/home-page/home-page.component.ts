@@ -20,6 +20,8 @@ import { environment } from '../../../environments/environment';
 import { SaintFilters } from '../../features/saints/interfaces/saint-filter';
 import { PrayersService } from '../../core/services/prayers.service';
 import { Prayer } from '../../features/prayers/interfaces/prayer';
+import { MiraclesService } from '../../core/services/miracles.service';
+import { Miracle } from '../../features/miracles/interfaces/miracle';
 
 @Component({
   selector: 'app-home-page',
@@ -39,6 +41,7 @@ import { Prayer } from '../../features/prayers/interfaces/prayer';
 })
 export class HomePageComponent implements OnInit {
   private saintsService = inject(SaintsService);
+  private miraclesService = inject(MiraclesService);
   private prayersService = inject(PrayersService);
   private router = inject(Router);
 
@@ -46,26 +49,27 @@ export class HomePageComponent implements OnInit {
   universalFeastOfTheDay: Saint | null = null;
   saintsOfThisMonth: Saint[] = [];
   recentPrayers: Prayer[] = [];
-  loading = false;
+  recentMiracles: Miracle[] = [];
+  currentMonth!: string;
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
 
   ngOnInit(): void {
+    const now = new Date();
+    this.currentMonth = now.toLocaleString('en-US', { month: 'long' });
     this.loadUniversalFeastOfTheDay();
     this.loadSaintsOfThisMonth();
-    this.loadRecentPrayers();
+    this.loadRecentMiracles(5);
+    this.loadRecentPrayers(5);
   }
 
   private loadUniversalFeastOfTheDay() {
-    this.loading = true;
     this.saintsService.getSaintOfTheDay().subscribe({
       next: (saint) => {
         this.universalFeastOfTheDay = saint;
-        this.loading = false;
       },
       error: (err) => {
         console.error('Failed to load universal feast saint:', err);
-        this.loading = false;
       },
     });
   }
@@ -77,11 +81,9 @@ export class HomePageComponent implements OnInit {
 
     this.saintsService.getSaints(filters).subscribe({
       next: (response) => {
-        this.saintsOfThisMonth = this.universalFeastOfTheDay
-          ? response.items.filter(
-              (s) => s.id !== this.universalFeastOfTheDay?.id
-            )
-          : response.items;
+        this.saintsOfThisMonth = response.items.filter(
+          (s) => s.id !== this.universalFeastOfTheDay?.id
+        );
       },
       error: (err) => {
         console.error('Failed to load saints of the month:', err);
@@ -89,8 +91,19 @@ export class HomePageComponent implements OnInit {
     });
   }
 
-  private loadRecentPrayers() {
-    this.prayersService.getRecentPrayers(5).subscribe({
+  private loadRecentMiracles(limit: number) {
+    this.miraclesService.getRecentMiracles(limit).subscribe({
+      next: (miracles) => {
+        this.recentMiracles = miracles;
+      },
+      error: (err) => {
+        console.error('Failed to load recent miracles:', err);
+      },
+    });
+  }
+
+  private loadRecentPrayers(limit: number) {
+    this.prayersService.getRecentPrayers(limit).subscribe({
       next: (prayers) => {
         this.recentPrayers = prayers;
       },
@@ -112,6 +125,10 @@ export class HomePageComponent implements OnInit {
 
   goToSaint(slug: string) {
     this.router.navigate(['/saints', slug]);
+  }
+
+  goToMiracle(slug: string) {
+    this.router.navigate(['/miracles', slug]);
   }
 
   goToPrayer(slug: string) {
