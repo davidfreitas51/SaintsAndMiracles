@@ -9,4 +9,8 @@ public class Prayer
     public required string MarkdownPath { get; set; }
     public required string Slug { get; set; }
     public List<Tag> Tags { get; set; } = [];
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
 }

@@ -67,12 +67,15 @@ public class PrayersRepository(DataContext context) : IPrayersRepository
 
     public async Task<bool> CreateAsync(Prayer newPrayer)
     {
+        newPrayer.CreatedAt = DateTime.UtcNow;
+        newPrayer.UpdatedAt = DateTime.UtcNow;
         await context.Prayers.AddAsync(newPrayer);
         return await context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> UpdateAsync(Prayer prayer)
     {
+        prayer.UpdatedAt = DateTime.UtcNow;
         context.Prayers.Update(prayer);
         return await context.SaveChangesAsync() > 0;
     }
@@ -100,5 +103,13 @@ public class PrayersRepository(DataContext context) : IPrayersRepository
     public async Task<int> GetTotalPrayersAsync()
     {
         return await context.Prayers.CountAsync();
+    }
+
+    public async Task<List<Prayer>> GetRecentPrayersAsync(int count)
+    {
+        return await context.Set<Prayer>()
+            .OrderByDescending(p => p.UpdatedAt)
+            .Take(count)
+            .ToListAsync();
     }
 }

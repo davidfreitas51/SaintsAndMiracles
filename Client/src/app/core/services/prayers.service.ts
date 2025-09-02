@@ -83,4 +83,10 @@ export class PrayersService {
       responseType: 'text',
     });
   }
+
+  public getRecentPrayers(count: number = 5): Observable<Prayer[]> {
+    return this.http.get<Prayer[]>(`${this.baseUrl}prayers/recent`, {
+      params: new HttpParams().set('count', count),
+    });
+  }
 }

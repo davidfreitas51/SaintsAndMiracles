@@ -18,6 +18,8 @@ import { CountryCodePipe } from '../../shared/pipes/country-code.pipe';
 import { MatIconModule } from '@angular/material/icon';
 import { environment } from '../../../environments/environment';
 import { SaintFilters } from '../../features/saints/interfaces/saint-filter';
+import { PrayersService } from '../../core/services/prayers.service';
+import { Prayer } from '../../features/prayers/interfaces/prayer';
 
 @Component({
   selector: 'app-home-page',
@@ -37,11 +39,13 @@ import { SaintFilters } from '../../features/saints/interfaces/saint-filter';
 })
 export class HomePageComponent implements OnInit {
   private saintsService = inject(SaintsService);
+  private prayersService = inject(PrayersService);
   private router = inject(Router);
 
   imageBaseUrl = environment.assetsUrl;
   universalFeastOfTheDay: Saint | null = null;
   saintsOfThisMonth: Saint[] = [];
+  recentPrayers: Prayer[] = [];
   loading = false;
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
@@ -49,6 +53,7 @@ export class HomePageComponent implements OnInit {
   ngOnInit(): void {
     this.loadUniversalFeastOfTheDay();
     this.loadSaintsOfThisMonth();
+    this.loadRecentPrayers();
   }
 
   private loadUniversalFeastOfTheDay() {
@@ -84,6 +89,17 @@ export class HomePageComponent implements OnInit {
     });
   }
 
+  private loadRecentPrayers() {
+    this.prayersService.getRecentPrayers(5).subscribe({
+      next: (prayers) => {
+        this.recentPrayers = prayers;
+      },
+      error: (err) => {
+        console.error('Failed to load recent prayers:', err);
+      },
+    });
+  }
+
   scroll(direction: 'left' | 'right') {
     const container = this.scrollContainer.nativeElement;
     const scrollAmount = 300;
@@ -96,5 +112,9 @@ export class HomePageComponent implements OnInit {
 
   goToSaint(slug: string) {
     this.router.navigate(['/saints', slug]);
+  }
+
+  goToPrayer(slug: string) {
+    this.router.navigate(['/prayers', slug]);
   }
 }

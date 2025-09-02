@@ -14,4 +14,5 @@ public interface IPrayersRepository
     Task<bool> SlugExistsAsync(string slug);
     Task<IReadOnlyList<string>> GetTagsAsync();
     Task<int> GetTotalPrayersAsync();
+    Task<List<Prayer>> GetRecentPrayersAsync(int count);
 }

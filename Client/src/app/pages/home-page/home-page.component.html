@@ -96,7 +96,6 @@
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-8">
           Today's Saint
         </h2>
-
         <a
           [routerLink]="['/saints', universalFeastOfTheDay.slug]"
           class="block w-full"
@@ -104,7 +103,6 @@
           <mat-card
             class="flex flex-col md:flex-row items-center p-8 md:p-12 rounded-3xl shadow-xl hover:shadow-2xl transition h-full cursor-pointer w-full"
           >
-            <!-- Left image -->
             <div class="flex-shrink-0 mb-6 md:mb-0 md:mr-8">
               <img
                 [src]="imageBaseUrl + universalFeastOfTheDay.image"
@@ -112,14 +110,10 @@
                 class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-cover rounded-xl border border-gray-300"
               />
             </div>
-
-            <!-- Right content -->
             <div class="flex flex-col flex-1 text-center md:text-left">
               <h3 class="text-xl sm:text-2xl md:text-3xl font-bold mb-3">
                 {{ universalFeastOfTheDay.name }}
               </h3>
-
-              <!-- Century and Country with proper flag -->
               <div
                 class="flex flex-col items-center sm:flex-row sm:items-center text-sm sm:text-base text-gray-500 gap-2 sm:gap-3 mb-4"
               >
@@ -138,7 +132,6 @@
                   />
                 </span>
               </div>
-
               <p
                 class="text-base sm:text-lg text-gray-600 line-clamp-5 flex-1 mb-5"
               >
@@ -150,6 +143,7 @@
       </ng-container>
     </div>
 
+    <!-- Saints of This Month -->
     <div
       *ngIf="saintsOfThisMonth.length > 0"
       class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
@@ -157,8 +151,6 @@
       <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
         Saints of this Month
       </h2>
-
-      <!-- Scrollable container with extra padding so shadows are visible -->
       <div
         #scrollContainer
         class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-4 pb-5"
@@ -168,24 +160,17 @@
           class="flex-shrink-0 w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
           (click)="goToSaint(saint.slug)"
         >
-          <!-- Image -->
           <img
             [src]="imageBaseUrl + saint.image"
             [alt]="saint.name"
             class="w-24 h-24 object-cover rounded-xl border border-gray-300 mb-3"
           />
-
-          <!-- Content -->
-          <h3 class="text-base font-bold mb-1 text-center">
-            {{ saint.name }}
-          </h3>
-
+          <h3 class="text-base font-bold mb-1 text-center">{{ saint.name }}</h3>
           <div class="text-xs text-gray-500 mb-2 text-center">
             <span><strong>Century:</strong> {{ saint.century | roman }}</span
             ><br />
             <span class="flex justify-center items-center">
-              <strong class="mr-1">Country:</strong>
-              {{ saint.country }}
+              <strong class="mr-1">Country:</strong> {{ saint.country }}
               <img
                 *ngIf="saint.country | countryCode as code"
                 [src]="'https://flagcdn.com/w20/' + code + '.png'"
@@ -194,7 +179,6 @@
               />
             </span>
           </div>
-
           <p class="text-gray-600 text-xs line-clamp-3 text-center">
             {{ saint.description }}
           </p>
@@ -202,23 +186,36 @@
       </div>
     </div>
 
-    <!-- Daily Prayer -->
-    <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
+    <!-- Recently Updated Prayers -->
+    <div
+      *ngIf="recentPrayers.length > 0"
+      class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
+    >
       <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-        Daily Prayer
+        Recently Updated Prayers
       </h2>
-      <mat-card class="p-4 rounded-2xl shadow-md max-w-2xl mx-auto">
-        <h3 class="text-sm font-semibold mb-2">Prayer to Saint Michael</h3>
-        <p class="text-xs text-gray-600 mb-4">
-          Saint Michael the Archangel, defend us in battle. Be our protection
-          against the wickedness and snares of the devil. Amen.
-        </p>
-        <a
-          routerLink="/prayers/1"
-          class="text-primary-app font-semibold text-xs hover:underline"
-          >Read Full Prayer</a
+      <div
+        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-4 pb-5"
+      >
+        <mat-card
+          *ngFor="let prayer of recentPrayers"
+          class="flex-shrink-0 w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
+          (click)="goToPrayer(prayer.slug)"
         >
-      </mat-card>
+          <img
+            [src]="imageBaseUrl + prayer.image"
+            [alt]="prayer.title"
+            class="w-24 h-24 object-cover rounded-xl border border-gray-300 mb-3"
+          />
+          <h3 class="text-base font-bold mb-1 text-center">
+            {{ prayer.title }}
+          </h3>
+          
+          <p class="text-gray-600 text-xs line-clamp-3 text-center">
+            {{ prayer.description }}
+          </p>
+        </mat-card>
+      </div>
     </div>
   </main>
 
