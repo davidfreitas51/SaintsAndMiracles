@@ -104,12 +104,4 @@ public class PrayersRepository(DataContext context) : IPrayersRepository
     {
         return await context.Prayers.CountAsync();
     }
-
-    public async Task<List<Prayer>> GetRecentPrayersAsync(int count)
-    {
-        return await context.Set<Prayer>()
-            .OrderByDescending(p => p.UpdatedAt)
-            .Take(count)
-            .ToListAsync();
-    }
 }

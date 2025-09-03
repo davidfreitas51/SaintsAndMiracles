@@ -144,7 +144,7 @@ public class SaintsRepository(DataContext context) : ISaintsRepository
         return await context.Saints.AnyAsync(s => s.Slug == slug);
     }
 
-    public async Task<Saint?> GetUniversalFeastByFeastDayAsync(DateOnly feastDay)
+    public async Task<Saint?> GetSaintOfTheDayAsync(DateOnly feastDay)
     {
         return await context.Saints
             .Where(s => s.FeastDay.HasValue &&

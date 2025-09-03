@@ -76,7 +76,7 @@ public class SaintsController(
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        var saint = await saintsRepository.GetUniversalFeastByFeastDayAsync(today);
+        var saint = await saintsRepository.GetSaintOfTheDayAsync(today);
 
         if (saint is null)
             return NoContent();

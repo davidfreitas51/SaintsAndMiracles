@@ -73,11 +73,4 @@ public class PrayersController(
         var tags = await prayersRepository.GetTagsAsync();
         return Ok(tags);
     }
-
-    [HttpGet("recent")]
-    public async Task<IActionResult> GetRecentPrayers([FromQuery] int count = 5)
-    {
-        var prayers = await prayersRepository.GetRecentPrayersAsync(count);
-        return Ok(prayers);
-    }
 }

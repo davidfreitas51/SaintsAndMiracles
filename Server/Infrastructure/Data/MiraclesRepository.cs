@@ -123,12 +123,4 @@ public class MiraclesRepository(DataContext context) : IMiraclesRepository
     {
         return await context.Miracles.AnyAsync(m => m.Slug == slug);
     }
-
-    public async Task<List<Miracle>> GetRecentMiraclesAsync(int count)
-    {
-        return await context.Set<Miracle>()
-            .OrderByDescending(p => p.UpdatedAt)
-            .Take(count)
-            .ToListAsync();
-    }
 }
