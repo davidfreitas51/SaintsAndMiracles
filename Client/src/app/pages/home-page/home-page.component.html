@@ -36,9 +36,16 @@
           <a
             routerLink="/miracles"
             mat-flat-button
-            class="bg-yellow-500 text-white hover:bg-yellow-600"
+            class="bg-yellow-600 text-white hover:bg-yellow-700"
           >
             Explore Miracles
+          </a>
+          <a
+            routerLink="/prayers"
+            mat-flat-button
+            class="bg-green-600 text-white hover:bg-green-700"
+          >
+            Explore Prayers
           </a>
         </div>
       </div>
@@ -69,25 +76,6 @@
         Christ, inviting those already in Heaven to pray with us and guide us on
         the path they once walked.
       </p>
-
-      <div class="bg-yellow-50 p-6 rounded-2xl shadow-sm">
-        <p class="text-gray-800 text-base sm:text-lg leading-relaxed">
-          Saints&Miracles exists to share their stories and the miracles around
-          them, helping us learn to love God more deeply, see real people
-          overcome weakness, and witness that God continues to act in history.
-        </p>
-        <p class="text-gray-800 text-base sm:text-lg leading-relaxed mt-3">
-          From
-          <span class="font-semibold text-blue-600"
-            >Joan of Arc in the Hundred Years’ War</span
-          >
-          to
-          <span class="font-semibold text-blue-600"
-            >Padre Pio in World War II</span
-          >, Saints show us that God never abandons His people. They are
-          friends, companions, and living witnesses of faith.
-        </p>
-      </div>
     </div>
 
     <!-- Today's Saint -->
@@ -146,7 +134,7 @@
     <!-- Saints of This Month -->
     <div
       *ngIf="saintsOfThisMonth.length > 0"
-      class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
+      class="p-4 pb-10 pt-10 w-full max-w-screen-xl mx-auto"
     >
       <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
         Saints of {{ currentMonth }}
@@ -181,69 +169,6 @@
           </div>
           <p class="text-gray-600 text-xs line-clamp-3 text-center">
             {{ saint.description }}
-          </p>
-        </mat-card>
-      </div>
-    </div>
-
-    <div
-      *ngIf="recentMiracles.length > 0"
-      class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
-    >
-      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-        Recently Updated Miracles
-      </h2>
-      <div
-        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-4 pb-5"
-      >
-        <mat-card
-          *ngFor="let miracle of recentMiracles"
-          class="flex-shrink-0 w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
-          (click)="goToMiracle(miracle.slug)"
-        >
-          <img
-            [src]="imageBaseUrl + miracle.image"
-            [alt]="miracle.title"
-            class="w-24 h-24 object-cover rounded-xl border border-gray-300 mb-3"
-          />
-          <h3 class="text-base font-bold mb-1 text-center">
-            {{ miracle.title }}
-          </h3>
-
-          <p class="text-gray-600 text-xs line-clamp-3 text-center">
-            {{ miracle.description }}
-          </p>
-        </mat-card>
-      </div>
-    </div>
-
-    <!-- Recently Updated Prayers -->
-    <div
-      *ngIf="recentPrayers.length > 0"
-      class="p-4 pt-10 w-full max-w-screen-xl mx-auto"
-    >
-      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-        Recently Updated Prayers
-      </h2>
-      <div
-        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-4 pb-5"
-      >
-        <mat-card
-          *ngFor="let prayer of recentPrayers"
-          class="flex-shrink-0 w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
-          (click)="goToPrayer(prayer.slug)"
-        >
-          <img
-            [src]="imageBaseUrl + prayer.image"
-            [alt]="prayer.title"
-            class="w-24 h-24 object-cover rounded-xl border border-gray-300 mb-3"
-          />
-          <h3 class="text-base font-bold mb-1 text-center">
-            {{ prayer.title }}
-          </h3>
-
-          <p class="text-gray-600 text-xs line-clamp-3 text-center">
-            {{ prayer.description }}
           </p>
         </mat-card>
       </div>

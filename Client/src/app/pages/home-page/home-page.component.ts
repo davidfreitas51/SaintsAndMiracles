@@ -57,13 +57,11 @@ export class HomePageComponent implements OnInit {
   ngOnInit(): void {
     const now = new Date();
     this.currentMonth = now.toLocaleString('en-US', { month: 'long' });
-    this.loadUniversalFeastOfTheDay();
+    this.loadSaintOfTheDay();
     this.loadSaintsOfThisMonth();
-    this.loadRecentMiracles(5);
-    this.loadRecentPrayers(5);
   }
 
-  private loadUniversalFeastOfTheDay() {
+  private loadSaintOfTheDay() {
     this.saintsService.getSaintOfTheDay().subscribe({
       next: (saint) => {
         this.universalFeastOfTheDay = saint;
@@ -91,28 +89,6 @@ export class HomePageComponent implements OnInit {
     });
   }
 
-  private loadRecentMiracles(limit: number) {
-    this.miraclesService.getRecentMiracles(limit).subscribe({
-      next: (miracles) => {
-        this.recentMiracles = miracles;
-      },
-      error: (err) => {
-        console.error('Failed to load recent miracles:', err);
-      },
-    });
-  }
-
-  private loadRecentPrayers(limit: number) {
-    this.prayersService.getRecentPrayers(limit).subscribe({
-      next: (prayers) => {
-        this.recentPrayers = prayers;
-      },
-      error: (err) => {
-        console.error('Failed to load recent prayers:', err);
-      },
-    });
-  }
-
   scroll(direction: 'left' | 'right') {
     const container = this.scrollContainer.nativeElement;
     const scrollAmount = 300;
@@ -125,13 +101,5 @@ export class HomePageComponent implements OnInit {
 
   goToSaint(slug: string) {
     this.router.navigate(['/saints', slug]);
-  }
-
-  goToMiracle(slug: string) {
-    this.router.navigate(['/miracles', slug]);
-  }
-
-  goToPrayer(slug: string) {
-    this.router.navigate(['/prayers', slug]);
   }
 }
