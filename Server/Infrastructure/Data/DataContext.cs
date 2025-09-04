@@ -12,6 +12,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<ReligiousOrder> ReligiousOrders { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<AccountToken> AccountTokens { get; set; } = null!;
+    public DbSet<RecentActivity> RecentActivities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

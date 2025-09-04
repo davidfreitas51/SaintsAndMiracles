@@ -1,5 +1,6 @@
 using API.Helpers;
 using Core.Interfaces;
+using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Models;
 using Infrastructure.Data;
@@ -19,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPrayersRepository, PrayersRepository>();
         services.AddScoped<IReligiousOrdersRepository, ReligiousOrdersRepository>();
         services.AddScoped<ITagsRepository, TagsRepository>();
+        services.AddScoped<IRecentActivityRepository, RecentActivityRepository>();
 
         // Services
         services.AddScoped<ISaintsService, SaintsService>();

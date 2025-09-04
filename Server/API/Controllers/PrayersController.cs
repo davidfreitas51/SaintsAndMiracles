@@ -1,8 +1,10 @@
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Core.Models;
 using Core.Models.Filters;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -11,7 +13,8 @@ namespace API.Controllers;
 [ApiController]
 public class PrayersController(
     IPrayersRepository prayersRepository,
-    IPrayersService prayersService) : ControllerBase
+    IPrayersService prayersService,
+    UserManager<AppUser> userManager) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAllPrayers([FromQuery] PrayerFilters prayerFilters)
@@ -38,9 +41,12 @@ public class PrayersController(
     [Authorize]
     public async Task<IActionResult> CreatePrayer([FromBody] NewPrayerDto newPrayer)
     {
-        var created = await prayersService.CreatePrayerAsync(newPrayer);
+        var userId = userManager.GetUserId(User);
+        var created = await prayersService.CreatePrayerAsync(newPrayer, userId);
+
         if (!created.HasValue)
             return Conflict("A prayer with the same title already exists.");
+
         return CreatedAtAction(nameof(GetById), new { id = created.Value }, null);
     }
 
@@ -48,9 +54,12 @@ public class PrayersController(
     [Authorize]
     public async Task<IActionResult> UpdatePrayer(int id, [FromBody] NewPrayerDto updatedPrayer)
     {
-        var updated = await prayersService.UpdatePrayerAsync(id, updatedPrayer);
+        var userId = userManager.GetUserId(User);
+        var updated = await prayersService.UpdatePrayerAsync(id, updatedPrayer, userId);
+
         if (!updated)
             return NotFound();
+
         return NoContent();
     }
 
@@ -58,12 +67,12 @@ public class PrayersController(
     [Authorize]
     public async Task<IActionResult> DeletePrayer(int id)
     {
+        var userId = userManager.GetUserId(User);
         var prayer = await prayersRepository.GetByIdAsync(id);
         if (prayer is null)
             return NotFound();
 
-        await prayersService.DeletePrayerAsync(prayer.Slug);
-        await prayersRepository.DeleteAsync(prayer);
+        await prayersService.DeletePrayerAsync(prayer.Slug, userId);
         return Ok();
     }
 

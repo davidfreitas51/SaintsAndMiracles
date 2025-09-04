@@ -1,7 +1,7 @@
-
 using System.Text.RegularExpressions;
 using Core.DTOs;
 using Core.Interfaces;
+using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.Extensions.Hosting;
@@ -9,9 +9,10 @@ using Microsoft.Extensions.Hosting;
 public class PrayersService(
     IHostEnvironment env,
     IPrayersRepository prayersRepository,
+    IRecentActivityRepository recentActivityRepository,
     ITagsRepository tagsRepository) : IPrayersService
 {
-    public async Task<int?> CreatePrayerAsync(NewPrayerDto newPrayer)
+    public async Task<int?> CreatePrayerAsync(NewPrayerDto newPrayer, string? userId)
     {
         var slug = GenerateSlug(newPrayer.Title);
         if (await prayersRepository.SlugExistsAsync(slug))
@@ -34,10 +35,22 @@ public class PrayersService(
         };
 
         var created = await prayersRepository.CreateAsync(prayer);
+
+        if (created)
+        {
+            await recentActivityRepository.LogActivityAsync(
+                "Prayer",
+                prayer.Id,
+                prayer.Title,
+                "created",
+                userId
+            );
+        }
+
         return created ? prayer.Id : (int?)null;
     }
 
-    public async Task<bool> UpdatePrayerAsync(int id, NewPrayerDto updatedPrayer)
+    public async Task<bool> UpdatePrayerAsync(int id, NewPrayerDto updatedPrayer, string? userId)
     {
         var existingPrayer = await prayersRepository.GetByIdAsync(id);
         if (existingPrayer == null)
@@ -61,18 +74,42 @@ public class PrayersService(
         else
             existingPrayer.Tags = new List<Tag>();
 
-        return await prayersRepository.UpdateAsync(existingPrayer);
+        var updated = await prayersRepository.UpdateAsync(existingPrayer);
+
+        if (updated)
+        {
+            await recentActivityRepository.LogActivityAsync(
+                "Prayer",
+                existingPrayer.Id,
+                existingPrayer.Title,
+                "updated",
+                userId
+            );
+        }
+
+        return updated;
     }
 
-    public async Task DeletePrayerAsync(string slug)
+    public async Task DeletePrayerAsync(string slug, string? userId)
     {
+        var prayer = await prayersRepository.GetBySlugAsync(slug);
+        if (prayer == null) return;
+
         var wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
         var prayerFolder = Path.Combine(wwwroot, "prayers", slug);
 
         if (Directory.Exists(prayerFolder))
             Directory.Delete(prayerFolder, recursive: true);
 
-        await Task.CompletedTask;
+        await prayersRepository.DeleteAsync(prayer);
+
+        await recentActivityRepository.LogActivityAsync(
+            "Prayer",
+            prayer.Id,
+            prayer.Title,
+            "deleted",
+            userId
+        );
     }
 
     private string GenerateSlug(string title)
@@ -115,4 +152,3 @@ public class PrayersService(
         return await SaveFilesAsync(prayerDto, slug);
     }
 }
-
