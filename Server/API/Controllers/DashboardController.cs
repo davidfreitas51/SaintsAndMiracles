@@ -1,3 +1,4 @@
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -10,33 +11,30 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 [Authorize]
 [ApiController]
-public class DashboardController(ISaintsRepository saintsRepository, IMiraclesRepository miraclesRepository, IPrayersRepository prayersRepository, UserManager<AppUser> userManager) : ControllerBase
+public class DashboardController(
+    ISaintsRepository saintsRepository,
+    IMiraclesRepository miraclesRepository,
+    IPrayersRepository prayersRepository,
+    UserManager<AppUser> userManager) : ControllerBase
 {
-    [HttpGet("saints")]
-    public async Task<IActionResult> TotalSaints()
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetSummary()
     {
-        var totalSaints = await saintsRepository.GetTotalSaintsAsync();
-        return Ok(totalSaints);
-    }
+        var totalSaintsTask = saintsRepository.GetTotalSaintsAsync();
+        var totalMiraclesTask = miraclesRepository.GetTotalMiraclesAsync();
+        var totalPrayersTask = prayersRepository.GetTotalPrayersAsync();
+        var totalAccountsTask = userManager.Users.CountAsync(u => u.EmailConfirmed);
 
-    [HttpGet("miracles")]
-    public async Task<IActionResult> TotalMiracles()
-    {
-        var totalMiracles = await miraclesRepository.GetTotalMiraclesAsync();
-        return Ok(totalMiracles);
-    }
+        await Task.WhenAll(totalSaintsTask, totalMiraclesTask, totalPrayersTask, totalAccountsTask);
 
-    [HttpGet("prayers")]
-    public async Task<IActionResult> TotalPrayers()
-    {
-        var totalPrayers = await prayersRepository.GetTotalPrayersAsync();
-        return Ok(totalPrayers);
-    }
-    [HttpGet("accounts")]
-    public async Task<IActionResult> TotalAccounts()
-    {
-        var totalAccounts = await userManager.Users.CountAsync(u => u.EmailConfirmed);
-        return Ok(totalAccounts);
-    }
+        var summary = new DashboardSummaryDto
+        {
+            TotalSaints = totalSaintsTask.Result,
+            TotalMiracles = totalMiraclesTask.Result,
+            TotalPrayers = totalPrayersTask.Result,
+            TotalAccounts = totalAccountsTask.Result
+        };
 
+        return Ok(summary);
+    }
 }

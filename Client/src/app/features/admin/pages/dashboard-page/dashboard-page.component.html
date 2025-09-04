@@ -21,24 +21,50 @@
   <mat-card class="shadow-lg p-6">
     <h2 class="text-xl font-semibold mb-4">Recent Activity</h2>
 
-    <table mat-table [dataSource]="tableData" class="min-w-full">
+    <table mat-table [dataSource]="dataSource" class="min-w-full">
+      <!-- Name -->
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <th mat-header-cell *matHeaderCellDef class="text-left">Name</th>
         <td mat-cell *matCellDef="let element">{{ element.name }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let element">{{ element.status }}</td>
+      <!-- Type -->
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef class="text-left">Type</th>
+        <td mat-cell *matCellDef="let element">{{ element.type }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="lastActive">
-        <th mat-header-cell *matHeaderCellDef>Last Active</th>
-        <td mat-cell *matCellDef="let element">{{ element.lastActive }}</td>
+      <!-- Date -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef class="text-left">Date</th>
+        <td mat-cell *matCellDef="let element">{{ element.date }}</td>
       </ng-container>
 
+      <!-- Action -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef class="text-left">Action</th>
+        <td mat-cell *matCellDef="let element">
+          <span
+            [ngClass]="{
+              'text-green-600': element.action === 'created',
+              'text-blue-600': element.action === 'updated',
+              'text-red-600': element.action === 'deleted'
+            }"
+          >
+            {{ element.action | titlecase }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Header & Rows -->
       <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: tableColumns"></tr>
     </table>
+    <mat-paginator
+      [pageSize]="5"
+      [pageSizeOptions]="[5, 10, 20]"
+      showFirstLastButtons
+    >
+    </mat-paginator>
   </mat-card>
 </div>
