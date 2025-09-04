@@ -10,7 +10,7 @@ import {
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { SnackbarService } from '../../../core/services/snackbar.service';
@@ -18,7 +18,7 @@ import { FeastDayFormatPipe } from '../../pipes/feast-day-format.pipe';
 import { RomanPipe } from '../../pipes/roman.pipe';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-admin-content-table',
@@ -35,6 +35,7 @@ import { CommonModule } from '@angular/common';
     MatTableModule,
     CommonModule,
   ],
+  providers: [DatePipe]
 })
 export class AdminContentTableComponent implements OnChanges, AfterViewInit {
   @Input({ required: true }) data: any[] = [];
@@ -49,10 +50,10 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+  private datePipe = inject(DatePipe);
   private snackBarService = inject(SnackbarService);
   private dialogService = inject(ConfirmDialogService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
 
   entitySingular = '';
 
@@ -153,5 +154,15 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
           },
         });
       });
+  }
+
+  formatCell(element: any, col: string): any {
+    if (!element || !col) return '';
+
+    if ((col === 'createdAt' || col === 'updatedAt') && element[col]) {
+      return this.datePipe.transform(element[col], 'medium'); 
+    }
+
+    return element[col];
   }
 }

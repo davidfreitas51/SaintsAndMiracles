@@ -8,7 +8,6 @@
       class="w-full p-2 border rounded"
     />
   </div>
-  
 
   <div class="overflow-auto rounded-t-2xl">
     <table
@@ -37,7 +36,7 @@
                 ? (element[col] | roman)
                 : col === "feastDay"
                 ? (element[col] | feastDayFormat)
-                : element[col]
+                : formatCell(element, col)
             }}
           </ng-container>
           <ng-template #actionsTpl>
@@ -67,9 +66,7 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
       <tr class="text-center" *matNoDataRow>
-        <td [attr.colspan]="displayedColumns.length">
-          No data found
-        </td>
+        <td [attr.colspan]="displayedColumns.length">No data found</td>
       </tr>
     </table>
   </div>

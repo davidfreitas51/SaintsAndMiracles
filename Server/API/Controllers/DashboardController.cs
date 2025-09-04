@@ -20,19 +20,17 @@ public class DashboardController(
     [HttpGet("summary")]
     public async Task<IActionResult> GetSummary()
     {
-        var totalSaintsTask = saintsRepository.GetTotalSaintsAsync();
-        var totalMiraclesTask = miraclesRepository.GetTotalMiraclesAsync();
-        var totalPrayersTask = prayersRepository.GetTotalPrayersAsync();
-        var totalAccountsTask = userManager.Users.CountAsync(u => u.EmailConfirmed);
-
-        await Task.WhenAll(totalSaintsTask, totalMiraclesTask, totalPrayersTask, totalAccountsTask);
+        var totalSaintsTask = await saintsRepository.GetTotalSaintsAsync();
+        var totalMiraclesTask = await miraclesRepository.GetTotalMiraclesAsync();
+        var totalPrayersTask = await prayersRepository.GetTotalPrayersAsync();
+        var totalAccountsTask = await userManager.Users.CountAsync(u => u.EmailConfirmed);
 
         var summary = new DashboardSummaryDto
         {
-            TotalSaints = totalSaintsTask.Result,
-            TotalMiracles = totalMiraclesTask.Result,
-            TotalPrayers = totalPrayersTask.Result,
-            TotalAccounts = totalAccountsTask.Result
+            TotalSaints = totalSaintsTask,
+            TotalMiracles = totalMiraclesTask,
+            TotalPrayers = totalPrayersTask,
+            TotalAccounts = totalAccountsTask
         };
 
         return Ok(summary);
