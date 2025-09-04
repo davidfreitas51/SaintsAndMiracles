@@ -54,7 +54,7 @@ export class SaintsService {
       title: formValue.title || null,
       patronOf: formValue.patronOf || null,
       religiousOrderId: formValue.religiousOrder || null,
-      tagIds: formValue.currentTags || [],
+      tagIds: formValue.tagIds || [], 
       feastDay: this.formatFeastDayToIso(formValue.feastDay),
     };
 
@@ -90,9 +90,7 @@ export class SaintsService {
   }
 
   getSaintOfTheDay(): Observable<Saint | null> {
-    return this.http.get<Saint | null>(
-      `${this.baseUrl}saints/of-the-day`
-    );
+    return this.http.get<Saint | null>(`${this.baseUrl}saints/of-the-day`);
   }
 
   private parseFeastDay(

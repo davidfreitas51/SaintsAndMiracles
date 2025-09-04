@@ -1,10 +1,12 @@
 using System.Text.RegularExpressions;
 using Core.DTOs;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.Extensions.Hosting;
+
 
 public class MiraclesService(
     IHostEnvironment env,
@@ -42,10 +44,10 @@ public class MiraclesService(
         if (!created) return null;
 
         await recentActivityRepository.LogActivityAsync(
-            "Miracle",
+            EntityType.Miracle,
             miracle.Id,
             miracle.Title,
-            "created",
+            ActivityAction.Created,
             userId
         );
 
@@ -71,7 +73,6 @@ public class MiraclesService(
 
         if (!string.IsNullOrWhiteSpace(imagePath))
             existingMiracle.Image = imagePath;
-
         if (!string.IsNullOrWhiteSpace(markdownPath))
             existingMiracle.MarkdownPath = markdownPath;
 
@@ -84,10 +85,10 @@ public class MiraclesService(
         if (!updated) return false;
 
         await recentActivityRepository.LogActivityAsync(
-            "Miracle",
+            EntityType.Miracle,
             existingMiracle.Id,
             existingMiracle.Title,
-            "updated",
+            ActivityAction.Updated,
             userId
         );
 
@@ -107,10 +108,10 @@ public class MiraclesService(
         await miraclesRepository.DeleteAsync(miracle.Id);
 
         await recentActivityRepository.LogActivityAsync(
-            "Miracle",
+            EntityType.Miracle,
             miracle.Id,
             miracle.Title,
-            "deleted",
+            ActivityAction.Deleted,
             userId
         );
     }

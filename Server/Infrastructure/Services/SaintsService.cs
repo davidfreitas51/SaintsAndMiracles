@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Models;
@@ -53,10 +54,10 @@ public class SaintsService(
         if (!created) return null;
 
         await recentActivityRepository.LogActivityAsync(
-            "Saint",
+            EntityType.Saint,
             saint.Id,
             saint.Name,
-            "created",
+            ActivityAction.Created,
             userId
         );
 
@@ -100,10 +101,10 @@ public class SaintsService(
         if (!updated) return false;
 
         await recentActivityRepository.LogActivityAsync(
-            "Saint",
+            EntityType.Saint,
             existingSaint.Id,
             existingSaint.Name,
-            "updated",
+            ActivityAction.Updated,
             userId
         );
 
@@ -121,10 +122,10 @@ public class SaintsService(
         await saintsRepository.DeleteAsync(saint.Id);
 
         await recentActivityRepository.LogActivityAsync(
-            "Saint",
+            EntityType.Saint,
             saint.Id,
             saint.Name,
-            "deleted",
+            ActivityAction.Deleted,
             userId
         );
     }

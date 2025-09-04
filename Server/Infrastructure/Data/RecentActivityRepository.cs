@@ -1,3 +1,4 @@
+using Core.Enums;
 using Core.Interfaces.Repositories;
 using Core.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,21 +9,33 @@ public class RecentActivityRepository(DataContext context) : IRecentActivityRepo
 {
     private const int MaxRecords = 100;
 
-    public async Task<List<RecentActivity>> GetRecentActivitiesAsync(int limit = 5)
+    public async Task<PagedResult<RecentActivity>> GetRecentActivitiesAsync(int pageNumber = 1, int pageSize = 5)
     {
-        return await context.RecentActivities
+        var totalRecords = await context.RecentActivities.CountAsync();
+
+        var items = await context.RecentActivities
             .OrderByDescending(a => a.CreatedAt)
-            .Take(limit)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return new PagedResult<RecentActivity>
+        {
+            Items = items,
+            TotalCount = totalRecords,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
-    public async Task LogActivityAsync(string entityName, int entityId, string displayName, string action, string? userId = null)
+
+    public async Task LogActivityAsync(EntityType entityType, int entityId, string displayName, ActivityAction action, string? userId = null)
     {
         var activity = new RecentActivity
         {
-            EntityName = entityName,
+            EntityName = entityType.ToString(),
             EntityId = entityId,
             DisplayName = displayName,
-            Action = action,
+            Action = action.ToString().ToLower(),
             UserId = userId
         };
 

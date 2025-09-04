@@ -176,7 +176,11 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
     if (this.imageLoading) return;
 
     const tagIds = this.currentTags
-      .map((tagName) => this.tagsList.find((t) => t.name === tagName))
+      .map((tagName) =>
+        this.tagsList.find(
+          (t) => t.name.toLowerCase() === tagName.trim().toLowerCase()
+        )
+      )
       .filter((t): t is Tag => !!t)
       .map((t) => t.id);
 

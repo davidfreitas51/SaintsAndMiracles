@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Core.DTOs;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
@@ -39,10 +40,10 @@ public class PrayersService(
         if (created)
         {
             await recentActivityRepository.LogActivityAsync(
-                "Prayer",
+                EntityType.Prayer,
                 prayer.Id,
                 prayer.Title,
-                "created",
+                ActivityAction.Created,
                 userId
             );
         }
@@ -79,10 +80,10 @@ public class PrayersService(
         if (updated)
         {
             await recentActivityRepository.LogActivityAsync(
-                "Prayer",
+                EntityType.Prayer,
                 existingPrayer.Id,
                 existingPrayer.Title,
-                "updated",
+                ActivityAction.Updated,
                 userId
             );
         }
@@ -104,10 +105,10 @@ public class PrayersService(
         await prayersRepository.DeleteAsync(prayer);
 
         await recentActivityRepository.LogActivityAsync(
-            "Prayer",
+            EntityType.Prayer,
             prayer.Id,
             prayer.Title,
-            "deleted",
+            ActivityAction.Deleted,
             userId
         );
     }
