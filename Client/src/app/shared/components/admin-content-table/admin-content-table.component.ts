@@ -35,7 +35,7 @@ import { CommonModule, DatePipe } from '@angular/common';
     MatTableModule,
     CommonModule,
   ],
-  providers: [DatePipe]
+  providers: [DatePipe],
 })
 export class AdminContentTableComponent implements OnChanges, AfterViewInit {
   @Input({ required: true }) data: any[] = [];
@@ -133,10 +133,15 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
       this.entitySingular.charAt(0).toUpperCase() +
       this.entitySingular.slice(1);
 
+    const labelColumn = this.displayedColumns.find(
+      (c) => c !== 'id' && c !== 'actions'
+    );
+    const displayName = labelColumn ? entity[labelColumn] : entity.id;
+
     this.dialogService
       .confirm({
         title: `Delete ${entityName}?`,
-        message: `You're about to permanently delete “${name}”. This action cannot be undone.`,
+        message: `You're about to permanently delete “${displayName}”. This action cannot be undone.`,
         confirmText: 'Yes, delete',
         cancelText: 'Cancel',
       })
@@ -160,7 +165,7 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
     if (!element || !col) return '';
 
     if ((col === 'createdAt' || col === 'updatedAt') && element[col]) {
-      return this.datePipe.transform(element[col], 'medium'); 
+      return this.datePipe.transform(element[col], 'medium');
     }
 
     return element[col];

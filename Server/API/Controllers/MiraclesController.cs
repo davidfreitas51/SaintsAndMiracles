@@ -1,7 +1,9 @@
 using Core.DTOs;
 using Core.Interfaces;
+using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -10,7 +12,8 @@ namespace API.Controllers;
 [ApiController]
 public class MiraclesController(
     IMiraclesRepository miraclesRepository,
-    IMiraclesService miraclesService) : ControllerBase
+    IMiraclesService miraclesService,
+    UserManager<AppUser> userManager) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAllMiracles([FromQuery] MiracleFilters filters)
@@ -37,9 +40,13 @@ public class MiraclesController(
     [Authorize]
     public async Task<IActionResult> CreateMiracle([FromBody] NewMiracleDto newMiracle)
     {
-        var created = await miraclesService.CreateMiracleAsync(newMiracle);
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var created = await miraclesService.CreateMiracleAsync(newMiracle, user.Id);
         if (!created.HasValue)
             return Conflict("A miracle with the same name already exists.");
+
         return CreatedAtAction(nameof(GetById), new { id = created.Value }, null);
     }
 
@@ -47,9 +54,13 @@ public class MiraclesController(
     [Authorize]
     public async Task<IActionResult> UpdateMiracle(int id, [FromBody] NewMiracleDto updatedMiracle)
     {
-        var updated = await miraclesService.UpdateMiracleAsync(id, updatedMiracle);
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var updated = await miraclesService.UpdateMiracleAsync(id, updatedMiracle, user.Id);
         if (!updated)
             return NotFound();
+
         return NoContent();
     }
 
@@ -57,12 +68,14 @@ public class MiraclesController(
     [Authorize]
     public async Task<IActionResult> DeleteMiracle(int id)
     {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
         var miracle = await miraclesRepository.GetByIdAsync(id);
         if (miracle is null)
             return NotFound();
 
-        await miraclesService.DeleteFilesAsync(miracle.Slug);
-        await miraclesRepository.DeleteAsync(id);
+        await miraclesService.DeleteMiracleAsync(miracle.Slug, user.Id);
         return Ok();
     }
 

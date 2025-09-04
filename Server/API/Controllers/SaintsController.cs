@@ -1,5 +1,7 @@
 using Core.Interfaces;
+using Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -8,7 +10,8 @@ namespace API.Controllers;
 [ApiController]
 public class SaintsController(
     ISaintsRepository saintsRepository,
-    ISaintsService saintsService) : ControllerBase
+    ISaintsService saintsService,
+    UserManager<AppUser> userManager) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAllSaints([FromQuery] SaintFilters filters)
@@ -35,9 +38,13 @@ public class SaintsController(
     [Authorize]
     public async Task<IActionResult> CreateSaint([FromBody] NewSaintDto newSaint)
     {
-        var created = await saintsService.CreateSaintAsync(newSaint);
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var created = await saintsService.CreateSaintAsync(newSaint, user.Id);
         if (!created.HasValue)
             return Conflict("A saint with the same name already exists.");
+
         return CreatedAtAction(nameof(GetById), new { id = created.Value }, null);
     }
 
@@ -45,9 +52,13 @@ public class SaintsController(
     [Authorize]
     public async Task<IActionResult> UpdateSaint(int id, [FromBody] NewSaintDto updatedSaint)
     {
-        var updated = await saintsService.UpdateSaintAsync(id, updatedSaint);
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var updated = await saintsService.UpdateSaintAsync(id, updatedSaint, user.Id);
         if (!updated)
             return NotFound();
+
         return NoContent();
     }
 
@@ -55,12 +66,14 @@ public class SaintsController(
     [Authorize]
     public async Task<IActionResult> DeleteSaint(int id)
     {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
         var saint = await saintsRepository.GetByIdAsync(id);
         if (saint is null)
             return NotFound();
 
-        await saintsService.DeleteFilesAsync(saint.Slug);
-        await saintsRepository.DeleteAsync(id);
+        await saintsService.DeleteSaintAsync(id, user.Id);
         return Ok();
     }
 
@@ -72,10 +85,9 @@ public class SaintsController(
     }
 
     [HttpGet("of-the-day")]
-    public async Task<IActionResult> GetUniversalFeastOfTheDay()
+    public async Task<IActionResult> GetSaintOfTheDay()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
         var saint = await saintsRepository.GetSaintOfTheDayAsync(today);
 
         if (saint is null)

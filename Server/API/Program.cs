@@ -1,7 +1,5 @@
 using System.Text.Json;
 using API.Extensions;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,15 +1,18 @@
 using System.Text.RegularExpressions;
 using Core.DTOs;
 using Core.Interfaces;
+using Core.Interfaces.Repositories;
+using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.Extensions.Hosting;
 
 public class MiraclesService(
     IHostEnvironment env,
     IMiraclesRepository miraclesRepository,
+    IRecentActivityRepository recentActivityRepository,
     ITagsRepository tagsRepository) : IMiraclesService
 {
-    public async Task<int?> CreateMiracleAsync(NewMiracleDto newMiracle)
+    public async Task<int?> CreateMiracleAsync(NewMiracleDto newMiracle, string? userId)
     {
         var slug = GenerateSlug(newMiracle.Title);
         if (await miraclesRepository.SlugExistsAsync(slug))
@@ -36,10 +39,20 @@ public class MiraclesService(
         };
 
         var created = await miraclesRepository.CreateAsync(miracle);
-        return created ? miracle.Id : (int?)null;
+        if (!created) return null;
+
+        await recentActivityRepository.LogActivityAsync(
+            "Miracle",
+            miracle.Id,
+            miracle.Title,
+            "created",
+            userId
+        );
+
+        return miracle.Id;
     }
 
-    public async Task<bool> UpdateMiracleAsync(int id, NewMiracleDto updatedMiracle)
+    public async Task<bool> UpdateMiracleAsync(int id, NewMiracleDto updatedMiracle, string? userId)
     {
         var existingMiracle = await miraclesRepository.GetByIdAsync(id);
         if (existingMiracle == null)
@@ -67,18 +80,39 @@ public class MiraclesService(
         else
             existingMiracle.Tags = new List<Tag>();
 
-        return await miraclesRepository.UpdateAsync(existingMiracle);
+        var updated = await miraclesRepository.UpdateAsync(existingMiracle);
+        if (!updated) return false;
+
+        await recentActivityRepository.LogActivityAsync(
+            "Miracle",
+            existingMiracle.Id,
+            existingMiracle.Title,
+            "updated",
+            userId
+        );
+
+        return true;
     }
 
-    public async Task DeleteFilesAsync(string slug)
+    public async Task DeleteMiracleAsync(string slug, string? userId)
     {
+        var miracle = await miraclesRepository.GetBySlugAsync(slug);
+        if (miracle == null) return;
+
         var wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
         var miracleFolder = Path.Combine(wwwroot, "miracles", slug);
-
         if (Directory.Exists(miracleFolder))
             Directory.Delete(miracleFolder, recursive: true);
 
-        await Task.CompletedTask;
+        await miraclesRepository.DeleteAsync(miracle.Id);
+
+        await recentActivityRepository.LogActivityAsync(
+            "Miracle",
+            miracle.Id,
+            miracle.Title,
+            "deleted",
+            userId
+        );
     }
 
     private string GenerateSlug(string title)

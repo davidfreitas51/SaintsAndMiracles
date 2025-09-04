@@ -1,16 +1,19 @@
 using System.Text.RegularExpressions;
 using Core.Interfaces;
+using Core.Interfaces.Repositories;
 using Core.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 
 public class SaintsService(
     IHostEnvironment env,
     ISaintsRepository saintsRepository,
     ITagsRepository tagsRepository,
-    IReligiousOrdersRepository religiousOrdersRepository) : ISaintsService
+    IReligiousOrdersRepository religiousOrdersRepository,
+    IRecentActivityRepository recentActivityRepository,
+    UserManager<AppUser> userManager) : ISaintsService
 {
-
-    public async Task<int?> CreateSaintAsync(NewSaintDto newSaint)
+    public async Task<int?> CreateSaintAsync(NewSaintDto newSaint, string userId)
     {
         var slug = GenerateSlug(newSaint.Name);
         if (await saintsRepository.SlugExistsAsync(slug))
@@ -26,6 +29,10 @@ public class SaintsService(
         if (newSaint.ReligiousOrderId.HasValue)
             religiousOrder = await religiousOrdersRepository.GetByIdAsync(newSaint.ReligiousOrderId.Value);
 
+        var user = await userManager.FindByIdAsync(userId);
+        if (user is null)
+            return null;
+
         var saint = new Saint
         {
             Name = newSaint.Name,
@@ -39,21 +46,30 @@ public class SaintsService(
             FeastDay = newSaint.FeastDay,
             PatronOf = newSaint.PatronOf,
             ReligiousOrder = religiousOrder,
-            Tags = tags
+            Tags = tags,
         };
 
         var created = await saintsRepository.CreateAsync(saint);
-        return created ? saint.Id : (int?)null;
+        if (!created) return null;
+
+        await recentActivityRepository.LogActivityAsync(
+            "Saint",
+            saint.Id,
+            saint.Name,
+            "created",
+            userId
+        );
+
+        return saint.Id;
     }
 
-    public async Task<bool> UpdateSaintAsync(int id, NewSaintDto updatedSaint)
+    public async Task<bool> UpdateSaintAsync(int id, NewSaintDto updatedSaint, string userId)
     {
         var existingSaint = await saintsRepository.GetByIdAsync(id);
         if (existingSaint == null)
             return false;
 
         var slug = GenerateSlug(updatedSaint.Name);
-
         var (markdownPath, imagePath) = await UpdateFilesAsync(updatedSaint, slug);
 
         existingSaint.Name = updatedSaint.Name;
@@ -67,7 +83,6 @@ public class SaintsService(
 
         if (!string.IsNullOrWhiteSpace(imagePath))
             existingSaint.Image = imagePath;
-
         if (!string.IsNullOrWhiteSpace(markdownPath))
             existingSaint.MarkdownPath = markdownPath;
 
@@ -81,7 +96,37 @@ public class SaintsService(
         else
             existingSaint.Tags = new List<Tag>();
 
-        return await saintsRepository.UpdateAsync(existingSaint);
+        var updated = await saintsRepository.UpdateAsync(existingSaint);
+        if (!updated) return false;
+
+        await recentActivityRepository.LogActivityAsync(
+            "Saint",
+            existingSaint.Id,
+            existingSaint.Name,
+            "updated",
+            userId
+        );
+
+        return true;
+    }
+
+    public async Task DeleteSaintAsync(int id, string userId)
+    {
+        var saint = await saintsRepository.GetByIdAsync(id);
+        if (saint is null)
+            return;
+
+        await DeleteFilesAsync(saint.Slug);
+
+        await saintsRepository.DeleteAsync(saint.Id);
+
+        await recentActivityRepository.LogActivityAsync(
+            "Saint",
+            saint.Id,
+            saint.Name,
+            "deleted",
+            userId
+        );
     }
 
     public async Task DeleteFilesAsync(string slug)
