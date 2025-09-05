@@ -42,7 +42,7 @@
                 <strong class="mr-1">Country:</strong> {{ saint.country }}
                 <img
                   *ngIf="saint.country | countryCode as code"
-                  [src]="'https://flagcdn.com/w20/' + code + '.png'"
+                  [src]="'https://flagcdn.com/w20/' + code + '.webp'"
                   [alt]="saint.country + ' flag'"
                   class="ml-1 w-4 h-4 object-contain"
                 />

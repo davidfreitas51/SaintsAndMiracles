@@ -7,7 +7,7 @@
       class="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden"
     >
       <img
-        src="assets/hero.jpg"
+        src="assets/hero.webp"
         alt="Saints and Miracles"
         class="w-full h-full object-cover brightness-25"
       />
@@ -114,7 +114,7 @@
                   {{ universalFeastOfTheDay.country }}
                   <img
                     *ngIf="universalFeastOfTheDay.country | countryCode as code"
-                    [src]="'https://flagcdn.com/w20/' + code + '.png'"
+                    [src]="'https://flagcdn.com/w20/' + code + '.webp'"
                     [alt]="universalFeastOfTheDay.country + ' flag'"
                     class="ml-1 w-4 h-4 object-contain"
                   />
@@ -161,7 +161,7 @@
               <strong class="mr-1">Country:</strong> {{ saint.country }}
               <img
                 *ngIf="saint.country | countryCode as code"
-                [src]="'https://flagcdn.com/w20/' + code + '.png'"
+                [src]="'https://flagcdn.com/w20/' + code + '.webp'"
                 [alt]="saint.country + ' flag'"
                 class="ml-1 w-4 h-4 object-contain"
               />

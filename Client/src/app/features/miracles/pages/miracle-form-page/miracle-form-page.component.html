@@ -95,7 +95,7 @@
           />
           <img
             *ngIf="form.get('country')?.value | countryCode as flagCode"
-            [src]="'https://flagcdn.com/w20/' + flagCode + '.png'"
+            [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
             [alt]="form.get('country')?.value + ' flag'"
             class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 mt-4 h-5 object-contain pointer-events-none"
           />
