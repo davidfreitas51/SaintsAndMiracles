@@ -26,6 +26,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISaintsService, SaintsService>();
         services.AddScoped<IMiraclesService, MiraclesService>();
         services.AddScoped<IPrayersService, PrayersService>();
+        services.AddScoped<ITagsService, TagsService>();
+        services.AddScoped<IReligiousOrdersService, ReligiousOrdersService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAccountTokensService, AccountTokensService>();
         services.AddSingleton<IEmailSender<AppUser>, EmailSender>();

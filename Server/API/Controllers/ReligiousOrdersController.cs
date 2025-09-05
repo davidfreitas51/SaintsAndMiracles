@@ -1,14 +1,20 @@
 using Core.DTOs;
 using Core.Interfaces;
+using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("api/religious-orders")]
 [ApiController]
-public class ReligiousOrdersController(IReligiousOrdersRepository ordersRepository) : ControllerBase
+public class ReligiousOrdersController(
+    IReligiousOrdersRepository ordersRepository,
+    IReligiousOrdersService ordersService,
+    UserManager<AppUser> userManager
+) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] EntityFilters filters)
@@ -28,11 +34,13 @@ public class ReligiousOrdersController(IReligiousOrdersRepository ordersReposito
     [Authorize]
     public async Task<IActionResult> Create([FromBody] NewReligiousOrderDto dto)
     {
-        var order = new ReligiousOrder { Name = dto.Name };
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-        var success = await ordersRepository.CreateAsync(order);
-        return success
-            ? CreatedAtAction(nameof(GetById), new { id = order.Id }, order)
+        var createdOrder = await ordersService.CreateReligiousOrderAsync(dto, user.Id);
+
+        return createdOrder is not null
+            ? CreatedAtAction(nameof(GetById), new { id = createdOrder.Id }, createdOrder)
             : BadRequest();
     }
 
@@ -40,24 +48,23 @@ public class ReligiousOrdersController(IReligiousOrdersRepository ordersReposito
     [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] NewReligiousOrderDto dto)
     {
-        var order = await ordersRepository.GetByIdAsync(id);
-        if (order is null)
-            return NotFound();
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-        order.Name = dto.Name;
-        var success = await ordersRepository.UpdateAsync(order);
-        return success ? NoContent() : BadRequest();
+        var updated = await ordersService.UpdateReligiousOrderAsync(id, dto, user.Id);
+
+        return updated ? NoContent() : NotFound();
     }
 
     [HttpDelete("{id:int}")]
     [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
-        var order = await ordersRepository.GetByIdAsync(id);
-        if (order is null)
-            return NotFound();
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
 
-        await ordersRepository.DeleteAsync(id);
-        return Ok();
+        var deleted = await ordersService.DeleteReligiousOrderAsync(id, user.Id);
+
+        return deleted ? Ok() : NotFound();
     }
 }

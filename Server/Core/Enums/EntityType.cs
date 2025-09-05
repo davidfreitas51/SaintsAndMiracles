@@ -4,5 +4,7 @@ public enum EntityType
 {
     Prayer,
     Saint,
-    Miracle
+    Miracle,
+    Tag,
+    ReligiousOrder
 }
