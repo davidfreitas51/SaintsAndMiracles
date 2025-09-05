@@ -1,7 +1,8 @@
 export interface RecentActivity {
-  name: string; 
-  type: string; 
-  date: string; 
+  entityName: string;
+  entityId: number;
+  displayName: string;
   action: 'created' | 'updated' | 'deleted';
-  userEmail?: string; 
+  createdAt: string;
+  userEmail?: string;
 }

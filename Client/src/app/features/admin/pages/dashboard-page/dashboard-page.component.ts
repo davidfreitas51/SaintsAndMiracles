@@ -7,13 +7,17 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import {
+  MatPaginator,
+  MatPaginatorModule,
+  PageEvent,
+} from '@angular/material/paginator';
 
 import { DashboardService } from '../../../../core/services/dashboard.service';
-import { RecentActivity } from '../../interfaces/recent-activity';
 import { DashboardSummaryDto } from '../../interfaces/dashboard-summary-dto';
+import { RecentActivity } from '../../interfaces/recent-activity';
+import { PagedRecentActivity } from '../../interfaces/paged-activities';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -34,29 +38,35 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
     { label: 'Total Accounts', value: 0 },
   ];
 
-  tableColumns: string[] = ['name', 'type', 'date', 'action'];
-  dataSource = new MatTableDataSource<RecentActivity>([
-    {
-      name: 'Saint Teresa',
-      type: 'Saint',
-      date: '2025-09-01',
-      action: 'updated',
-    },
-    {
-      name: 'Healing Miracle',
-      type: 'Miracle',
-      date: '2025-09-02',
-      action: 'created',
-    },
-    {
-      name: 'Morning Prayer',
-      type: 'Prayer',
-      date: '2025-09-03',
-      action: 'deleted',
-    },
-  ]);
+  tableColumns: string[] = [
+    'createdAt',
+    'entityName',
+    'displayName',
+    'action',
+    'userEmail',
+    'entityId',
+  ];
+
+  dataSource = new MatTableDataSource<RecentActivity>([]);
+  totalCount = 0;
+  pageSize = 10;
+  pageNumber = 1;
+  isLoading = false;
 
   ngOnInit(): void {
+    this.loadSummary();
+    this.loadRecentActivities();
+  }
+
+  ngAfterViewInit(): void {
+    if (this.paginator) {
+      this.paginator.page.subscribe((event: PageEvent) =>
+        this.onPageChange(event)
+      );
+    }
+  }
+
+  private loadSummary(): void {
     this.dashboardService.getSummary().subscribe({
       next: (summary: DashboardSummaryDto) => {
         this.summary[0].value = summary.totalSaints;
@@ -68,7 +78,34 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+  onPageChange(event: PageEvent): void {
+    this.pageNumber = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadRecentActivities();
+  }
+
+  loadRecentActivities(): void {
+    this.dashboardService
+      .getRecentActivities(this.pageNumber, this.pageSize)
+      .subscribe({
+        next: (pagedResult) => {
+          this.dataSource.data = pagedResult.items;
+          this.totalCount = pagedResult.totalCount;
+        },
+        error: (err) => console.error('Failed to load recent activities:', err),
+      });
+  }
+
+  getActionClass(action: string): string {
+    switch (action.toLowerCase()) {
+      case 'created':
+        return 'text-green-600 font-semibold';
+      case 'updated':
+        return 'text-blue-600 font-semibold';
+      case 'deleted':
+        return 'text-red-600 font-semibold';
+      default:
+        return '';
+    }
   }
 }

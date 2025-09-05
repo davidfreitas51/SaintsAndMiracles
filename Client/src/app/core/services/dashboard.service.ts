@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { DashboardSummaryDto } from '../../features/admin/interfaces/dashboard-summary-dto';
-import { RecentActivity } from '../../features/admin/interfaces/recent-activity';
+import { PagedRecentActivity } from '../../features/admin/interfaces/paged-activities';
 
 @Injectable({
   providedIn: 'root',
@@ -13,10 +13,20 @@ export class DashboardService {
   public baseUrl = environment.apiUrl;
 
   getSummary(): Observable<DashboardSummaryDto> {
-    return this.http.get<DashboardSummaryDto>(`${this.baseUrl}dashboard/summary`);
+    return this.http.get<DashboardSummaryDto>(
+      `${this.baseUrl}dashboard/summary`
+    );
   }
 
-  getRecentActivities(): Observable<RecentActivity[]>{
-    return this.http.get<RecentActivity[]>(`${this.baseUrl}dashboard/recent`);
+  getRecentActivities(pageNumber: number, pageSize: number) {
+    return this.http.get<PagedRecentActivity>(
+      `${this.baseUrl}dashboard/recent`,
+      {
+        params: {
+          pageNumber: pageNumber.toString(),
+          pageSize: pageSize.toString(),
+        },
+      }
+    );
   }
 }

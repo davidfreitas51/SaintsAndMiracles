@@ -39,7 +39,7 @@ public class DashboardController(
     }
 
     [HttpGet("recent")]
-    public async Task<IActionResult> GetRecentActivity(int pageNumber = 1, int pageSize = 100)
+    public async Task<IActionResult> GetRecentActivity(int pageNumber = 1, int pageSize = 10)
     {
         var pagedActivities = await recentActivityRepository.GetRecentActivitiesAsync(pageNumber, pageSize);
 
@@ -61,7 +61,7 @@ public class DashboardController(
             a.Action,
             a.CreatedAt,
             UserEmail = users.FirstOrDefault(u => u.Id == a.UserId)?.Email
-        });
+        }).ToList();
 
         return Ok(new
         {
@@ -71,4 +71,5 @@ public class DashboardController(
             pagedActivities.PageSize
         });
     }
+
 }
