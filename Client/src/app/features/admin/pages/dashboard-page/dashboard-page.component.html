@@ -12,8 +12,22 @@
   </div>
 
   <!-- Placeholder for chart -->
-  <mat-card class="shadow-lg p-6 mb-8 text-center text-gray-500">
-    <p>Gráfico de exemplo (a implementar)</p>
+  <mat-card class="shadow-lg p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">Action Distribution</h2>
+    <div class="w-full h-[400px] flex items-center justify-center">
+      <canvas
+        baseChart
+        [data]="pieChartData"
+        [options]="pieChartOptions"
+        [type]="'pie'"
+      >
+      </canvas>
+    </div>
+
+    <!-- Disclaimer -->
+    <p class="text-sm text-gray-500 mt-4 text-center">
+      From the last {{ dataSource.data.length }} actions
+    </p>
   </mat-card>
 
   <!-- Recent Activity Table -->
@@ -73,13 +87,13 @@
     </div>
 
     <!-- Paginator -->
-      <mat-paginator
-        [length]="totalCount"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[10, 25, 50, 100]"
-        showFirstLastButtons
-        (page)="onPageChange($event)"
-      >
-      </mat-paginator>
+    <mat-paginator
+      [length]="totalCount"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      showFirstLastButtons
+      (page)="onPageChange($event)"
+    >
+    </mat-paginator>
   </mat-card>
 </div>

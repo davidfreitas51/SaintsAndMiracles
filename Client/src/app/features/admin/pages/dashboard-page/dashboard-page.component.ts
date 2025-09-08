@@ -17,19 +17,43 @@ import {
 import { DashboardService } from '../../../../core/services/dashboard.service';
 import { DashboardSummaryDto } from '../../interfaces/dashboard-summary-dto';
 import { RecentActivity } from '../../interfaces/recent-activity';
-import { PagedRecentActivity } from '../../interfaces/paged-activities';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
 
 @Component({
   selector: 'app-dashboard-page',
   templateUrl: './dashboard-page.component.html',
   styleUrls: ['./dashboard-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatTableModule, MatPaginatorModule],
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatTableModule,
+    MatPaginatorModule,
+    BaseChartDirective,
+  ],
 })
 export class DashboardPageComponent implements OnInit, AfterViewInit {
   private dashboardService = inject(DashboardService);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  public pieChartOptions: ChartOptions<'pie'> = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+    },
+  };
+
+  public pieChartData: ChartConfiguration<'pie'>['data'] = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: ['#4ade80', '#60a5fa', '#f87171'], 
+      },
+    ],
+  };
 
   summary = [
     { label: 'Total Saints', value: 0 },
@@ -91,9 +115,41 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
         next: (pagedResult) => {
           this.dataSource.data = pagedResult.items;
           this.totalCount = pagedResult.totalCount;
+
+          // Atualiza gráfico de pizza com os dados carregados
+          this.updatePieChart(pagedResult.items);
         },
         error: (err) => console.error('Failed to load recent activities:', err),
       });
+  }
+
+  private updatePieChart(items: RecentActivity[]): void {
+    // Tipagem forte: só aceita essas três chaves
+    const counts: Record<'created' | 'updated' | 'deleted', number> = {
+      created: 0,
+      updated: 0,
+      deleted: 0,
+    };
+
+    items.forEach((item) => {
+      const action = item.action.toLowerCase() as
+        | 'created'
+        | 'updated'
+        | 'deleted';
+      if (counts[action] !== undefined) {
+        counts[action]++;
+      }
+    });
+
+    this.pieChartData = {
+      labels: ['Created', 'Updated', 'Deleted'],
+      datasets: [
+        {
+          data: [counts.created, counts.updated, counts.deleted],
+          backgroundColor: ['#4ade80', '#60a5fa', '#f87171'], // verde, azul, vermelho
+        },
+      ],
+    };
   }
 
   getActionClass(action: string): string {
