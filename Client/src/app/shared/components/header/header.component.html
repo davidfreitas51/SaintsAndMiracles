@@ -20,50 +20,53 @@
         [routerLinkActiveOptions]="{ exact: true }"
         routerLinkActive="active"
         class="hover:darken transition"
+        >Home</a
       >
-        Home
-      </a>
       <a
         routerLink="/saints"
         routerLinkActive="active"
         class="hover:darken transition"
+        >Saints</a
       >
-        Saints
-      </a>
       <a
         routerLink="/miracles"
         routerLinkActive="active"
         class="hover:darken transition"
+        >Miracles</a
       >
-        Miracles
-      </a>
       <a
         routerLink="/prayers"
         routerLinkActive="active"
         class="hover:darken transition"
+        >Prayers</a
       >
-        Prayers
-      </a>
       <a
         routerLink="/about"
         routerLinkActive="active"
         class="hover:darken transition"
+        >About Us</a
       >
-        About Us
-      </a>
       <a
         routerLink="/admin"
         routerLinkActive="active"
         class="hover:darken transition"
+        >Admin</a
       >
-        Admin
-      </a>
     </nav>
+
+    <!-- Dark Mode Toggle -->
+    <button
+      (click)="toggleDarkMode()"
+      class="ml-auto hidden md:flex items-center gap-1 px-3 py-1 rounded bg-accent text-white hover:bg-accent-dark transition"
+    >
+      <mat-icon>dark_mode</mat-icon>
+      <span class="text-sm font-semibold">Dark Mode</span>
+    </button>
 
     <!-- Mobile menu button -->
     <button
       mat-icon-button
-      class="ml-auto md:hidden hover:darken transition"
+      class="ml-2 md:hidden hover:darken transition"
       [matMenuTriggerFor]="mobileMenu"
       aria-label="Open menu"
     >
@@ -124,6 +127,14 @@
       class="text-lg font-semibold hover:darken"
     >
       Admin
+    </button>
+    <button
+      mat-menu-item
+      (click)="toggleDarkMode()"
+      class="text-lg font-semibold hover:darken flex items-center gap-1"
+    >
+      <mat-icon>dark_mode</mat-icon>
+      Toggle Dark Mode
     </button>
   </mat-menu>
 

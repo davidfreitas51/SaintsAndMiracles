@@ -4,6 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html,
 body {
   height: 100%;
@@ -24,27 +26,21 @@ body {
 .bg-primary-app {
   background-color: var(--color-primary);
 }
-
 .bg-secondary-app {
   background-color: var(--color-secondary);
 }
-
 .bg-hover {
   background-color: var(--color-hover);
 }
-
 .hover\:bg-hover:hover {
   background-color: var(--color-hover);
 }
-
 .bg-accent {
   background-color: var(--color-accent);
 }
-
 .bg-accent-light {
   background-color: var(--color-accent-light);
 }
-
 .bg-accent-dark {
   background-color: var(--color-accent-dark);
 }
@@ -53,39 +49,30 @@ body {
 .text-primary-app {
   color: var(--color-primary);
 }
-
 .text-secondary-app {
   color: var(--color-secondary);
 }
-
 .text-hover {
   color: var(--color-hover);
 }
-
 .text-accent-app {
   color: var(--color-accent);
 }
-
 .text-accent-app-light {
   color: var(--color-accent-light);
 }
-
 .text-accent-app-dark {
   color: var(--color-accent-dark);
 }
-
 .hover\:text-hover:hover {
   color: var(--color-hover);
 }
-
 .hover\:text-accent-app:hover {
   color: var(--color-accent);
 }
-
 .hover\:text-accent-app-light:hover {
   color: var(--color-accent-light);
 }
-
 .hover\:darken:hover {
   filter: brightness(75%);
   transition: filter 0.2s ease;
@@ -95,23 +82,18 @@ body {
 .border-primary {
   border-color: var(--color-primary);
 }
-
 .border-secondary {
   border-color: var(--color-secondary);
 }
-
 .border-hover {
   border-color: var(--color-hover);
 }
-
 .border-accent {
   border-color: var(--color-accent);
 }
-
 .border-accent-light {
   border-color: var(--color-accent-light);
 }
-
 .border-accent-dark {
   border-color: var(--color-accent-dark);
 }
@@ -124,32 +106,32 @@ body {
   a:active {
     text-decoration: none !important;
   }
-
   a:not(.active):not([class*="text-"]) {
     color: inherit !important;
   }
 }
 
+/* Disabled buttons */
 button[disabled] {
   @apply bg-blue-300 cursor-not-allowed opacity-50;
 }
-
 button[disabled]:hover {
   @apply bg-blue-300;
 }
 
+/* Snackbar styles */
 .mat-mdc-snack-bar-container.snack-error {
   --mdc-snackbar-container-color: red;
   --mat-snack-bar-button-color: #fff;
   --mdc-snackbar-supporting-text-color: #fff;
 }
-
 .mat-mdc-snack-bar-container.snack-success {
   --mdc-snackbar-container-color: green;
   --mat-snack-bar-button-color: #fff;
   --mdc-snackbar-supporting-text-color: #fff;
 }
 
+/* Markdown images */
 .markdown-content img {
   display: block;
   margin-left: auto;
@@ -159,46 +141,128 @@ button[disabled]:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Dialogs */
 .entity-manager-dialog {
-  min-width: 0 !important;  
+  min-width: 0 !important;
   max-width: none !important;
   width: 800px !important;
 }
 
+/* Scroll and lists */
 html {
   scroll-behavior: smooth;
   overflow-y: scroll;
 }
-
 .prose ul {
   list-style-type: disc;
-  padding-left: 1.25rem; 
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
 }
-
 .prose ol {
   list-style-type: decimal;
   padding-left: 1.25rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin: 0.5rem 0;
 }
-
 .prose li {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+  margin: 0.25rem 0;
 }
-
 .markdown-body ul {
   list-style-type: disc;
   padding-left: 1.5rem;
 }
-
 .markdown-body ol {
   list-style-type: decimal;
   padding-left: 1.5rem;
 }
-
 blockquote {
   @apply border-l-4 border-gray-300 pl-4 italic text-gray-700 my-4;
+}
+
+/* ---------------- Dark Mode ---------------- */
+.dark {
+  /* Backgrounds */
+  .bg-primary-app {
+    background-color: #1f1f1f;
+  }
+  .bg-secondary-app {
+    background-color: #2a2a2a;
+  }
+  .bg-hover {
+    background-color: #341705;
+  }
+  .bg-accent {
+    background-color: #b8894c;
+  }
+  .bg-accent-light {
+    background-color: #d9a86c;
+  }
+  .bg-accent-dark {
+    background-color: #8b5e30;
+  }
+
+  /* Text */
+  .text-primary-app,
+  .mat-card,
+  .mat-toolbar,
+  .mat-input-element {
+    color: #e6d3b3;
+  }
+  .text-secondary-app {
+    color: #d9c4a6;
+  }
+  .text-hover {
+    color: #f0d9b5;
+  }
+
+  /* MatCards */
+  .mat-card {
+    background-color: #1f1f1f;
+    color: #e6d3b3;
+    border: 1px solid #333;
+  }
+  .mat-card-title,
+  .mat-card-subtitle {
+    color: #f0d9b5;
+  }
+  .mat-card-content {
+    color: #d9c4a6;
+  }
+
+  /* Toolbar */
+  .mat-toolbar {
+    background-color: #2a1a0b;
+    color: #e6d3b3;
+  }
+
+  /* Form fields */
+  .mat-form-field-appearance-outline .mat-form-field-outline {
+    color: #e6d3b3;
+    border-color: #555;
+  }
+  .mat-form-field .mat-input-element {
+    color: #e6d3b3;
+  }
+  .mat-form-field .mat-placeholder {
+    color: #d9c4a6;
+  }
+
+  /* Select */
+  .mat-select-panel {
+    background-color: #1f1f1f;
+    color: #e6d3b3;
+  }
+  .mat-select-value-text {
+    color: #e6d3b3;
+  }
+
+  /* Buttons */
+  .mat-flat-button,
+  .mat-raised-button {
+    background-color: #341705;
+    color: #e6d3b3;
+  }
+  .mat-flat-button:hover,
+  .mat-raised-button:hover {
+    background-color: #5a2a0c;
+  }
 }

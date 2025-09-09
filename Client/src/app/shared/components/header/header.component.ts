@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -22,13 +27,43 @@ import { AsyncPipe, CommonModule } from '@angular/common';
     RouterLinkActive,
     MatProgressBarModule,
     CommonModule,
-    AsyncPipe
+    AsyncPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
-export class HeaderComponent {
-  private loadingService = inject(LoadingService)
-  loading$ = this.loadingService.loading$
+export class HeaderComponent implements OnInit {
+  private loadingService = inject(LoadingService);
+  loading$ = this.loadingService.loading$;
+
+  ngOnInit(): void {
+    this.applyDarkModePreference();
+  }
+
+  toggleDarkMode() {
+    const htmlEl = document.documentElement;
+    htmlEl.classList.toggle('dark');
+
+    if (htmlEl.classList.contains('dark')) {
+      localStorage.setItem('theme', 'dark');
+    } else {
+      localStorage.setItem('theme', 'light');
+    }
+  }
+
+  applyDarkModePreference() {
+    const htmlEl = document.documentElement;
+    const storedTheme = localStorage.getItem('theme');
+
+    if (
+      storedTheme === 'dark' ||
+      (!storedTheme &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      htmlEl.classList.add('dark');
+    } else {
+      htmlEl.classList.remove('dark');
+    }
+  }
 }
