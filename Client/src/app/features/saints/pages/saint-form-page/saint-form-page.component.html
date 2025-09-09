@@ -2,9 +2,10 @@
   class="flex flex-col gap-6 p-6 shadow rounded-lg bg-white max-w-4xl mx-auto"
 >
   <form [formGroup]="form" class="flex flex-col gap-6" (ngSubmit)="onSubmit()">
-    <div class="flex gap-6">
+    <!-- Image + Basic Info -->
+    <div class="flex flex-col sm:flex-row gap-6">
       <!-- Image Upload -->
-      <div class="w-1/2">
+      <div class="w-full sm:w-1/2">
         <label for="imageInput" class="block mb-2 font-semibold">
           Icon image <span class="text-red-600">*</span>
         </label>
@@ -29,7 +30,7 @@
             </ng-container>
             <ng-template #showIcon>
               <mat-icon
-                class="!text-[330px] w-[330px] h-[330px] leading-none text-primary-app"
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app"
                 fontIcon="add_a_photo"
               ></mat-icon>
             </ng-template>
@@ -46,11 +47,12 @@
       </div>
 
       <!-- Basic Info -->
-      <div class="flex-1 flex flex-col gap-4">
+      <div class="flex-1 flex flex-col gap-4 w-full">
+        <!-- Name -->
         <label class="block">
-          <span class="block pb-2 font-semibold">
-            Name <span class="text-red-600">*</span>
-          </span>
+          <span class="block pb-2 font-semibold"
+            >Name <span class="text-red-600">*</span></span
+          >
           <input
             type="text"
             placeholder="Saint's name"
@@ -68,6 +70,7 @@
           </div>
         </label>
 
+        <!-- Country -->
         <label class="block relative">
           <span class="block pb-2 font-semibold"
             >Country <span class="text-red-600">*</span></span
@@ -82,10 +85,11 @@
             *ngIf="form.get('country')?.value | countryCode as flagCode"
             [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
             [alt]="form.get('country')?.value + ' flag'"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 mt-4 h-5 object-contain pointer-events-none"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 object-contain pointer-events-none"
           />
         </label>
 
+        <!-- Century -->
         <label class="block">
           <span class="block pb-2 font-semibold"
             >Century <span class="text-red-600">*</span></span
@@ -100,6 +104,7 @@
           </mat-select>
         </label>
 
+        <!-- Description -->
         <label class="block">
           <span class="block pb-2 font-semibold"
             >Description <span class="text-red-600">*</span></span
@@ -151,81 +156,82 @@
     </div>
 
     <!-- Markdown Editor -->
-    <div class="flex flex-col gap-2">
-      <label class="block font-semibold mb-2"
-        >Markdown
-        <ng-container *ngIf="form.get('description')">
-          <span class="text-red-600">*</span>
-        </ng-container>
-      </label>
+    <!-- Markdown Editor -->
+    <div>
+      <label class="block flex flex-col">
+        <span class="mb-5 font-semibold">
+          Markdown
+          <span *ngIf="form.get('markdownContent')" class="text-red-600"
+            >*</span
+          >
+        </span>
 
-      <!-- Editor + Toolbar Wrapper -->
-      <div class="flex border rounded overflow-hidden h-[400px] flex-col">
-        <!-- Toolbar -->
-        <div class="flex gap-1 p-2 bg-gray-100 border-b">
-          <button
-            type="button"
-            class="px-2 py-1 border rounded hover:bg-gray-200 font-bold"
-            (click)="insertMarkdown('**', '**')"
-          >
-            Bold
-          </button>
-          <button
-            type="button"
-            class="px-2 py-1 border rounded hover:bg-gray-200 italic"
-            (click)="insertMarkdown('*', '*')"
-          >
-            Italic
-          </button>
-          <button
-            type="button"
-            class="px-2 py-1 border rounded hover:bg-gray-200 text-xl"
-            (click)="insertMarkdown('## ', '')"
-          >
-            H2
-          </button>
-          <button
-            type="button"
-            class="px-2 py-1 border rounded hover:bg-gray-200"
-            (click)="insertMarkdown('- ', '')"
-          >
-            List
-          </button>
-          <button
-            type="button"
-            class="px-2 py-1 border rounded hover:bg-gray-200"
-            (click)="insertMarkdown('1. ', '')"
-          >
-            Ordered List
-          </button>
-          <button
-            type="button"
-            class="px-2 py-1 border rounded hover:bg-gray-200"
-            (click)="insertMarkdown('---\n', '')"
-          >
-            Divider
-          </button>
-        </div>
+        <div class="flex flex-col border rounded overflow-hidden h-[300px]">
+          <!-- Toolbar -->
+          <div class="flex gap-1 p-2 bg-gray-100 border-b flex-wrap">
+            <button
+              type="button"
+              class="px-3 py-1 border rounded hover:bg-gray-200 font-bold"
+              (click)="insertMarkdown('**', '**')"
+            >
+              Bold
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 border rounded hover:bg-gray-200 italic"
+              (click)="insertMarkdown('*', '*')"
+            >
+              Italic
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 border rounded hover:bg-gray-200"
+              (click)="insertMarkdown('## ', '')"
+            >
+              H2
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 border rounded hover:bg-gray-200"
+              (click)="insertMarkdown('- ', '')"
+            >
+              List
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 border rounded hover:bg-gray-200"
+              (click)="insertMarkdown('1. ', '')"
+            >
+              Ordered
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 border rounded hover:bg-gray-200"
+              (click)="insertMarkdown('---\n', '')"
+            >
+              Divider
+            </button>
+          </div>
 
-        <!-- Editor + Preview -->
-        <div class="flex flex-1 overflow-hidden">
-          <textarea
-            formControlName="markdownContent"
-            class="w-1/2 p-2 resize-none outline-none"
-            placeholder="Type your markdown here..."
-          ></textarea>
+          <!-- Editor + Preview -->
+          <div class="flex flex-1 overflow-hidden flex-col sm:flex-row">
+            <textarea
+              formControlName="markdownContent"
+              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300"
+              placeholder="Type your markdown here..."
+            ></textarea>
 
-          <!-- Divisória vertical -->
-          <div class="border-l border-gray-300"></div>
-
-          <div class="w-1/2 p-2 bg-white overflow-auto markdown-body">
-            <markdown
-              [data]="form.get('markdownContent')?.value"
-              ngPreserveWhitespaces
-            ></markdown>
+            <div
+              class="w-full sm:w-1/2 p-2 bg-white overflow-auto markdown-body"
+            >
+              <markdown
+                [data]="form.get('markdownContent')?.value"
+                ngPreserveWhitespaces
+              ></markdown>
+            </div>
           </div>
         </div>
-      </div>
+      </label>
     </div>
 
     <!-- Optional Fields -->
@@ -286,11 +292,11 @@
     </div>
 
     <!-- Buttons -->
-    <div class="flex justify-end pt-5">
+    <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-5 pt-5">
       <button
         mat-flat-button
         [routerLink]="['/admin/saints']"
-        class="bg-red-600 hover:bg-red-700 text-white font-semibold mr-5 py-2 px-4 rounded inline-flex items-center gap-2"
+        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2 w-full sm:w-auto"
         type="button"
       >
         <mat-icon class="text-white">undo</mat-icon> Cancel
@@ -299,7 +305,7 @@
         mat-flat-button
         type="submit"
         [disabled]="form.invalid || imageLoading"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2 w-full sm:w-auto"
       >
         <mat-icon class="text-white">{{
           isEditMode ? "edit" : "add"

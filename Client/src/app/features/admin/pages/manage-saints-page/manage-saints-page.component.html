@@ -1,30 +1,49 @@
-<div>
-  <div class="flex items-center justify-between mb-6">
-    <div class="flex items-center gap-6">
-      <h1 class="text-3xl font-bold text-primary-app">Saints</h1>
+<div class="p-4">
+  <!-- Header -->
+  <div
+    class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between"
+  >
+    <!-- Title + Buttons -->
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
+      <h1 class="text-2xl font-bold text-primary-app md:text-3xl">Saints</h1>
 
-      <button (click)="manageTags()" mat-stroked-button color="primary">
-        <mat-icon>label</mat-icon>
-        <span class="ml-1">Manage Tags</span>
-      </button>
+      <div class="flex flex-wrap gap-3">
+        <button
+          (click)="manageTags()"
+          mat-stroked-button
+          color="primary"
+          class="flex items-center"
+        >
+          <mat-icon>label</mat-icon>
+          <span class="ml-1">Manage Tags</span>
+        </button>
 
-      <button
-        (click)="manageReligiousOrders()"
-        mat-stroked-button
-        color="primary"
-      >
-        <mat-icon>church</mat-icon>
-        <span class="ml-1">Manage Religious Orders</span>
-      </button>
+        <button
+          (click)="manageReligiousOrders()"
+          mat-stroked-button
+          color="primary"
+          class="flex items-center"
+        >
+          <mat-icon>church</mat-icon>
+          <span class="ml-1">Manage Religious Orders</span>
+        </button>
+      </div>
     </div>
 
-    <a mat-fab extended [routerLink]="['/admin', 'saints', 'create']">
+    <!-- Action Button -->
+    <a
+      mat-fab
+      extended
+      [routerLink]="['/admin', 'saints', 'create']"
+      class="self-start md:self-auto"
+    >
       <mat-icon>add</mat-icon>
-      Create new Saint
+      <span>Create new Saint</span>
     </a>
   </div>
 
-  <div class="w-full">
+  <!-- Table -->
+  <div class="w-full overflow-x-auto">
     <app-admin-content-table
       [data]="saints"
       [excludedColumns]="[

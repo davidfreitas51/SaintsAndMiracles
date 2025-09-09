@@ -1,23 +1,30 @@
-<div>
-  <div class="flex items-center justify-between mb-6">
-    <div class="flex items-center gap-6">
-      <h1 class="text-3xl font-bold text-primary-app">Accounts</h1>
+<div class="p-4">
+  <!-- Header -->
+  <div
+    class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between"
+  >
+    <!-- Title -->
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
+      <h1 class="text-2xl font-bold text-primary-app md:text-3xl">Accounts</h1>
     </div>
 
-    <a mat-fab extended (click)="openRegisterAccountDialog()">
+    <!-- Action Button -->
+    <a
+      mat-fab
+      extended
+      (click)="openRegisterAccountDialog()"
+      class="self-start md:self-auto"
+    >
       <mat-icon>add</mat-icon>
-      Generate new invite token
+      <span>Generate new invite token</span>
     </a>
   </div>
 
-  <div class="w-full">
+  <!-- Table -->
+  <div class="w-full overflow-x-auto">
     <app-admin-content-table
       [data]="accounts"
-      [excludedColumns]="[
-        'passwordHash',
-        'securityStamp',
-        'concurrencyStamp'
-      ]"
+      [excludedColumns]="['passwordHash', 'securityStamp', 'concurrencyStamp']"
       [deleteFn]="deleteUser"
       [loadData]="loadUsers"
     ></app-admin-content-table>

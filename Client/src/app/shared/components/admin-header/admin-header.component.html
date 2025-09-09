@@ -1,7 +1,9 @@
 <header
   class="relative border-b shadow-md px-4 py-3 w-full fixed top-0 z-50 bg-primary-app"
 >
-  <div class="flex items-center justify-between max-w-screen-2xl mx-auto w-full">
+  <div
+    class="relative max-w-screen-2xl mx-auto w-full flex items-center justify-between"
+  >
     <!-- Left: Logo -->
     <a
       routerLink="/"
@@ -11,7 +13,7 @@
       <img
         src="assets/SaintsNMiracles-logo.webp"
         alt="Saints & Miracles Logo"
-        class="h-16 w-auto"
+        class="h-12 w-auto md:h-16"
       />
       <span class="sr-only">Home</span>
     </a>
@@ -19,24 +21,19 @@
     <!-- Middle: Admin Dashboard -->
     <a
       routerLink="/admin/dashboard"
-      class="hidden md:flex items-center text-secondary-app uppercase font-semibold px-4 py-2 rounded hover:bg-hover hover:text-primary-app transition-colors"
+      class="hidden md:block absolute left-1/2 transform -translate-x-1/2 items-center text-secondary-app uppercase font-semibold px-4 py-2 rounded hover:bg-hover hover:text-primary-app transition-colors"
     >
       Admin Dashboard
     </a>
 
     <!-- Right: User Menu -->
-    <div
-      class="hidden md:flex gap-4 items-center relative"
-      (mouseleave)="closeMenu()"
-    >
-      <div class="relative">
+    <div class="hidden md:flex items-center gap-6">
+      <div class="relative" (mouseleave)="closeMenu()">
         <button
           (click)="toggleMenu()"
-          class="flex items-center gap-2 py-3 px-4 rounded transition-colors bg-primary-app text-secondary-app hover:bg-hover hover:text-primary-app min-h-[48px] overflow-visible"
+          class="flex items-center gap-2 py-2 px-4 rounded transition-colors bg-primary-app text-secondary-app hover:bg-hover hover:text-primary-app min-h-[44px]"
         >
-          <span class="uppercase text-md font-semibold">
-            {{ userName }}
-          </span>
+          <span class="uppercase text-sm font-semibold">{{ userName }}</span>
           <mat-icon>account_circle</mat-icon>
         </button>
 
@@ -49,9 +46,8 @@
             routerLink="/account/settings"
             class="block px-4 py-2 hover:bg-gray-200 transition-colors"
             (click)="closeMenu()"
+            >Account Settings</a
           >
-            Account Settings
-          </a>
           <button
             (click)="handleLogout()"
             class="w-full text-left px-4 py-2 hover:bg-gray-200 transition-colors"
@@ -61,6 +57,36 @@
         </div>
       </div>
     </div>
+
+    <!-- Mobile Hamburger -->
+    <button
+      class="md:hidden flex items-center px-3 py-2 text-secondary-app hover:text-primary-app"
+      (click)="mobileMenuOpen = !mobileMenuOpen"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div *ngIf="mobileMenuOpen" class="md:hidden bg-white shadow-lg mt-3 rounded">
+    <a
+      routerLink="/admin/dashboard"
+      class="block px-4 py-2 text-primary-app font-semibold uppercase hover:bg-gray-200"
+      (click)="mobileMenuOpen = false"
+      >Admin Dashboard</a
+    >
+    <a
+      routerLink="/account/settings"
+      class="block px-4 py-2 hover:bg-gray-200"
+      (click)="mobileMenuOpen = false"
+      >Account Settings</a
+    >
+    <button
+      (click)="handleLogout(); mobileMenuOpen = false"
+      class="w-full text-left px-4 py-2 hover:bg-gray-200"
+    >
+      Logout
+    </button>
   </div>
 
   <!-- Progress bar at bottom -->

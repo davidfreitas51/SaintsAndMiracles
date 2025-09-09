@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { SnackbarService } from '../../../core/services/snackbar.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,7 +35,8 @@ export class AdminHeaderComponent implements OnInit {
   private router = inject(Router);
 
   userName = '';
-  menuOpen = false;
+  menuOpen = false; // Dropdown user menu
+  mobileMenuOpen = false; // Mobile hamburger menu
 
   ngOnInit(): void {
     this.userSessionService.currentUser$.subscribe({
@@ -50,11 +56,21 @@ export class AdminHeaderComponent implements OnInit {
     this.menuOpen = false;
   }
 
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu() {
+    this.mobileMenuOpen = false;
+  }
+
   handleLogout() {
     this.authenticationService.logout().subscribe({
       next: () => {
         this.router.navigate(['/']);
         this.snackBarService.success("You've logged out");
+        this.closeMenu();
+        this.closeMobileMenu();
       },
       error: (err) => {
         this.snackBarService.error('Logout failed');
