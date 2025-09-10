@@ -4,10 +4,13 @@
   <main class="flex-grow relative">
     <div class="p-4 pt-10 w-full max-w-screen-sm mx-auto">
       <mat-card
-        class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white"
+        class="p-6 rounded-2xl shadow-md hover:shadow-lg transition"
       >
-        <h2 class="text-2xl font-semibold text-center mb-6">Create Account</h2>
-
+        <h2
+          class="text-2xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-200"
+        >
+          Create Account
+        </h2>
         <form
           #form="ngForm"
           class="flex flex-col gap-4"
@@ -15,7 +18,7 @@
         >
           <!-- First Name -->
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>First Name</mat-label>
+            <mat-label class="dark:text-gray-200">First Name</mat-label>
             <input
               matInput
               type="text"
@@ -31,7 +34,7 @@
 
           <!-- Last Name -->
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Last Name</mat-label>
+            <mat-label class="dark:text-gray-200">Last Name</mat-label>
             <input
               matInput
               type="text"
@@ -47,7 +50,7 @@
 
           <!-- Email -->
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Email</mat-label>
+            <mat-label class="dark:text-gray-200">Email</mat-label>
             <input
               matInput
               type="email"
@@ -69,7 +72,7 @@
 
           <!-- Password -->
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Password</mat-label>
+            <mat-label class="dark:text-gray-200">Password</mat-label>
             <input
               matInput
               [type]="hidePassword ? 'password' : 'text'"
@@ -85,14 +88,14 @@
               type="button"
               (click)="hidePassword = !hidePassword"
             >
-              <mat-icon>{{
+              <mat-icon class="dark:text-gray-200">{{
                 hidePassword ? "visibility_off" : "visibility"
               }}</mat-icon>
             </button>
             <mat-error *ngIf="passwordCtrl.invalid && passwordCtrl.touched">
-              <ng-container *ngIf="passwordCtrl.errors?.['required']"
-                >Password is required</ng-container
-              >
+              <ng-container *ngIf="passwordCtrl.errors?.['required']">
+                Password is required
+              </ng-container>
               <ng-container *ngIf="passwordCtrl.errors?.['pattern']">
                 Must be at least 8 characters, include uppercase, lowercase,
                 number, and symbol
@@ -102,7 +105,7 @@
 
           <!-- Confirm Password -->
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Confirm Password</mat-label>
+            <mat-label class="dark:text-gray-200">Confirm Password</mat-label>
             <input
               matInput
               [type]="hideConfirmPassword ? 'password' : 'text'"
@@ -117,7 +120,7 @@
               type="button"
               (click)="hideConfirmPassword = !hideConfirmPassword"
             >
-              <mat-icon>{{
+              <mat-icon class="dark:text-gray-200">{{
                 hideConfirmPassword ? "visibility_off" : "visibility"
               }}</mat-icon>
             </button>
@@ -136,7 +139,7 @@
 
           <!-- Invite Token -->
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Invite Token</mat-label>
+            <mat-label class="dark:text-gray-200">Invite Token</mat-label>
             <input
               matInput
               type="text"
@@ -156,17 +159,17 @@
             color="primary"
             type="submit"
             [disabled]="form.invalid"
-            class="rounded-xl shadow-md mt-4"
+            class="rounded-xl shadow-md mt-4 dark:bg-blue-700 dark:text-white"
           >
             Register
           </button>
         </form>
 
-        <div class="text-center text-sm text-gray-600 mt-6">
+        <div class="text-center text-sm text-gray-600 dark:text-gray-300 mt-6">
           Already have an account?
           <a
             routerLink="/account/login"
-            class="text-primary-app font-semibold hover:underline"
+            class="text-primary-app font-semibold hover:underline dark:text-blue-400"
           >
             Login here
           </a>
