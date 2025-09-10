@@ -4,38 +4,32 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { LoadingService } from '../../../core/services/loading.service';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
-import { RouterLink, RouterLinkActive, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { LoadingService } from '../../../core/services/loading.service';
-import { AsyncPipe, CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.scss'],
   imports: [
-    MatToolbarModule,
+    RouterLink,
+    RouterLinkActive,
     MatIconModule,
     MatMenuModule,
-    MatButtonModule,
-    MatDividerModule,
-    RouterLink,
-    RouterModule,
-    RouterLinkActive,
     MatProgressBarModule,
     CommonModule,
-    AsyncPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './header.component.html',
-  styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
   private loadingService = inject(LoadingService);
   loading$ = this.loadingService.loading$;
+
+  isDarkMode = false; // controla o estado atual do tema
 
   ngOnInit(): void {
     this.applyDarkModePreference();
@@ -44,26 +38,23 @@ export class HeaderComponent implements OnInit {
   toggleDarkMode() {
     const htmlEl = document.documentElement;
     htmlEl.classList.toggle('dark');
-
-    if (htmlEl.classList.contains('dark')) {
-      localStorage.setItem('theme', 'dark');
-    } else {
-      localStorage.setItem('theme', 'light');
-    }
+    this.isDarkMode = htmlEl.classList.contains('dark');
+    localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
   }
 
   applyDarkModePreference() {
     const htmlEl = document.documentElement;
     const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia(
+      '(prefers-color-scheme: dark)'
+    ).matches;
 
-    if (
-      storedTheme === 'dark' ||
-      (!storedTheme &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
+    if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
       htmlEl.classList.add('dark');
+      this.isDarkMode = true;
     } else {
       htmlEl.classList.remove('dark');
+      this.isDarkMode = false;
     }
   }
 }

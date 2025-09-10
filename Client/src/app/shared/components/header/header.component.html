@@ -1,12 +1,13 @@
 <header
   class="fixed top-0 left-0 right-0 z-50 bg-primary-app border-b shadow-md px-4 py-3 w-full"
 >
-  <div class="relative flex items-center max-w-screen-2xl mx-auto">
-    <a routerLink="/" class="my-auto flex items-center gap-2 h-full">
+  <div class="relative flex items-center max-w-screen-2xl mx-auto w-full">
+    <!-- Logo -->
+    <a routerLink="/" class="flex items-center gap-2 h-full my-auto">
       <img
         src="assets/SaintsNMiracles-logo.webp"
         alt="Logo"
-        class="h-16 w-auto my-auto"
+        class="h-16 w-auto"
       />
       <span class="sr-only">Home</span>
     </a>
@@ -57,10 +58,15 @@
     <!-- Dark Mode Toggle -->
     <button
       (click)="toggleDarkMode()"
-      class="ml-auto hidden md:flex items-center gap-1 px-3 py-1 rounded bg-accent text-white hover:bg-accent-dark transition"
+      class="ml-auto flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10 transition"
+      aria-label="Toggle dark mode"
     >
-      <mat-icon>dark_mode</mat-icon>
-      <span class="text-sm font-semibold">Dark Mode</span>
+      <mat-icon class="text-white">{{
+        isDarkMode ? "light_mode" : "dark_mode"
+      }}</mat-icon>
+      <span class="hidden md:inline text-sm font-semibold text-white">
+        Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
+      </span>
     </button>
 
     <!-- Mobile menu button -->
@@ -128,16 +134,9 @@
     >
       Admin
     </button>
-    <button
-      mat-menu-item
-      (click)="toggleDarkMode()"
-      class="text-lg font-semibold hover:darken flex items-center gap-1"
-    >
-      <mat-icon>dark_mode</mat-icon>
-      Toggle Dark Mode
-    </button>
   </mat-menu>
 
+  <!-- Progress bar -->
   <mat-progress-bar
     *ngIf="loading$ | async"
     mode="indeterminate"
