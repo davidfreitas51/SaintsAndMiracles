@@ -85,7 +85,9 @@
           </div>
 
           <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1">{{ miracle.title }}</h3>
+            <h3 class="text-sm font-semibold mb-1">
+              {{ miracle.title }}
+            </h3>
 
             <div
               class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
@@ -99,7 +101,9 @@
               <span>{{ miracle.country }} – {{ miracle.century | roman }}</span>
             </div>
 
-            <p class="text-xs text-gray-600 line-clamp-3 flex-1">
+            <p
+              class="text-xs text-gray-600 line-clamp-3 flex-1 dark:text-gray-300"
+            >
               {{ miracle.description }}
             </p>
 
@@ -116,7 +120,7 @@
     </div>
 
     <div class="py-6 flex justify-center">
-      <div class="rounded-xl overflow-hidden shadow-sm border">
+      <div class="rounded-xl overflow-hidden shadow-sm">
         <mat-paginator
           [length]="totalCount"
           [pageIndex]="miracleFilters.pageNumber - 1"

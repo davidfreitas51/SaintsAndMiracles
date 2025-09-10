@@ -295,6 +295,10 @@ blockquote {
   }
 
   /* ----------------- Paginator ----------------- */
+  .mat-mdc-paginator {
+    border: 1px solid #323233 !important; // muda para a cor que quiser
+  }
+
   .mat-mdc-paginator-icon {
     fill: #bebebe !important;
   }
