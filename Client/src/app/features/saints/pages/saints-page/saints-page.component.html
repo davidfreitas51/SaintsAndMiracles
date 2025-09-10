@@ -84,7 +84,7 @@
             <img
               [src]="imageBaseUrl + saint.image"
               [alt]="saint.name"
-              class="w-16 h-16 object-cover rounded-full border border-gray-300"
+              class="w-16 h-16 object-cover rounded-full"
             />
           </div>
 
@@ -128,7 +128,7 @@
 
     @if(saints && saints.length > 0){
     <div class="py-6 flex justify-center">
-      <div class="rounded-xl overflow-hidden shadow-sm border">
+      <div class="rounded-xl overflow-hidden shadow-sm">
         <mat-paginator
           [length]="totalCount"
           [pageIndex]="saintFilters.pageNumber - 1"

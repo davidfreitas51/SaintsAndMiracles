@@ -26,6 +26,18 @@
 
   --color-border-light: #e0e0e0;
   --color-border-dark: #333;
+
+  /* Paginator */
+  --color-paginator-bg: #ffffff;
+  --color-paginator-text: #1f2937; // gray-800
+  --color-paginator-border: #e5e7eb; // gray-200
+}
+
+.dark {
+  --color-paginator-bg: #1e2022;
+  --color-paginator-text: #f3f4f6; // gray-100
+  --color-paginator-border: #374151; // gray-700
+  --color-paginator-button: #111;
 }
 
 /* ----------------- Base ----------------- */
@@ -90,8 +102,16 @@ button[disabled] {
 .prose li {
   margin: 0.25rem 0;
 }
+
 blockquote {
-  @apply border-l-4 border-gray-300 pl-4 italic text-gray-700 my-4;
+  @apply border-l-4 pl-4 italic my-4;
+  border-color: var(--color-border-light);
+  color: var(--color-text-light);
+  
+  .dark & {
+    border-color: var(--color-border-dark);
+    color: var(--color-text-dark);
+  }
 }
 
 /* ----------------- Dialogs ----------------- */
@@ -115,6 +135,27 @@ blockquote {
   .mat-card-content {
     color: var(--color-primary);
   }
+}
+
+/* ----------------- MatPaginator ----------------- */
+.mat-mdc-paginator {
+  background-color: var(--color-paginator-bg) !important;
+  color: var(--color-paginator-text) !important;
+  border: 1px solid var(--color-paginator-border) !important;
+  border-radius: 0.75rem !important; // rounded-xl
+}
+
+.mat-mdc-paginator .mat-mdc-icon-button,
+.mat-mdc-paginator .mat-mdc-button,
+.mat-mdc-paginator .mat-mdc-select-value,
+.mat-mdc-paginator .mat-mdc-select-trigger,
+.mat-mdc-paginator .mat-mdc-paginator-range-label {
+  color: var(--color-paginator-text) !important;
+}
+
+.mat-mdc-select-panel {
+  background-color: var(--color-paginator-bg) !important;
+  color: var(--color-paginator-text) !important;
 }
 
 /* ----------------- Tailwind Helpers ----------------- */
@@ -213,9 +254,14 @@ blockquote {
     border: 1px solid var(--color-border-dark);
 
     .mat-card-subtitle {
-      color: #e0e0e0 !important; /* subtitle cinza claro */
+      color: #e0e0e0 !important;
     }
   }
+
+  .mdc-text-field-filled{
+    background-color: red !important;
+  }
+
 
   /* Toolbar */
   .mat-toolbar {
@@ -234,6 +280,14 @@ blockquote {
   .mat-select-panel {
     background-color: #1f1f1f;
     color: var(--color-text-dark);
+  }
+
+  .mat-mdc-paginator-icon {
+    fill: #bebebe !important;
+  }
+
+  .mat-mdc-icon-button[disabled] .mat-mdc-paginator-icon {
+    fill: #ff00001f !important;
   }
 
   /* Buttons */

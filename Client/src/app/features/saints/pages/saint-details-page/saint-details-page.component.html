@@ -1,4 +1,4 @@
-<div class="min-h-screen flex flex-col bg-white">
+<div class="min-h-screen flex flex-col">
   <app-header></app-header>
 
   <main class="flex-grow">
@@ -7,14 +7,14 @@
       class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-12 gap-10"
     >
       <!-- Main Content (left 10 cols) -->
-      <section class="md:col-span-10 space-y-10 pr-8 border-gray-200">
+      <section class="md:col-span-10 space-y-10 pr-8 border-gray-200 dark:text-gray-200">
         <div class="flex flex-col md:flex-row md:items-center gap-6">
           <img
             [src]="imageBaseUrl + saint.image"
             [alt]="saint.name"
             class="w-full md:w-60 rounded-xl shadow-md"
           />
-          <div class="space-y-2 text-gray-800">
+          <div class="space-y-2 text-gray-800 dark:text-gray-200">
             <!-- Nome -->
             <h1 class="text-4xl font-bold">
               {{
@@ -36,7 +36,7 @@
             </div>
 
             <!-- Contexto histórico e país -->
-            <div class="flex items-center text-sm text-gray-600 gap-4 mt-2">
+            <div class="flex items-center text-sm text-gray-600 gap-4 mt-2 dark:text-gray-200">
               <span><strong>Century:</strong> {{ saint.century | roman }}</span>
               <span class="flex items-center">
                 <strong class="mr-1">Country:</strong> {{ saint.country }}
@@ -49,19 +49,19 @@
               </span>
             </div>
             @if (saint.title) {
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-gray-600 dark:text-gray-200">
               Title: <strong>{{ saint.title }}</strong>
             </p>
             } @if (saint.feastDay) {
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-gray-600 dark:text-gray-200">
               Feast Day: <strong>{{ saint.feastDay | date : "MMMM d" }}</strong>
             </p>
             } @if (saint.patronOf) {
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-gray-600 dark:text-gray-200">
               Patron of: <strong>{{ saint.patronOf }}</strong>
             </p>
             } @if (saint.religiousOrder && saint.religiousOrder.name) {
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-gray-600 dark:text-gray-200">
               Religious Order: <strong>{{ saint.religiousOrder.name }}</strong>
             </p>
             }
