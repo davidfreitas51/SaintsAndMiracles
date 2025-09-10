@@ -90,7 +90,7 @@
             <li>
               <a
                 (click)="scrollTo(heading.id)"
-                class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-sm"
+                class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-sm dark:text-blue-400"
               >
                 {{ heading.text }}
               </a>
@@ -111,7 +111,7 @@
               <a
                 [routerLink]="['/saints']"
                 [queryParams]="{ country: saint.country }"
-                class="text-blue-600 hover:text-blue-800 hover:underline block"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
               >
                 Saints from {{ saint.country }}
               </a>
@@ -120,8 +120,8 @@
               <a
                 [routerLink]="['/saints']"
                 [queryParams]="{ century: saint.century }"
-                class="text-blue-600 hover:text-blue-800 hover:underline block"
-              >
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
+              > 
                 Saints from the {{ saint.century | roman }} century
               </a>
             </li>
@@ -129,7 +129,7 @@
               <a
                 [routerLink]="['/miracles']"
                 [queryParams]="{ country: saint.country }"
-                class="text-blue-600 hover:text-blue-800 hover:underline block"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
               >
                 Miracles from {{ saint.country }}
               </a>
@@ -138,7 +138,7 @@
               <a
                 [routerLink]="['/miracles']"
                 [queryParams]="{ century: saint.century }"
-                class="text-blue-600 hover:text-blue-800 hover:underline block"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
               >
                 Miracles from the {{ saint.century | roman }} century
               </a>
@@ -146,7 +146,7 @@
             <li>
               <a
                 routerLink="/about"
-                class="text-blue-600 hover:text-blue-800 hover:underline block"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
               >
                 About Us
               </a>

@@ -107,7 +107,7 @@ blockquote {
   @apply border-l-4 pl-4 italic my-4;
   border-color: var(--color-border-light);
   color: var(--color-text-light);
-  
+
   .dark & {
     border-color: var(--color-border-dark);
     color: var(--color-text-dark);
@@ -234,19 +234,20 @@ blockquote {
 
 /* ----------------- Dark Mode ----------------- */
 .dark {
+  /* ----------------- Base ----------------- */
   html,
   body {
     background-color: var(--color-bg-dark);
     color: var(--color-text-dark);
   }
 
-  .text-primary-app,
+  /* ----------------- Toolbar & Headers ----------------- */
   .mat-toolbar,
-  .mat-input-element {
+  .text-primary-app {
     color: var(--color-text-dark);
   }
 
-  /* Cards */
+  /* ----------------- Cards ----------------- */
   .mat-card,
   .mat-mdc-card {
     background-color: var(--color-card-dark) !important;
@@ -258,30 +259,42 @@ blockquote {
     }
   }
 
-  .mdc-text-field-filled{
-    background-color: red !important;
+  /* ----------------- Inputs & Text Fields ----------------- */
+  .mat-mdc-input-element {
+    color: #e0e0e0 !important; /* input text */
   }
 
-
-  /* Toolbar */
-  .mat-toolbar {
-    background-color: #2a1a0b;
+  .mat-mdc-floating-label {
+    color: #b6b6b6 !important; /* floating label */
   }
 
-  /* Form fields */
-  .mat-form-field-appearance-outline .mat-form-field-outline {
-    border-color: #555;
-  }
-  .mat-form-field .mat-placeholder {
-    color: #d9c4a6;
+  .mdc-text-field--filled {
+    --mdc-filled-text-field-container-color: #1e2022 !important;
   }
 
-  /* Select */
-  .mat-select-panel {
-    background-color: #1f1f1f;
-    color: var(--color-text-dark);
+  /* Suffix icons inside inputs */
+  .mat-mdc-form-field-icon-suffix .mat-mdc-icon-button {
+    color: #f3f4f6; /* light gray for dark mode */
   }
 
+  /* ----------------- Select & Options ----------------- */
+  .mat-mdc-option {
+    color: #ffffff; /* options text */
+  }
+
+  .mat-mdc-select-value {
+    --mat-option-selected-text-color: #f3f4f6;
+    color: var(
+      --mat-option-selected-text-color
+    ) !important; /* selected value */
+  }
+
+  /* ----------------- Dialogs ----------------- */
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-color: #1a1c1e; /* dialog background */
+  }
+
+  /* ----------------- Paginator ----------------- */
   .mat-mdc-paginator-icon {
     fill: #bebebe !important;
   }
@@ -290,7 +303,7 @@ blockquote {
     fill: #ff00001f !important;
   }
 
-  /* Buttons */
+  /* ----------------- Buttons ----------------- */
   .mat-flat-button,
   .mat-raised-button {
     background-color: var(--color-hover);
