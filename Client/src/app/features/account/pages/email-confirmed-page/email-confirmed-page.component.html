@@ -1,13 +1,27 @@
-<div class="confirmation-container flex flex-col min-h-screen">
+<div class="min-h-screen flex flex-col">
   <app-header></app-header>
 
-  <main class="flex-1 flex items-center justify-center px-4">
-    <div class="text-center max-w-md bg-white shadow-lg rounded-2xl p-8">
-      <ng-container *ngIf="success; else failed">
-        <h1 class="text-2xl font-bold text-green-600 mb-4">
-          {{ logout ? "Email Change Confirmed 🎉" : "Email Confirmed 🎉" }}
-        </h1>
-        <p class="text-gray-700 mb-6">
+  <main class="flex-grow relative">
+    <div class="p-4 pt-10 w-full max-w-screen-sm mx-auto">
+      <div
+        class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-[#1e2023]"
+      >
+        <h2
+          class="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-200"
+        >
+          {{
+            success
+              ? logout
+                ? "Email Change Confirmed ✅"
+                : "Email Confirmed ✅"
+              : "Confirmation Failed ❌"
+          }}
+        </h2>
+
+        <p
+          class="text-center text-gray-700 dark:text-gray-300 mb-6"
+          *ngIf="success"
+        >
           {{
             logout
               ? "Your email has been successfully changed. Please log in with your new email."
@@ -15,22 +29,22 @@
           }}
         </p>
 
-        <a
-          routerLink="/account/login"
-          class="inline-block bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+        <p
+          class="text-center text-gray-700 dark:text-gray-300 mb-6"
+          *ngIf="!success"
         >
-          Go to Login
-        </a>
-      </ng-container>
-
-      <ng-template #failed>
-        <h1 class="text-2xl font-bold text-red-600 mb-4">
-          Confirmation Failed ❌
-        </h1>
-        <p class="text-gray-700">
           The confirmation link is invalid or expired.
         </p>
-      </ng-template>
+
+        <div class="text-center">
+          <a
+            routerLink="/account/login"
+            class="inline-block bg-primary-app hover:bg-primary-app/90 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition"
+          >
+            Go to Login
+          </a>
+        </div>
+      </div>
     </div>
   </main>
 

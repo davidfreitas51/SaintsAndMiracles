@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AccountManagementService } from '../../../../core/services/account-management.service';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
@@ -26,6 +26,7 @@ import { PASSWORD_PATTERN } from '../../constants/constants';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
+    RouterLink
   ],
   templateUrl: './reset-password-page.component.html',
   styleUrls: ['./reset-password-page.component.scss'],
