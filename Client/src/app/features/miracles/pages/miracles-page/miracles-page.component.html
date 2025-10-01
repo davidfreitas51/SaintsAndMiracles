@@ -3,6 +3,7 @@
 
   <main class="flex-grow">
     <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
+      <!-- Filters & Search -->
       <div
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 flex-wrap"
       >
@@ -12,8 +13,8 @@
             mat-flat-button
             class="bg-gray-500 text-white"
           >
-            <mat-icon class="mr-1">tune</mat-icon>
-            Advanced Filters
+            <mat-icon>tune</mat-icon>
+            <span>Advanced Filters</span>
           </button>
 
           <button
@@ -26,12 +27,12 @@
           </button>
         </div>
 
-        <!-- Search -->
+        <!-- Search & Order -->
         <div
-          class="flex gap-2 items-center w-full sm:w-[220px] md:w-[260px] lg:w-[500px]"
+          class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto flex-1 md:flex-none"
         >
           <!-- Search Input -->
-          <mat-form-field appearance="fill" class="flex-1">
+          <mat-form-field appearance="fill" class="flex-1 min-w-0 rounded-full">
             <mat-label>Search</mat-label>
             <input
               matInput
@@ -51,7 +52,10 @@
           </mat-form-field>
 
           <!-- Order By -->
-          <mat-form-field appearance="fill" class="min-w-[149px] w-[180px]">
+          <mat-form-field
+            appearance="fill"
+            class="min-w-[149px] w-full sm:w-[180px] rounded-full"
+          >
             <mat-label>Order By</mat-label>
             <mat-select
               [(value)]="miracleFilters.orderBy"
@@ -67,6 +71,7 @@
       </div>
     </div>
 
+    <!-- Miracle Grid -->
     <div
       class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
     >
@@ -80,17 +85,17 @@
             <img
               [src]="imageBaseUrl + miracle.image"
               [alt]="miracle.title"
-              class="w-16 h-16 object-cover rounded-full border border-gray-300"
+              class="w-16 h-16 object-cover rounded-full"
             />
           </div>
 
           <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1">
+            <h3 class="text-sm font-semibold mb-1 line-clamp-1">
               {{ miracle.title }}
             </h3>
 
             <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
+              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1 line-clamp-1"
             >
               <img
                 *ngIf="miracle.country | countryCode as flagCode"
@@ -109,7 +114,7 @@
 
             <a
               [routerLink]="['/miracles', miracle.slug]"
-              class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
+              class="text-primary-app font-semibold pt-2 text-xs hover:underline mt-auto inline-block self-center"
             >
               Read More
             </a>
@@ -119,6 +124,7 @@
       }
     </div>
 
+    <!-- Paginator -->
     <div class="py-6 flex justify-center">
       <div class="rounded-xl overflow-hidden shadow-sm">
         <mat-paginator

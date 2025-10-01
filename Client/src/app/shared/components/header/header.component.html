@@ -3,7 +3,10 @@
 >
   <div class="relative flex items-center max-w-screen-2xl mx-auto w-full">
     <!-- Logo -->
-    <a routerLink="/" class="flex items-center gap-2 h-full my-auto">
+    <a
+      routerLink="/"
+      class="flex items-center gap-2 h-full my-auto text-secondary-app dark:text-gray-200"
+    >
       <img
         src="assets/SaintsNMiracles-logo.webp"
         alt="Logo"
@@ -14,7 +17,7 @@
 
     <!-- Desktop navigation -->
     <nav
-      class="hidden md:flex gap-6 uppercase text-lg font-semibold text-secondary-app absolute left-1/2 transform -translate-x-1/2"
+      class="hidden md:flex gap-6 uppercase text-lg font-semibold absolute left-1/2 transform -translate-x-1/2 text-secondary-app dark:text-gray-200"
     >
       <a
         routerLink="/"
@@ -60,25 +63,23 @@
       <!-- Dark Mode Toggle -->
       <button
         (click)="toggleDarkMode()"
-        class="flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10 transition"
+        class="flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10  transition text-secondary-app dark:text-gray-200"
         aria-label="Toggle dark mode"
       >
-        <mat-icon class="text-secondary-app">{{
-          isDarkMode ? "light_mode" : "dark_mode"
-        }}</mat-icon>
-        <span class="hidden md:inline text-sm font-semibold text-secondary-app">
-          Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
-        </span>
+        <mat-icon>{{ isDarkMode ? "light_mode" : "dark_mode" }}</mat-icon>
+        <span class="hidden md:inline text-sm font-semibold"
+          >Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}</span
+        >
       </button>
 
       <!-- Mobile menu button -->
       <button
         mat-icon-button
-        class="md:hidden pt-4 p-2 rounded hover:bg-white/10 transition"
+        class="md:hidden pt-4 p-2 rounded hover:bg-white/10 dark:hover:bg-gray-800 transition text-secondary-app dark:text-gray-200"
         [matMenuTriggerFor]="mobileMenu"
         aria-label="Open menu"
       >
-        <mat-icon class="text-secondary-app">menu</mat-icon>
+        <mat-icon>menu</mat-icon>
       </button>
     </div>
   </div>
@@ -86,14 +87,14 @@
   <!-- Mobile menu -->
   <mat-menu
     #mobileMenu="matMenu"
-    class="bg-primary-app w-48 text-secondary-app"
+    class="bg-primary-app dark:bg-gray-800 w-48 text-secondary-app "
   >
     <button
       mat-menu-item
       [routerLink]="'/'"
       [routerLinkActiveOptions]="{ exact: true }"
       routerLinkActive="active"
-      class="text-lg font-semibold hover:darken"
+      class="text-lg font-semibold hover:darken dark:text-white"
     >
       Home
     </button>
@@ -101,7 +102,7 @@
       mat-menu-item
       [routerLink]="'/saints'"
       routerLinkActive="active"
-      class="text-lg font-semibold hover:darken"
+      class="text-lg font-semibold hover:darken dark:text-white"
     >
       Saints
     </button>
@@ -109,7 +110,7 @@
       mat-menu-item
       [routerLink]="'/miracles'"
       routerLinkActive="active"
-      class="text-lg font-semibold hover:darken"
+      class="text-lg font-semibold hover:darken dark:text-white"
     >
       Miracles
     </button>
@@ -117,7 +118,7 @@
       mat-menu-item
       [routerLink]="'/prayers'"
       routerLinkActive="active"
-      class="text-lg font-semibold hover:darken"
+      class="text-lg font-semibold hover:darken dark:text-white"
     >
       Prayers
     </button>
@@ -125,7 +126,7 @@
       mat-menu-item
       [routerLink]="'/about'"
       routerLinkActive="active"
-      class="text-lg font-semibold hover:darken"
+      class="text-lg font-semibold hover:darken dark:text-white"
     >
       About Us
     </button>
@@ -133,7 +134,7 @@
       mat-menu-item
       [routerLink]="'/admin'"
       routerLinkActive="active"
-      class="text-lg font-semibold hover:darken"
+      class="text-lg font-semibold hover:darken dark:text-white"
     >
       Admin
     </button>
