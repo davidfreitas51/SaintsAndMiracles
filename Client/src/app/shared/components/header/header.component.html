@@ -55,29 +55,32 @@
       >
     </nav>
 
-    <!-- Dark Mode Toggle -->
-    <button
-      (click)="toggleDarkMode()"
-      class="ml-auto flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10 transition"
-      aria-label="Toggle dark mode"
-    >
-      <mat-icon class="text-white">{{
-        isDarkMode ? "light_mode" : "dark_mode"
-      }}</mat-icon>
-      <span class="hidden md:inline text-sm font-semibold text-white">
-        Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
-      </span>
-    </button>
+    <!-- Right side: Dark Mode + Mobile Menu -->
+    <div class="ml-auto flex items-center gap-2">
+      <!-- Dark Mode Toggle -->
+      <button
+        (click)="toggleDarkMode()"
+        class="flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10 transition"
+        aria-label="Toggle dark mode"
+      >
+        <mat-icon class="text-secondary-app">{{
+          isDarkMode ? "light_mode" : "dark_mode"
+        }}</mat-icon>
+        <span class="hidden md:inline text-sm font-semibold text-secondary-app">
+          Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
+        </span>
+      </button>
 
-    <!-- Mobile menu button -->
-    <button
-      mat-icon-button
-      class="ml-2 md:hidden hover:darken transition"
-      [matMenuTriggerFor]="mobileMenu"
-      aria-label="Open menu"
-    >
-      <mat-icon class="text-secondary-app">menu</mat-icon>
-    </button>
+      <!-- Mobile menu button -->
+      <button
+        mat-icon-button
+        class="md:hidden pt-4 p-2 rounded hover:bg-white/10 transition"
+        [matMenuTriggerFor]="mobileMenu"
+        aria-label="Open menu"
+      >
+        <mat-icon class="text-secondary-app">menu</mat-icon>
+      </button>
+    </div>
   </div>
 
   <!-- Mobile menu -->

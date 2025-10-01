@@ -26,9 +26,24 @@
       Admin Dashboard
     </a>
 
-    <!-- Right: User Menu -->
-    <div class="hidden md:flex items-center gap-6">
-      <div class="relative" (mouseleave)="closeMenu()">
+    <!-- Right: Dark Mode + User Menu -->
+    <div class="flex items-center gap-4">
+      <!-- Dark Mode Toggle (ALWAYS VISIBLE) -->
+      <button
+        (click)="toggleDarkMode()"
+        class="flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10 transition"
+        aria-label="Toggle dark mode"
+      >
+        <mat-icon class="text-secondary-app">
+          {{ isDarkMode ? "light_mode" : "dark_mode" }}
+        </mat-icon>
+        <span class="hidden md:inline text-sm font-semibold text-secondary-app">
+          Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
+        </span>
+      </button>
+
+      <!-- User Dropdown (Desktop only) -->
+      <div class="hidden md:block relative" (mouseleave)="closeMenu()">
         <button
           (click)="toggleMenu()"
           class="flex items-center gap-2 py-2 px-4 rounded transition-colors bg-primary-app text-secondary-app hover:bg-hover hover:text-primary-app min-h-[44px]"
@@ -56,19 +71,22 @@
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- Mobile Hamburger -->
-    <button
-      class="md:hidden flex items-center px-3 py-2 text-secondary-app hover:text-primary-app"
-      (click)="mobileMenuOpen = !mobileMenuOpen"
-    >
-      <mat-icon>menu</mat-icon>
-    </button>
+      <!-- Mobile Hamburger -->
+      <button
+        class="md:hidden flex items-center px-3 py-2 text-secondary-app hover:text-primary-app"
+        (click)="mobileMenuOpen = !mobileMenuOpen"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+    </div>
   </div>
 
   <!-- Mobile Menu -->
-  <div *ngIf="mobileMenuOpen" class="md:hidden bg-white shadow-lg mt-3 rounded">
+  <div
+    *ngIf="mobileMenuOpen"
+    class="absolute top-full right-0 w-full md:hidden bg-white shadow-lg rounded"
+  >
     <a
       routerLink="/admin/dashboard"
       class="block px-4 py-2 text-primary-app font-semibold uppercase hover:bg-gray-200"

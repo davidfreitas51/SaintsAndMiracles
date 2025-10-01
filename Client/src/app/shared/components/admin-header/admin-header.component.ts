@@ -31,12 +31,14 @@ export class AdminHeaderComponent implements OnInit {
   private userSessionService = inject(UserSessionService);
   private snackBarService = inject(SnackbarService);
   private loadingService = inject(LoadingService);
-  loading$ = this.loadingService.loading$;
   private router = inject(Router);
 
+  loading$ = this.loadingService.loading$;
+
   userName = '';
-  menuOpen = false; // Dropdown user menu
-  mobileMenuOpen = false; // Mobile hamburger menu
+  menuOpen = false;
+  mobileMenuOpen = false;
+  isDarkMode = false;
 
   ngOnInit(): void {
     this.userSessionService.currentUser$.subscribe({
@@ -46,6 +48,8 @@ export class AdminHeaderComponent implements OnInit {
         }
       },
     });
+
+    this.applyDarkModePreference();
   }
 
   toggleMenu() {
@@ -64,6 +68,29 @@ export class AdminHeaderComponent implements OnInit {
     this.mobileMenuOpen = false;
   }
 
+  toggleDarkMode() {
+    const htmlEl = document.documentElement;
+    htmlEl.classList.toggle('dark');
+    this.isDarkMode = htmlEl.classList.contains('dark');
+    localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
+  }
+
+  applyDarkModePreference() {
+    const htmlEl = document.documentElement;
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia(
+      '(prefers-color-scheme: dark)'
+    ).matches;
+
+    if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+      htmlEl.classList.add('dark');
+      this.isDarkMode = true;
+    } else {
+      htmlEl.classList.remove('dark');
+      this.isDarkMode = false;
+    }
+  }
+
   handleLogout() {
     this.authenticationService.logout().subscribe({
       next: () => {
@@ -72,7 +99,7 @@ export class AdminHeaderComponent implements OnInit {
         this.closeMenu();
         this.closeMobileMenu();
       },
-      error: (err) => {
+      error: () => {
         this.snackBarService.error('Logout failed');
       },
     });
