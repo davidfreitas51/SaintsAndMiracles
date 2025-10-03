@@ -5,16 +5,20 @@
   >
     <!-- Title + Buttons -->
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
-      <h1 class="text-2xl font-bold text-primary-app md:text-3xl">Miracles</h1>
+      <h1
+        class="text-2xl font-bold text-primary-app md:text-3xl dark:text-primary-app"
+      >
+        Miracles
+      </h1>
 
       <div class="flex flex-wrap gap-3">
         <button
           (click)="manageTags()"
           mat-stroked-button
           color="primary"
-          class="flex items-center"
+          class="flex items-center dark:text-gray-200 dark:bg-blue-900 border-0"
         >
-          <mat-icon>label</mat-icon>
+          <mat-icon class="dark:text-gray-300">label</mat-icon>
           <span class="ml-1">Manage Tags</span>
         </button>
       </div>
@@ -25,7 +29,7 @@
       mat-fab
       extended
       [routerLink]="['/admin', 'miracles', 'create']"
-      class="self-start md:self-auto"
+      class="self-start md:self-auto bg-primary-app text-white hover:bg-primary-app/90 dark:text-white bg-blue-700"
     >
       <mat-icon>add</mat-icon>
       <span>Create new Miracle</span>
@@ -33,7 +37,9 @@
   </div>
 
   <!-- Table -->
-  <div class="w-full overflow-x-auto">
+  <div
+    class="w-full overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow"
+  >
     <app-admin-content-table
       [data]="miracles"
       [excludedColumns]="[
@@ -45,6 +51,7 @@
       ]"
       [deleteFn]="deleteMiracle"
       [loadData]="loadMiracles"
+      class="dark:text-gray-100"
     ></app-admin-content-table>
   </div>
 </div>

@@ -1,34 +1,38 @@
-<mat-card class="shadow-lg p-6">
+<mat-card
+  class="shadow-lg p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+>
+  <!-- Filter Input -->
   <div class="mb-4">
     <input
       #filterInput
       type="text"
       placeholder="Filter..."
       (input)="applyFilter(filterInput.value)"
-      class="w-full p-2 border rounded"
+      class="w-full p-2 border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
     />
   </div>
 
-  <div class="overflow-auto rounded-t-2xl">
+  <!-- Table -->
+  <div class="overflow-x-auto">
     <table
       mat-table
       [dataSource]="dataSource"
       matSort
-      class="min-w-full border border-gray-200 rounded-t-2xl overflow-hidden"
+      class="min-w-[600px] w-full mat-elevation-z8 border border-gray-200 dark:border-gray-700"
     >
       <ng-container *ngFor="let col of displayedColumns" [matColumnDef]="col">
         <th
           mat-header-cell
           *matHeaderCellDef
           [mat-sort-header]="col !== 'actions' ? col : ''"
-          class="text-center text-sm font-medium px-4 py-3 border-b"
+          class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 px-4 py-3 text-left"
         >
           {{ humanizeColumn(col) }}
         </th>
         <td
           mat-cell
           *matCellDef="let element"
-          class="text-sm text-gray-700 px-4 py-3 border-b"
+          class="dark:bg-gray-800 dark:text-gray-100 px-4 py-3"
         >
           <ng-container *ngIf="col !== 'actions'; else actionsTpl">
             {{
@@ -43,7 +47,7 @@
             <div class="flex gap-2 justify-center">
               <button
                 mat-icon-button
-                class="text-blue-500 cursor-pointer"
+                class="text-blue-500 dark:text-blue-400 cursor-pointer"
                 (click)="editObject(element)"
                 aria-label="Edit"
               >
@@ -51,7 +55,7 @@
               </button>
               <button
                 mat-icon-button
-                class="text-red-500 cursor-pointer"
+                class="text-red-500 dark:text-red-400 cursor-pointer"
                 (click)="deleteObject(element)"
                 aria-label="Delete"
               >
@@ -63,18 +67,18 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-      <tr class="text-center" *matNoDataRow>
-        <td [attr.colspan]="displayedColumns.length">No data found</td>
-      </tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        class="hover:bg-gray-100 dark:hover:bg-gray-700"
+      ></tr>
     </table>
   </div>
 
   <mat-paginator
     [pageSizeOptions]="[10, 20, 50, 100]"
     showFirstLastButtons
-    class="rounded-b-2xl rounded-t-none"
+    class="rounded-t-none dark:bg-gray-900 dark:text-gray-200"
   >
   </mat-paginator>
 </mat-card>

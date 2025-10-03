@@ -5,14 +5,19 @@
 
   <!-- Summary cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-    <mat-card class="shadow-lg p-4" *ngFor="let item of summary">
-      <p class="text-gray-500">{{ item.label }}</p>
+    <mat-card
+      class="shadow-lg p-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+      *ngFor="let item of summary"
+    >
+      <p class="text-gray-500 dark:text-gray-400">{{ item.label }}</p>
       <h2 class="text-2xl font-semibold">{{ item.value }}</h2>
     </mat-card>
   </div>
 
   <!-- Placeholder for chart -->
-  <mat-card class="shadow-lg p-6 mb-8">
+  <mat-card
+    class="shadow-lg p-6 mb-8 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+  >
     <h2 class="text-xl font-semibold mb-4">Action Distribution</h2>
     <div class="w-full h-[400px] flex items-center justify-center">
       <canvas
@@ -25,44 +30,90 @@
     </div>
 
     <!-- Disclaimer -->
-    <p class="text-sm text-gray-500 mt-4 text-center">
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
       From the last {{ dataSource.data.length }} actions
     </p>
   </mat-card>
 
   <!-- Recent Activity Table -->
-  <mat-card class="shadow-lg p-6">
+  <mat-card
+    class="shadow-lg p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+  >
     <h2 class="text-xl font-semibold mb-4">Recent Activity</h2>
     <div class="overflow-x-auto">
       <table
         mat-table
         [dataSource]="dataSource"
-        class="min-w-[600px] w-full mat-elevation-z8"
+        class="min-w-[600px] w-full mat-elevation-z8 border border-gray-200 dark:border-gray-700"
       >
         <!-- Date Column -->
         <ng-container matColumnDef="createdAt">
-          <th mat-header-cell *matHeaderCellDef>Date</th>
-          <td mat-cell *matCellDef="let row">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+          >
+            Date
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let row"
+            class="dark:bg-gray-800 dark:text-gray-100"
+          >
             {{ row.createdAt | date : "MMM d, y, hh:mm:ss a" }}
           </td>
         </ng-container>
 
         <!-- Entity Column -->
         <ng-container matColumnDef="entityName">
-          <th mat-header-cell *matHeaderCellDef>Entity</th>
-          <td mat-cell *matCellDef="let row">{{ row.entityName }}</td>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+          >
+            Entity
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let row"
+            class="dark:bg-gray-800 dark:text-gray-100"
+          >
+            {{ row.entityName }}
+          </td>
         </ng-container>
 
         <!-- Display Name Column -->
         <ng-container matColumnDef="displayName">
-          <th mat-header-cell *matHeaderCellDef>Name</th>
-          <td mat-cell *matCellDef="let row">{{ row.displayName }}</td>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+          >
+            Name
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let row"
+            class="dark:bg-gray-800 dark:text-gray-100"
+          >
+            {{ row.displayName }}
+          </td>
         </ng-container>
 
-        <!-- Action Column with colors -->
+        <!-- Action Column -->
         <ng-container matColumnDef="action">
-          <th mat-header-cell *matHeaderCellDef>Action</th>
-          <td mat-cell *matCellDef="let row">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+          >
+            Action
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let row"
+            class="dark:bg-gray-800 dark:text-gray-100"
+          >
             <span [ngClass]="getActionClass(row.action)">
               {{ row.action | titlecase }}
             </span>
@@ -71,18 +122,46 @@
 
         <!-- User Column -->
         <ng-container matColumnDef="userEmail">
-          <th mat-header-cell *matHeaderCellDef>User</th>
-          <td mat-cell *matCellDef="let row">{{ row.userEmail || "-" }}</td>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+          >
+            User
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let row"
+            class="dark:bg-gray-800 dark:text-gray-100"
+          >
+            {{ row.userEmail || "-" }}
+          </td>
         </ng-container>
 
         <!-- Optional ID Column -->
         <ng-container matColumnDef="entityId">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let row">{{ row.entityId }}</td>
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+          >
+            ID
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let row"
+            class="dark:bg-gray-800 dark:text-gray-100"
+          >
+            {{ row.entityId }}
+          </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: tableColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: tableColumns"
+          class="hover:bg-gray-100 dark:hover:bg-gray-700"
+        ></tr>
       </table>
     </div>
 
@@ -93,7 +172,7 @@
       [pageSizeOptions]="[10, 25, 50, 100]"
       showFirstLastButtons
       (page)="onPageChange($event)"
-      class="rounded-t-none"
+      class="rounded-t-none dark:bg-gray-900 dark:text-gray-200"
     >
     </mat-paginator>
   </mat-card>

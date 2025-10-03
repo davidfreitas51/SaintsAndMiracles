@@ -50,7 +50,9 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
     datasets: [
       {
         data: [],
-        backgroundColor: ['#4ade80', '#60a5fa', '#f87171'], 
+        backgroundColor: ['#4ade80', '#60a5fa', '#f87171'], // fill colors
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'], // initial border color
+        borderWidth: 2,
       },
     ],
   };
@@ -124,7 +126,6 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
   }
 
   private updatePieChart(items: RecentActivity[]): void {
-    // Tipagem forte: só aceita essas três chaves
     const counts: Record<'created' | 'updated' | 'deleted', number> = {
       created: 0,
       updated: 0,
@@ -136,10 +137,14 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
         | 'created'
         | 'updated'
         | 'deleted';
-      if (counts[action] !== undefined) {
-        counts[action]++;
-      }
+      if (counts[action] !== undefined) counts[action]++;
     });
+
+    // Check for dark mode to adjust border color
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const borderColor = isDarkMode
+      ? ['#1f2937', '#1f2937', '#1f2937']
+      : ['#ffffff', '#ffffff', '#ffffff'];
 
     this.pieChartData = {
       labels: ['Created', 'Updated', 'Deleted'],
@@ -147,6 +152,8 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
         {
           data: [counts.created, counts.updated, counts.deleted],
           backgroundColor: ['#4ade80', '#60a5fa', '#f87171'], // verde, azul, vermelho
+          borderColor: borderColor,
+          borderWidth: 2,
         },
       ],
     };
