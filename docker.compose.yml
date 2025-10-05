@@ -1,18 +1,19 @@
-version: "3.9"
+version: '3.9'
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: saints-sqlserver
+  mysql:
+    image: mysql:8.1
+    container_name: saints-mysql
     environment:
-      SA_PASSWORD: "Password@1"
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: "Developer"
+      MYSQL_ROOT_PASSWORD: 'Password@1'
+      MYSQL_DATABASE: 'saintsdb'
+      MYSQL_USER: 'saintsuser'
+      MYSQL_PASSWORD: 'Password@1'
     ports:
-      - "1433:1433"
+      - '3306:3306'
     volumes:
-      - sql_data:/var/opt/mssql
+      - mysql_data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d
     restart: always
 
 volumes:
-  sql_data:
+  mysql_data:

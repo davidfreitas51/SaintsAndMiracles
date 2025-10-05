@@ -37,10 +37,15 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
     {
+        var connectionString = config.GetConnectionString("defaultConnection");
+
         services.AddDbContext<DataContext>(options =>
-        {
-            options.UseSqlServer(config.GetConnectionString("defaultConnection"));
-        });
+            options.UseMySql(
+                connectionString,
+                new MySqlServerVersion(new Version(8, 1, 0))
+            )
+        );
+
         return services;
     }
 
