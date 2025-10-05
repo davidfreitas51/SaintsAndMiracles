@@ -1,5 +1,5 @@
 <div
-  class="flex flex-col gap-6 p-6 shadow rounded-lg bg-white max-w-4xl mx-auto"
+  class="flex flex-col gap-6 p-6 shadow rounded-lg bg-white dark:bg-gray-900 dark:text-gray-100 max-w-4xl mx-auto"
 >
   <form [formGroup]="form" class="flex flex-col gap-6" (ngSubmit)="onSubmit()">
     <!-- Image + Basic Info -->
@@ -11,7 +11,7 @@
         </label>
         <label
           for="imageInput"
-          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden"
+          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden dark:border-gray-700"
         >
           <ng-container *ngIf="form.get('image')?.value; else noImage">
             <img
@@ -30,7 +30,7 @@
             </ng-container>
             <ng-template #showIcon>
               <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app"
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
                 fontIcon="add_a_photo"
               ></mat-icon>
             </ng-template>
@@ -50,13 +50,13 @@
       <div class="flex-1 flex flex-col gap-4 w-full">
         <!-- Name -->
         <label class="block">
-          <span class="block pb-2 font-semibold"
-            >Name <span class="text-red-600">*</span></span
-          >
+          <span class="block pb-2 font-semibold">
+            Name <span class="text-red-600">*</span>
+          </span>
           <input
             type="text"
             placeholder="Saint's name"
-            class="w-full border rounded px-3 py-2"
+            class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
             formControlName="name"
           />
           <div
@@ -72,31 +72,31 @@
 
         <!-- Country -->
         <label class="block relative">
-          <span class="block pb-2 font-semibold"
-            >Country <span class="text-red-600">*</span></span
-          >
+          <span class="block pb-2 font-semibold">
+            Country <span class="text-red-600">*</span>
+          </span>
           <input
             type="text"
             placeholder="Saint's country"
-            class="w-full border rounded px-3 py-2 pr-10"
+            class="w-full border rounded px-3 py-2 pr-10 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
             formControlName="country"
           />
           <img
             *ngIf="form.get('country')?.value | countryCode as flagCode"
             [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
             [alt]="form.get('country')?.value + ' flag'"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 object-contain pointer-events-none"
+            class="absolute mt-4 right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 object-contain pointer-events-none"
           />
         </label>
 
         <!-- Century -->
         <label class="block">
-          <span class="block pb-2 font-semibold"
-            >Century <span class="text-red-600">*</span></span
-          >
+          <span class="block pb-2 font-semibold">
+            Century <span class="text-red-600">*</span>
+          </span>
           <mat-select
             formControlName="century"
-            class="w-full border rounded px-4 py-2"
+            class="w-full border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           >
             <mat-option *ngFor="let item of centuries" [value]="item">{{
               item | roman
@@ -106,14 +106,14 @@
 
         <!-- Description -->
         <label class="block">
-          <span class="block pb-2 font-semibold"
-            >Description <span class="text-red-600">*</span></span
-          >
+          <span class="block pb-2 font-semibold">
+            Description <span class="text-red-600">*</span>
+          </span>
           <textarea
             #descriptionTextarea
             rows="1"
             placeholder="Saint's brief description"
-            class="w-full border rounded px-3 py-2 resize-none overflow-hidden min-h-[40px]"
+            class="w-full border rounded px-3 py-2 resize-none overflow-hidden min-h-[40px] dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
             formControlName="description"
             (input)="autoResize($event)"
           ></textarea>
@@ -135,17 +135,18 @@
             <button
               [matMenuTriggerFor]="tagsMenu"
               type="button"
-              class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 text-gray-700 hover:bg-gray-400 mr-2 mb-2"
+              class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-100 hover:bg-gray-400 dark:hover:bg-gray-600 mr-2 mb-2"
             >
               +
             </button>
             }
-            <mat-menu #tagsMenu="matMenu">
+            <mat-menu #tagsMenu="matMenu" class="dark:bg-gray-800">
               <button
                 mat-menu-item
                 *ngFor="let tag of tagsList"
                 [disabled]="currentTags.includes(tag.name)"
                 (click)="addTag(tag.name)"
+                class="dark:text-gray-100 dark:hover:bg-gray-700"
               >
                 {{ tag.name }}
               </button>
@@ -156,57 +157,57 @@
     </div>
 
     <!-- Markdown Editor -->
-    <!-- Markdown Editor -->
     <div>
       <label class="block flex flex-col">
         <span class="mb-5 font-semibold">
-          Markdown
-          <span *ngIf="form.get('markdownContent')" class="text-red-600"
-            >*</span
-          >
+          Markdown <span class="text-red-600">*</span>
         </span>
 
-        <div class="flex flex-col border rounded overflow-hidden h-[300px]">
+        <div
+          class="flex flex-col border rounded overflow-hidden h-[300px] dark:border-gray-700"
+        >
           <!-- Toolbar -->
-          <div class="flex gap-1 p-2 bg-gray-100 border-b flex-wrap">
+          <div
+            class="flex gap-1 p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-wrap"
+          >
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 font-bold"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 font-bold"
               (click)="insertMarkdown('**', '**')"
             >
               Bold
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 italic"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 italic"
               (click)="insertMarkdown('*', '*')"
             >
               Italic
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('## ', '')"
             >
               H2
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('- ', '')"
             >
               List
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('1. ', '')"
             >
               Ordered
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('---\n', '')"
             >
               Divider
@@ -217,12 +218,12 @@
           <div class="flex flex-1 overflow-hidden flex-col sm:flex-row">
             <textarea
               formControlName="markdownContent"
-              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300"
+              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
               placeholder="Type your markdown here..."
             ></textarea>
 
             <div
-              class="w-full sm:w-1/2 p-2 bg-white overflow-auto markdown-body"
+              class="w-full sm:w-1/2 p-2 bg-white dark:bg-gray-800 overflow-auto markdown-body"
             >
               <markdown
                 [data]="form.get('markdownContent')?.value"
@@ -238,23 +239,23 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
       <label class="block">
         <span class="block pb-2 font-semibold"
-          >Title <span class="text-gray-400">(optional)</span></span
+          >Title (optional)</span
         >
         <input
           type="text"
           placeholder="Saint's title"
-          class="w-full border rounded px-3 py-2"
+          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           formControlName="title"
         />
       </label>
 
       <label class="block">
         <span class="block pb-2 font-semibold"
-          >Feast Day <span class="text-gray-400">(optional)</span></span
+          >Feast Day (optional)</span
         >
         <input
           type="text"
-          class="w-full border rounded px-3 py-2"
+          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           formControlName="feastDay"
           mask="d0/M0"
           placeholder="DD/MM"
@@ -263,23 +264,23 @@
 
       <label class="block">
         <span class="block pb-2 font-semibold"
-          >Patron Of <span class="text-gray-400">(optional)</span></span
+          >Patron Of (optional)</span
         >
         <input
           type="text"
           placeholder="Patron of..."
-          class="w-full border rounded px-3 py-2"
+          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           formControlName="patronOf"
         />
       </label>
 
       <label class="block">
         <span class="block pb-2 font-semibold"
-          >Religious Order <span class="text-gray-400">(optional)</span></span
+          >Religious Order (optional)</span
         >
         <mat-select
           formControlName="religiousOrder"
-          class="w-full border rounded px-3 py-2"
+          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
         >
           <mat-option [value]="null">None</mat-option>
           <mat-option
@@ -314,7 +315,7 @@
       </button>
     </div>
 
-    <p class="text-sm text-gray-500 text-end pt-2">
+    <p class="text-sm text-gray-500 dark:text-gray-400 text-end pt-2">
       Fields marked with <span class="text-red-600">*</span> are required.
     </p>
   </form>
