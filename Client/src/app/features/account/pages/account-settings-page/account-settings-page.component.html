@@ -1,18 +1,23 @@
 <app-admin-header></app-admin-header>
 
-<div class="flex flex-col gap-6 max-w-3xl mx-auto p-6">
+<div class="flex flex-col gap-6 max-w-3xl mx-auto p-6 dark:text-gray-100">
   <!-- Profile Card -->
   <mat-card
-    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white"
+    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-gray-800"
   >
-    <h2 class="text-xl font-semibold mb-6">Profile</h2>
+    <h2 class="text-xl font-semibold mb-6 text-primary-app dark:text-blue-400">
+      Profile
+    </h2>
     <form
       [formGroup]="profileForm"
       class="flex flex-col gap-6"
       (ngSubmit)="updateProfile()"
     >
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <mat-form-field appearance="fill">
+        <mat-form-field
+          appearance="fill"
+          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+        >
           <mat-label>First Name</mat-label>
           <input
             matInput
@@ -22,7 +27,10 @@
           />
         </mat-form-field>
 
-        <mat-form-field appearance="fill">
+        <mat-form-field
+          appearance="fill"
+          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+        >
           <mat-label>Last Name</mat-label>
           <input
             matInput
@@ -39,7 +47,7 @@
           color="primary"
           type="submit"
           [disabled]="profileForm.invalid"
-          class="rounded-lg"
+          class="rounded-lg dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-white"
         >
           <mat-icon>save</mat-icon>
           Save Changes
@@ -50,15 +58,20 @@
 
   <!-- Email Card -->
   <mat-card
-    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white"
+    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-gray-800"
   >
-    <h2 class="text-xl font-semibold mb-6">Email</h2>
+    <h2 class="text-xl font-semibold mb-6 text-primary-app dark:text-blue-400">
+      Email
+    </h2>
     <form
       [formGroup]="emailForm"
       class="flex flex-col gap-6"
       (ngSubmit)="updateEmail()"
     >
-      <mat-form-field appearance="fill">
+      <mat-form-field
+        appearance="fill"
+        class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+      >
         <mat-label>Email</mat-label>
         <input
           matInput
@@ -74,7 +87,7 @@
           color="primary"
           type="submit"
           [disabled]="emailForm.invalid"
-          class="rounded-lg"
+          class="rounded-lg dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-white"
         >
           <mat-icon>mail</mat-icon>
           Update Email
@@ -85,16 +98,21 @@
 
   <!-- Password Card -->
   <mat-card
-    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white"
+    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-gray-800"
   >
-    <h2 class="text-xl font-semibold mb-6">Password</h2>
+    <h2 class="text-xl font-semibold mb-6 text-primary-app dark:text-blue-400">
+      Password
+    </h2>
     <form
       [formGroup]="passwordForm"
       class="flex flex-col gap-6"
       (ngSubmit)="updatePassword()"
     >
       <!-- Current Password -->
-      <mat-form-field appearance="fill" class="w-full">
+      <mat-form-field
+        appearance="fill"
+        class="w-full dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+      >
         <mat-label>Current Password</mat-label>
         <input
           matInput
@@ -108,6 +126,7 @@
           type="button"
           (click)="hideCurrentPassword = !hideCurrentPassword"
           [attr.aria-label]="'Hide or show current password'"
+          class="dark:text-gray-300"
         >
           <mat-icon>{{
             hideCurrentPassword ? "visibility_off" : "visibility"
@@ -118,7 +137,10 @@
       <!-- New Password + Confirm Password -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- New Password -->
-        <mat-form-field appearance="fill">
+        <mat-form-field
+          appearance="fill"
+          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+        >
           <mat-label>New Password</mat-label>
           <input
             matInput
@@ -132,13 +154,13 @@
             type="button"
             (click)="hideNewPassword = !hideNewPassword"
             [attr.aria-label]="'Hide or show new password'"
+            class="dark:text-gray-300"
           >
             <mat-icon>{{
               hideNewPassword ? "visibility_off" : "visibility"
             }}</mat-icon>
           </button>
 
-          <!-- Pattern error -->
           <mat-error
             *ngIf="passwordForm.get('newPassword')?.hasError('pattern')"
           >
@@ -148,8 +170,10 @@
         </mat-form-field>
 
         <!-- Confirm New Password -->
-        <!-- Confirm New Password -->
-        <mat-form-field appearance="fill">
+        <mat-form-field
+          appearance="fill"
+          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+        >
           <mat-label>Confirm New Password</mat-label>
           <input
             matInput
@@ -163,13 +187,13 @@
             type="button"
             (click)="hideConfirmPassword = !hideConfirmPassword"
             [attr.aria-label]="'Hide or show confirm password'"
+            class="dark:text-gray-300"
           >
             <mat-icon>{{
               hideConfirmPassword ? "visibility_off" : "visibility"
             }}</mat-icon>
           </button>
 
-          <!-- Password mismatch error -->
           <mat-error
             *ngIf="
               passwordForm.hasError('passwordMismatch') &&
@@ -187,7 +211,7 @@
           color="primary"
           type="submit"
           [disabled]="passwordForm.invalid"
-          class="rounded-lg"
+          class="rounded-lg dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-white"
         >
           Change Password
         </button>

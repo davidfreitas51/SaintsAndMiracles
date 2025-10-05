@@ -1,17 +1,17 @@
 <div
-  class="flex flex-col gap-6 p-6 shadow rounded-lg bg-white max-w-4xl mx-auto"
+  class="flex flex-col gap-6 p-6 shadow rounded-lg bg-white dark:bg-gray-900 dark:text-gray-100 max-w-4xl mx-auto"
 >
   <form [formGroup]="form" class="flex flex-col gap-6" (ngSubmit)="onSubmit()">
     <div class="flex flex-col sm:flex-row gap-6">
       <!-- Image -->
       <div class="w-full sm:w-1/2">
-        <label for="imageInput" class="block mb-2 font-semibold">
-          Icon Image <span class="text-red-600">*</span>
-        </label>
+        <label for="imageInput" class="block mb-2 font-semibold"
+          >Icon Image <span class="text-red-600">*</span></label
+        >
 
         <label
           for="imageInput"
-          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden"
+          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden dark:border-gray-700"
         >
           <ng-container
             *ngIf="form.get('image')?.value; else croppedOrPlaceholder"
@@ -22,6 +22,7 @@
               class="object-cover w-full h-full rounded"
             />
           </ng-container>
+
           <ng-template #croppedOrPlaceholder>
             <ng-container *ngIf="croppedImage; else placeholderIcon">
               <div class="flex items-center justify-center">
@@ -37,7 +38,7 @@
           <ng-template #placeholderIcon>
             <div class="flex items-center justify-center">
               <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app"
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
                 fontIcon="add_a_photo"
               ></mat-icon>
             </div>
@@ -58,15 +59,14 @@
       <div class="flex-1 flex flex-col gap-4 w-full">
         <!-- Title -->
         <label class="block">
-          <span class="block pb-2 font-semibold">
-            Title
-            <span class="text-red-600">*</span>
-          </span>
+          <span class="block pb-2 font-semibold"
+            >Title <span class="text-red-600">*</span></span
+          >
           <input
             type="text"
             formControlName="title"
             placeholder="Prayer's title"
-            class="w-full border rounded px-3 py-2"
+            class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           />
           <div
             *ngIf="
@@ -81,16 +81,15 @@
 
         <!-- Description -->
         <label class="block">
-          <span class="block pb-2 font-semibold">
-            Description
-            <span class="text-red-600">*</span>
-          </span>
+          <span class="block pb-2 font-semibold"
+            >Description <span class="text-red-600">*</span></span
+          >
           <textarea
             #descriptionTextarea
             formControlName="description"
             rows="1"
             placeholder="Brief description of the prayer"
-            class="w-full border rounded px-3 py-2 resize-none overflow-hidden min-h-[40px]"
+            class="w-full border rounded px-3 py-2 resize-none overflow-hidden min-h-[40px] dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
             (input)="autoResize($event)"
           ></textarea>
         </label>
@@ -112,19 +111,25 @@
             <button
               [matMenuTriggerFor]="tagsMenu"
               type="button"
-              class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 text-gray-700 hover:bg-gray-400 transition mr-2 mb-2"
+              class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-400 dark:hover:bg-gray-600 transition mr-2 mb-2"
               aria-label="Add tag"
             >
               +
             </button>
             }
 
-            <mat-menu #tagsMenu="matMenu" class="w-48">
+            <!-- TAGS MENU -->
+            <mat-menu
+              #tagsMenu="matMenu"
+              class="w-48 dark:bg-gray-800"
+              [overlapTrigger]="false"
+            >
               <button
                 mat-menu-item
                 *ngFor="let tag of tagsList"
                 [disabled]="currentTags.includes(tag.name)"
                 (click)="addTag(tag.name)"
+                class="dark:hover:bg-gray-700 dark:text-gray-100"
               >
                 {{ tag.name }}
               </button>
@@ -137,52 +142,55 @@
     <!-- Markdown Editor -->
     <div>
       <label class="block flex flex-col">
-        <span class="mb-5 font-semibold">
-          Markdown
-          <span class="text-red-600">*</span>
-        </span>
+        <span class="mb-5 font-semibold"
+          >Markdown <span class="text-red-600">*</span></span
+        >
 
-        <div class="flex flex-col border rounded overflow-hidden h-[300px]">
+        <div
+          class="flex flex-col border rounded overflow-hidden h-[300px] dark:border-gray-700"
+        >
           <!-- Toolbar -->
-          <div class="flex gap-1 p-2 bg-gray-100 border-b flex-wrap">
+          <div
+            class="flex gap-1 p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-wrap"
+          >
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 font-bold"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 font-bold"
               (click)="insertMarkdown('**', '**')"
             >
               Bold
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 italic"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 italic"
               (click)="insertMarkdown('*', '*')"
             >
               Italic
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('## ', '')"
             >
               H2
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('- ', '')"
             >
               List
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('1. ', '')"
             >
               Ordered
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200"
+              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
               (click)="insertMarkdown('---\n', '')"
             >
               Divider
@@ -193,12 +201,12 @@
           <div class="flex flex-col sm:flex-row flex-1 overflow-hidden">
             <textarea
               formControlName="markdownContent"
-              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300"
+              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
               placeholder="Write the prayer text in Markdown..."
             ></textarea>
 
             <div
-              class="w-full sm:w-1/2 p-2 bg-white overflow-auto markdown-body"
+              class="w-full sm:w-1/2 p-2 bg-white dark:bg-gray-800 overflow-auto markdown-body"
             >
               <markdown
                 [data]="form.get('markdownContent')?.value"
@@ -227,13 +235,14 @@
         [disabled]="form.invalid || imageLoading"
         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2 w-full sm:w-auto"
       >
-        <mat-icon class="text-white">
-          {{ isEditMode ? "edit" : "add" }}
-        </mat-icon>
+        <mat-icon class="text-white">{{
+          isEditMode ? "edit" : "add"
+        }}</mat-icon>
         {{ isEditMode ? "Update Prayer" : "Create Prayer" }}
       </button>
     </div>
-    <p class="text-sm text-gray-500 text-end pt-2">
+
+    <p class="text-sm text-gray-500 dark:text-gray-400 text-end pt-2">
       Fields marked with <span class="text-red-600">*</span> are required.
     </p>
   </form>
