@@ -32,12 +32,14 @@
       Manage Prayers
     </a>
 
-    <a
-      routerLink="/admin/accounts"
-      routerLinkActive="bg-hover"
-      class="bg-primary-app rounded-2xl p-6 shadow-md transition text-center font-semibold text-secondary-app hover:darken"
-    >
-      Manage Accounts
-    </a>
+    <ng-container *ngIf="isSuperAdmin">
+      <a
+        routerLink="/admin/accounts"
+        routerLinkActive="bg-hover"
+        class="bg-primary-app rounded-2xl p-6 shadow-md transition text-center font-semibold text-secondary-app hover:darken"
+      >
+        Manage Accounts
+      </a>
+    </ng-container>
   </div>
 </main>

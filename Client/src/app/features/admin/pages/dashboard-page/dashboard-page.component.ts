@@ -19,6 +19,7 @@ import { DashboardSummaryDto } from '../../interfaces/dashboard-summary-dto';
 import { RecentActivity } from '../../interfaces/recent-activity';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
+import { AdminMenuComponent } from '../../components/admin-menu/admin-menu.component';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -50,8 +51,8 @@ export class DashboardPageComponent implements OnInit, AfterViewInit {
     datasets: [
       {
         data: [],
-        backgroundColor: ['#4ade80', '#60a5fa', '#f87171'], // fill colors
-        borderColor: ['#ffffff', '#ffffff', '#ffffff'], // initial border color
+        backgroundColor: ['#4ade80', '#60a5fa', '#f87171'],
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
         borderWidth: 2,
       },
     ],

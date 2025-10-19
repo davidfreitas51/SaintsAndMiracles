@@ -14,8 +14,8 @@ export class AuthenticationService {
   private baseUrl = environment.apiUrl;
   private session = inject(UserSessionService);
 
-  constructor() { }
-  
+  constructor() {}
+
   public login(login: LoginDto): Observable<CurrentUser> {
     const params = new HttpParams().set('useCookies', true);
 
@@ -27,6 +27,8 @@ export class AuthenticationService {
       .pipe(
         tap((user) => {
           this.session.setUser(user);
+
+          this.session.fetchUserRole();
         })
       );
   }
@@ -38,7 +40,7 @@ export class AuthenticationService {
       })
       .pipe(
         tap(() => {
-          this.session.setUser(null);
+          this.session.clearSession();
         })
       );
   }

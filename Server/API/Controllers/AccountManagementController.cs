@@ -46,6 +46,30 @@ public class AccountManagementController(UserManager<AppUser> userManager, SignI
         return Ok(user);
     }
 
+    [Authorize]
+    [HttpGet("user-role")]
+    public async Task<ActionResult<string>> GetCurrentRole()
+    {
+        var user = HttpContext.User;
+
+        if (user?.Identity == null || !user.Identity.IsAuthenticated)
+            return Unauthorized();
+
+        var role = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+        if (string.IsNullOrEmpty(role))
+        {
+            var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Unauthorized();
+        }
+
+        if (string.IsNullOrEmpty(role))
+            return NotFound("Role not found for user");
+
+        return Ok(new { role });
+    }
+
+
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {

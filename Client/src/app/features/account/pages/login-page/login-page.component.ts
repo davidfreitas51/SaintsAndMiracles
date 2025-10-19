@@ -7,7 +7,6 @@ import { MatCardModule } from '@angular/material/card';
 import { Router, RouterLink } from '@angular/router';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
-import { User } from '../../../../interfaces/user';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { MatIconModule } from '@angular/material/icon';
 import { LoginDto } from '../../interfaces/login-dto';
@@ -35,8 +34,8 @@ import { RegistrationService } from '../../../../core/services/registration.serv
 })
 export class LoginPageComponent {
   private router = inject(Router);
-  private authenticationService = inject(AuthenticationService)
-  private registrationService = inject(RegistrationService)
+  private authenticationService = inject(AuthenticationService);
+  private registrationService = inject(RegistrationService);
   private snackbarService = inject(SnackbarService);
 
   hidePassword = true;
@@ -46,7 +45,7 @@ export class LoginPageComponent {
     if (!this.loginDto.email || !this.loginDto.password) return;
 
     this.authenticationService.login(this.loginDto).subscribe({
-      next: (user: User) => {
+      next: () => {
         this.snackbarService.success('Login successful');
         this.router.navigate(['/admin']);
       },
