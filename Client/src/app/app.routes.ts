@@ -27,6 +27,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { ForgotPasswordPageComponent } from './features/account/pages/forgot-password-page/forgot-password-page.component';
 import { ResetPasswordPageComponent } from './features/account/pages/reset-password-page/reset-password-page.component';
 import { AccountSettingsPageComponent } from './features/account/pages/account-settings-page/account-settings-page.component';
+import { SuperAdminGuard } from './core/guards/super-admin.guard';
 
 export const routes: Routes = [
   {
@@ -101,6 +102,7 @@ export const routes: Routes = [
       },
       {
         path: 'accounts',
+        canActivate: [SuperAdminGuard],
         children: [{ path: '', component: ManageAccountsPageComponent }],
       },
     ],
@@ -111,7 +113,7 @@ export const routes: Routes = [
       {
         path: '',
         redirectTo: 'login',
-        pathMatch: 'full'
+        pathMatch: 'full',
       },
       {
         path: 'login',
@@ -127,17 +129,17 @@ export const routes: Routes = [
       },
       {
         path: 'forgot-password',
-        component: ForgotPasswordPageComponent
+        component: ForgotPasswordPageComponent,
       },
       {
         path: 'reset-password',
-        component: ResetPasswordPageComponent
+        component: ResetPasswordPageComponent,
       },
       {
         path: 'settings',
         component: AccountSettingsPageComponent,
-        canActivate: [AuthGuard]
-      }
+        canActivate: [AuthGuard],
+      },
     ],
   },
 ];
