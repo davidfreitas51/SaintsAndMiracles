@@ -8,7 +8,7 @@ namespace Infrastructure.Services;
 public class AccountTokensService(DataContext context, ITokenService tokenService) : IAccountTokensService
 {
 
-    public async Task<string> GenerateInviteAsync(TimeSpan? lifetime = null)
+    public async Task<string> GenerateInviteAsync(string role)
     {
         var clearToken = tokenService.GenerateClearToken();
         var hash = tokenService.HashTokenBase64(clearToken);
@@ -16,15 +16,17 @@ public class AccountTokensService(DataContext context, ITokenService tokenServic
         var invite = new AccountToken
         {
             Hash = hash,
-            ExpiresAtUtc = DateTime.UtcNow.Add(lifetime ?? TimeSpan.FromHours(24)),
+            Role = role,
+            ExpiresAtUtc = DateTime.UtcNow.Add(TimeSpan.FromHours(24)),
             IsUsed = false
         };
 
         context.AccountTokens.Add(invite);
         await context.SaveChangesAsync();
 
-        return clearToken; 
+        return clearToken;
     }
+
 
     public async Task<bool> ValidateAsync(string providedToken)
     {
@@ -54,4 +56,12 @@ public class AccountTokensService(DataContext context, ITokenService tokenServic
         return true;
     }
 
+    public async Task<AccountToken?> GetValidTokenAsync(string providedToken)
+    {
+        var invites = await context.AccountTokens
+            .Where(i => !i.IsUsed && i.ExpiresAtUtc > DateTime.UtcNow)
+            .ToListAsync();
+
+        return invites.FirstOrDefault(i => tokenService.VerifyToken(providedToken, i.Hash));
+    }
 }

@@ -34,7 +34,7 @@ public static class SeedData
 
     private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
     {
-        var roles = new[] { "Employee", "Admin" };
+        var roles = new[] { "Admin", "SuperAdmin" };
 
         foreach (var roleName in roles)
         {
@@ -52,7 +52,7 @@ public static class SeedData
 
     private static async Task SeedBootstrapToken(DataContext context, UserManager<AppUser> userManager, ITokenService tokenService)
     {
-        if ((await userManager.GetUsersInRoleAsync("Admin")).Any()) return;
+        if ((await userManager.GetUsersInRoleAsync("SuperAdmin")).Any()) return;
 
         var clearToken = tokenService.GenerateClearToken();
         var hash = tokenService.HashTokenBase64(clearToken);
@@ -60,6 +60,7 @@ public static class SeedData
         var bootstrapToken = new AccountToken
         {
             Hash = hash,
+            Role = "SuperAdmin",
             CreatedAtUtc = DateTimeOffset.UtcNow,
             ExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(1),
             Purpose = "InitialAdminBootstrap",
@@ -71,8 +72,8 @@ public static class SeedData
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("=================================================");
-        Console.WriteLine(" NO ADMIN USERS FOUND ");
-        Console.WriteLine(" Use this bootstrap token to create the first admin account:");
+        Console.WriteLine(" NO SUPER-ADMIN USERS FOUND ");
+        Console.WriteLine(" Use this bootstrap token to create the first super admin account:");
         Console.WriteLine(clearToken);
         Console.WriteLine($" This token will expire at: {bootstrapToken.ExpiresAtUtc}");
         Console.WriteLine("=================================================");

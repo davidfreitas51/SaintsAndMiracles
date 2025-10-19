@@ -16,8 +16,6 @@ import { AccountManagementService } from '../../../../core/services/account-mana
     AdminContentTableComponent,
     MatIconModule,
     MatButtonModule,
-    RouterLink,
-    MatButtonModule,
   ],
   templateUrl: './manage-accounts-page.component.html',
   styleUrls: ['./manage-accounts-page.component.scss'],
@@ -44,7 +42,7 @@ export class ManageAccountsPageComponent {
 
   openRegisterAccountDialog() {
     this.dialog.open(GenerateTokenDialogComponent, {
-      height: '500px',
+      height: '750px',
       width: '600px',
       panelClass: 'generate-token-dialog',
     });

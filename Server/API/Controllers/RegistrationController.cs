@@ -18,7 +18,8 @@ public class RegistrationController(
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
     {
-        if (!await accountTokensService.ValidateAsync(registerDto.InviteToken))
+        var tokenRecord = await accountTokensService.GetValidTokenAsync(registerDto.InviteToken);
+        if (tokenRecord == null)
             return BadRequest(new ApiErrorResponse { Message = "Invalid or expired token" });
 
         var existingUser = await signInManager.UserManager.FindByEmailAsync(registerDto.Email);
@@ -43,7 +44,7 @@ public class RegistrationController(
             });
         }
 
-        var roleResult = await signInManager.UserManager.AddToRoleAsync(user, "Admin");
+        var roleResult = await signInManager.UserManager.AddToRoleAsync(user, tokenRecord.Role);
         if (!roleResult.Succeeded)
         {
             return BadRequest(new ApiErrorResponse
@@ -56,7 +57,6 @@ public class RegistrationController(
         await accountTokensService.ConsumeAsync(registerDto.InviteToken);
 
         var token = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
-
         var confirmationLink = Url.Action(
             "ConfirmEmail",
             "Registration",
@@ -68,6 +68,7 @@ public class RegistrationController(
 
         return Created("", new { Message = "User created. Please check your email to confirm." });
     }
+
 
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(string userId, string token)
@@ -107,11 +108,11 @@ public class RegistrationController(
         return Ok(new { Message = "Confirmation email resent" });
     }
 
-    [Authorize]
+    [Authorize(Roles = "SuperAdmin")]
     [HttpPost("invite")]
-    public async Task<IActionResult> GenerateInviteToken()
+    public async Task<IActionResult> GenerateInviteToken([FromBody] InviteRequest request)
     {
-        var token = await accountTokensService.GenerateInviteAsync();
+        var token = await accountTokensService.GenerateInviteAsync(request.Role);
         return Ok(token);
     }
 }

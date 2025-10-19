@@ -1,3 +1,5 @@
+using Core.Enums;
+
 namespace Core.Models;
 
 public class AccountToken
@@ -5,6 +7,7 @@ public class AccountToken
     public Guid Id { get; set; } = Guid.NewGuid();
 
     public string Hash { get; set; } = null!;
+    public string Role { get; set; } = string.Empty;
 
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset ExpiresAtUtc { get; set; }

@@ -11,9 +11,13 @@ export class RegistrationService {
   private baseUrl = environment.apiUrl;
 
   public register(values: any): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}registration/register`, values, {
-      withCredentials: true,
-    });
+    return this.http.post<void>(
+      `${this.baseUrl}registration/register`,
+      values,
+      {
+        withCredentials: true,
+      }
+    );
   }
 
   public resendConfirmation(email: string): Observable<void> {
@@ -24,8 +28,9 @@ export class RegistrationService {
     );
   }
 
-  public generateInviteToken(): Observable<string> {
-    return this.http.post(`${this.baseUrl}registration/invite`, null, {
+  public generateInviteToken(selectedRole: string): Observable<string> {
+    const body = { role: selectedRole };
+    return this.http.post(`${this.baseUrl}registration/invite`, body, {
       responseType: 'text',
       withCredentials: true,
     });
