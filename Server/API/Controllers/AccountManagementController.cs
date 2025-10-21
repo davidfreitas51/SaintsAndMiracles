@@ -21,6 +21,56 @@ public class AccountManagementController(UserManager<AppUser> userManager, SignI
         return Ok();
     }
 
+    [Authorize(Roles = "SuperAdmin")]
+    [HttpGet("users")]
+    public async Task<ActionResult<IEnumerable<object>>> GetUsers()
+    {
+        var users = await userManager.Users.ToListAsync();
+
+        var result = new List<object>();
+
+        foreach (var user in users)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+
+            result.Add(new
+            {
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                Roles = roles,
+            });
+        }
+
+        return Ok(result);
+    }
+
+    [Authorize(Roles = "SuperAdmin")]
+    [HttpDelete("users/{username}")]
+    public async Task<ActionResult> DeleteUserByUsername(string username)
+    {
+        var user = await userManager.FindByNameAsync(username);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+        if (currentUser != null && currentUser.UserName == username)
+        {
+            return BadRequest(new { message = "You cannot delete your own account." });
+        }
+
+        var result = await userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return NoContent(); // 204
+    }
+
+
 
     [Authorize]
     [HttpGet("current-user")]

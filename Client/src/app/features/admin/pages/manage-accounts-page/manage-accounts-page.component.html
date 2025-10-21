@@ -24,9 +24,10 @@
   <div class="w-full overflow-x-auto">
     <app-admin-content-table
       [data]="accounts"
-      [excludedColumns]="['passwordHash', 'securityStamp', 'concurrencyStamp']"
       [deleteFn]="deleteUser"
       [loadData]="loadUsers"
+      [identifierColumn]="'email'"
+      [showEdit]="false"
     ></app-admin-content-table>
   </div>
 </div>

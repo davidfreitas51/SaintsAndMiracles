@@ -6,7 +6,7 @@ import { ResetPasswordDto } from '../../features/account/interfaces/reset-passwo
 import { CurrentUser } from '../../interfaces/current-user';
 import { UserSessionService } from './user-session.service';
 import { UpdateProfileDto } from '../../features/account/interfaces/update-profile-dto';
-
+import { UserSummary } from '../../features/account/interfaces/user-summary';
 
 @Injectable({
   providedIn: 'root',
@@ -58,10 +58,6 @@ export class AccountManagementService {
     );
   }
 
-  public deleteUser(id: number) {
-    return this.http.delete<void>(`${this.baseUrl}accounts/${id}`, {});
-  }
-
   public requestPasswordReset(email: string) {
     return this.http.post<void>(
       `${this.baseUrl}accountManagement/forgot-password`,
@@ -73,6 +69,21 @@ export class AccountManagementService {
     return this.http.post<void>(
       `${this.baseUrl}accountManagement/reset-password`,
       dto
+    );
+  }
+
+  public getAllUsers() {
+    return this.http.get<UserSummary[]>(
+      `${this.baseUrl}accountManagement/users`
+    );
+  }
+
+  public deleteUser(userEmail: string) {
+    return this.http.delete<void>(
+      `${this.baseUrl}accountManagement/users/${userEmail}`,
+      {
+        withCredentials: true,
+      }
     );
   }
 }

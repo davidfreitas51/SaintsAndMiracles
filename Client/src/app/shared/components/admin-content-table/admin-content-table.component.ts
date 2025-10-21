@@ -40,8 +40,10 @@ import { CommonModule, DatePipe } from '@angular/common';
 export class AdminContentTableComponent implements OnChanges, AfterViewInit {
   @Input({ required: true }) data: any[] = [];
   @Input() excludedColumns: string[] = [];
-  @Input() deleteFn!: (id: number) => Observable<any>;
+  @Input() deleteFn!: (identifier: any) => Observable<any>;
+  @Input() identifierColumn: string = 'id';
   @Input() loadData!: () => void;
+  @Input() showEdit = true;
 
   columns: string[] = [];
   displayedColumns: string[] = [];
@@ -122,22 +124,26 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
     if (!id || !this.entitySingular) return;
     this.router.navigate(['/admin', `${this.entitySingular}s`, id, 'edit']);
   }
-
   deleteObject(entity: any): void {
     if (!this.deleteFn || !this.loadData) {
       console.error('deleteFn or loadData not provided.');
       return;
     }
 
+    // Determine entity name for dialog and messages
     const entityName =
       this.entitySingular.charAt(0).toUpperCase() +
       this.entitySingular.slice(1);
 
+    // Find a user-friendly column to display in the confirmation dialog
     const labelColumn = this.displayedColumns.find(
-      (c) => c !== 'id' && c !== 'actions'
+      (col) => col !== (this.identifierColumn || 'id') && col !== 'actions'
     );
-    const displayName = labelColumn ? entity[labelColumn] : entity.id;
+    const displayName = labelColumn
+      ? entity[labelColumn]
+      : entity[this.identifierColumn || 'id'];
 
+    // Show confirmation dialog
     this.dialogService
       .confirm({
         title: `Delete ${entityName}?`,
@@ -148,7 +154,10 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
       .subscribe((confirmed) => {
         if (!confirmed) return;
 
-        this.deleteFn(entity.id).subscribe({
+        // Use the specified identifier column (default to 'id')
+        const identifier = entity[this.identifierColumn || 'id'];
+
+        this.deleteFn(identifier).subscribe({
           next: () => {
             this.snackBarService.success(`${entityName} successfully deleted`);
             this.loadData();
