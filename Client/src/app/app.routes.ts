@@ -28,6 +28,7 @@ import { ForgotPasswordPageComponent } from './features/account/pages/forgot-pas
 import { ResetPasswordPageComponent } from './features/account/pages/reset-password-page/reset-password-page.component';
 import { AccountSettingsPageComponent } from './features/account/pages/account-settings-page/account-settings-page.component';
 import { SuperAdminGuard } from './core/guards/super-admin.guard';
+import { RegistrationConfirmationPageComponent } from './features/account/pages/registration-confirmation-page/registration-confirmation-page.component';
 
 export const routes: Routes = [
   {
@@ -126,6 +127,10 @@ export const routes: Routes = [
       {
         path: 'email-confirmed',
         component: EmailConfirmedPageComponent,
+      },
+      {
+        path: 'registration-confirmation',
+        component: RegistrationConfirmationPageComponent,
       },
       {
         path: 'forgot-password',

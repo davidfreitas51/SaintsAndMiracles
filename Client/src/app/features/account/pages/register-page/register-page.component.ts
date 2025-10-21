@@ -67,7 +67,7 @@ export class RegisterPageComponent {
         this.snackbarService.success(
           'Registration successful! Please confirm your email before login'
         );
-        this.router.navigateByUrl('/account/login');
+        this.router.navigateByUrl('/account/registration-confirmation');
       },
       error: (err) => {
         const details: string[] = err?.error?.details || [];

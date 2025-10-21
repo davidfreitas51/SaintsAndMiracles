@@ -1,0 +1,33 @@
+<div class="min-h-screen flex flex-col">
+  <app-header></app-header>
+
+  <main class="flex-grow relative">
+    <div class="p-4 pt-10 w-full max-w-screen-sm mx-auto">
+      <div
+        class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-[#1e2023]"
+      >
+        <h2
+          class="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-200"
+        >
+          Registration Successful ✅
+        </h2>
+
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-6">
+          Please confirm your email before logging in. A confirmation email has
+          been sent to your inbox.
+        </p>
+
+        <div class="text-center">
+          <a
+            routerLink="/account/login"
+            class="inline-block bg-primary-app hover:bg-primary-app/90 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition"
+          >
+            Go to Login
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <app-footer></app-footer>
+</div>
