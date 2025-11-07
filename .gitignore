@@ -485,8 +485,8 @@ $RECYCLE.BIN/
 
 
 
-wwwroot/*
+/Server/API/wwwroot/*
 
-!wwwroot/miracles/
-!wwwroot/prayers/
-!wwwroot/saints/
+!/Server/API/wwwroot/miracles/
+!/Server/API/wwwroot/prayers/
+!/Server/API/wwwroot/saints/

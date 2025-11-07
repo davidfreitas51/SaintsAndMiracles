@@ -71,18 +71,32 @@ public class RegistrationController(
 
 
     [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    public async Task<IActionResult> ConfirmEmail(string userId, string token,
+        [FromServices] IWebHostEnvironment env,
+        [FromServices] IConfiguration config)
     {
+        string? frontUrl;
+
+        if (env.IsDevelopment())
+        {
+            frontUrl = "http://localhost:4200";
+        }
+        else
+        {
+            frontUrl = config["Frontend:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
+        }
+
         var user = await signInManager.UserManager.FindByIdAsync(userId);
         if (user == null)
-            return Redirect("http://localhost:4200/account/email-confirmed?success=false");
+            return Redirect($"{frontUrl}/account/email-confirmed?success=false");
 
         var result = await signInManager.UserManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded)
-            return Redirect("http://localhost:4200/account/email-confirmed?success=false");
+            return Redirect($"{frontUrl}/account/email-confirmed?success=false");
 
-        return Redirect("http://localhost:4200/account/email-confirmed?success=true");
+        return Redirect($"{frontUrl}/account/email-confirmed?success=true");
     }
+
 
     [HttpPost("resend-confirmation")]
     public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationDto resendConfirmation)
