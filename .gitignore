@@ -485,3 +485,8 @@ $RECYCLE.BIN/
 
 
 
+wwwroot/*
+
+!wwwroot/miracles/
+!wwwroot/prayers/
+!wwwroot/saints/
