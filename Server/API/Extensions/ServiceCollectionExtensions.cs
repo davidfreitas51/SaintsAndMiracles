@@ -14,6 +14,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddMemoryCache();
+
         // Repositories
         services.AddScoped<ISaintsRepository, SaintsRepository>();
         services.AddScoped<IMiraclesRepository, MiraclesRepository>();
@@ -31,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAccountTokensService, AccountTokensService>();
         services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
+        services.AddSingleton<ICacheService, CacheService>();
 
         return services;
     }
