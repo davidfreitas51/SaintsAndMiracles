@@ -39,7 +39,6 @@ public class CacheService(IMemoryCache cache) : ICacheService
 
         if (result is not null)
         {
-            await Task.Delay(3000);
             cache.Set(cacheKey, result, new MemoryCacheEntryOptions
             {
                 SlidingExpiration = _slidingExpiration
