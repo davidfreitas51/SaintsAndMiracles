@@ -1,31 +1,46 @@
 using Core.Enums;
 using Core.Interfaces.Repositories;
+using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
-public class RecentActivityRepository(DataContext context) : IRecentActivityRepository
+public class RecentActivityRepository(DataContext context, ICacheService cacheService) : IRecentActivityRepository
 {
     private const int MaxRecords = 100;
 
     public async Task<PagedResult<RecentActivity>> GetRecentActivitiesAsync(int pageNumber = 1, int pageSize = 5)
     {
-        var totalRecords = await context.RecentActivities.CountAsync();
+        var cacheKey = cacheService.BuildKey(
+            "recent_activity",
+            $"page{pageNumber}_size{pageSize}",
+            incrementVersion: false
+        );
 
-        var items = await context.RecentActivities
-            .OrderByDescending(a => a.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var result = await cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
+            {
+                var totalRecords = await context.RecentActivities.CountAsync();
 
-        return new PagedResult<RecentActivity>
-        {
-            Items = items,
-            TotalCount = totalRecords,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+                var items = await context.RecentActivities
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return new PagedResult<RecentActivity>
+                {
+                    Items = items,
+                    TotalCount = totalRecords,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+            }
+        );
+
+        return result ?? new PagedResult<RecentActivity>();
     }
 
     public async Task LogActivityAsync(EntityType entityType, int entityId, string displayName, ActivityAction action, string? userId = null)
@@ -42,7 +57,7 @@ public class RecentActivityRepository(DataContext context) : IRecentActivityRepo
         context.RecentActivities.Add(activity);
         await context.SaveChangesAsync();
 
-        int totalRecords = await context.RecentActivities.CountAsync();
+        var totalRecords = await context.RecentActivities.CountAsync();
         if (totalRecords > MaxRecords)
         {
             int excess = totalRecords - MaxRecords;
@@ -54,5 +69,7 @@ public class RecentActivityRepository(DataContext context) : IRecentActivityRepo
             context.RecentActivities.RemoveRange(oldest);
             await context.SaveChangesAsync();
         }
+
+        cacheService.GetNextVersion("recent_activity");
     }
 }
