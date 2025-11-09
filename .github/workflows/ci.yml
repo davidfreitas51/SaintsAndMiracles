@@ -46,4 +46,7 @@ jobs:
 
       # 7. Executa todos os testes da solução
       - name: Run .NET tests
-        run: dotnet test ./SignsNSaints.sln --no-build --verbosity normal
+        run: |
+          dotnet test ./Server/Tests/API.Tests/API.Tests.csproj --framework net9.0 --verbosity normal
+          dotnet test ./Server/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj --framework net9.0 --verbosity normal
+
