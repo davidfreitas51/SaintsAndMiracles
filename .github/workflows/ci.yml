@@ -44,6 +44,8 @@ jobs:
       - name: Build .NET solution
         run: dotnet build ./SignsNSaints.sln --no-restore --configuration Release
 
-      # 7. Executa testes .NET
+      # 7. Executa testes .NET projeto por projeto
       - name: Run .NET tests
-        run: dotnet test ./SignsNSaints.sln --no-build --verbosity normal
+        run: |
+          dotnet test ./Server/Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal --framework net9.0 --no-parallel
+          dotnet test ./Server/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj --no-build --verbosity normal --framework net9.0 --no-parallel
