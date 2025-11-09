@@ -11,34 +11,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout do repositório
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2. Configura Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
           cache: 'npm'
 
+      # 3. Instala dependências e build do Angular
       - name: Build Angular Client
         working-directory: ./Client
         run: |
           npm ci
-          npm run build
+          npm run build -- --configuration production
 
+      # 4. Configura .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
 
+      # 5. Restaura dependências do .NET
       - name: Restore .NET dependencies
         working-directory: ./Server
         run: dotnet restore
 
+      # 6. Build da solução .NET
       - name: Build .NET solution
         working-directory: ./Server
         run: dotnet build --no-restore --configuration Release
 
+      # 7. Executa testes .NET
       - name: Run .NET tests
         working-directory: ./Server
         run: dotnet test --no-build --verbosity normal
