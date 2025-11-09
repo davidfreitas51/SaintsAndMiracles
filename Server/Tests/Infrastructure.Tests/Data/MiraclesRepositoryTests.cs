@@ -11,11 +11,10 @@ public class MiraclesRepositoryTests
     private MiraclesRepository CreateRepository(out DataContext context)
     {
         var options = new DbContextOptionsBuilder<DataContext>()
-            .UseInMemoryDatabase("MiraclesDb")
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
         context = new DataContext(options);
-        context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
         var cache = new DummyCacheService();
