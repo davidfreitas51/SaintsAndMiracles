@@ -38,15 +38,12 @@ jobs:
 
       # 5. Restaura dependências do .NET
       - name: Restore .NET dependencies
-        working-directory: ./Server
-        run: dotnet restore
+        run: dotnet restore ./SignsNSaints.sln
 
       # 6. Build da solução .NET
       - name: Build .NET solution
-        working-directory: ./Server
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build ./SignsNSaints.sln --no-restore --configuration Release
 
       # 7. Executa todos os testes da solução
       - name: Run .NET tests
-        working-directory: ./Server
         run: dotnet test ./SignsNSaints.sln --no-build --verbosity normal
