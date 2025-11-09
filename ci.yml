@@ -1,0 +1,44 @@
+name: SaintsNMiracles CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Build Angular Client
+        working-directory: ./Client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore .NET dependencies
+        working-directory: ./Server
+        run: dotnet restore
+
+      - name: Build .NET solution
+        working-directory: ./Server
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run .NET tests
+        working-directory: ./Server
+        run: dotnet test --no-build --verbosity normal
