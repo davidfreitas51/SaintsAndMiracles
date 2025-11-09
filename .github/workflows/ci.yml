@@ -28,7 +28,8 @@ jobs:
         working-directory: ./Client
         run: |
           npm ci
-          npm run build -- --configuration production
+          # Build apontando direto para wwwroot do .NET
+          npm run build -- --configuration production --output-path ../Server/API/wwwroot
 
       # 4. Configura .NET
       - name: Setup .NET
