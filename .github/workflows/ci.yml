@@ -28,7 +28,6 @@ jobs:
         working-directory: ./Client
         run: |
           npm ci
-          # Build apontando direto para wwwroot do .NET
           npm run build -- --configuration production --output-path ../Server/API/wwwroot
 
       # 4. Configura .NET
@@ -37,17 +36,14 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      # 5. Restaura dependências do .NET
+      # 5. Restaura dependências da solução .NET
       - name: Restore .NET dependencies
-        working-directory: ./Server
-        run: dotnet restore
+        run: dotnet restore ./SignsNSaints.sln
 
       # 6. Build da solução .NET
       - name: Build .NET solution
-        working-directory: ./Server
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build ./SignsNSaints.sln --no-restore --configuration Release
 
       # 7. Executa testes .NET
       - name: Run .NET tests
-        working-directory: ./Server
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test ./SignsNSaints.sln --no-build --verbosity normal
