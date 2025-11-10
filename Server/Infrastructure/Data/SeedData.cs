@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Core.Interfaces.Services;
@@ -7,10 +8,12 @@ using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+
+[assembly: InternalsVisibleTo("Infrastructure.Tests")]
 public static class SeedData
 {
-    private static string basePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data/SeedData");
-    private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+    internal static string basePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data/SeedData");
+    internal static JsonSerializerOptions jsonOptions = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
@@ -32,7 +35,7 @@ public static class SeedData
         await SeedPrayers(context);
     }
 
-    private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
+    internal static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
     {
         var roles = new[] { "Admin", "SuperAdmin" };
 
@@ -80,7 +83,7 @@ public static class SeedData
         Console.ResetColor();
     }
 
-    private static async Task SeedTags(DataContext context)
+    internal static async Task SeedTags(DataContext context)
     {
         var filePath = Path.Combine(basePath, "tags.json");
         var json = await File.ReadAllTextAsync(filePath);
@@ -105,7 +108,7 @@ public static class SeedData
         }
     }
 
-    private static async Task SeedSaints(DataContext context)
+    internal static async Task SeedSaints(DataContext context)
     {
         if (!context.Saints.Any())
         {
@@ -139,7 +142,7 @@ public static class SeedData
         }
     }
 
-    private static async Task SeedMiracles(DataContext context)
+    internal static async Task SeedMiracles(DataContext context)
     {
         if (!context.Miracles.Any())
         {
@@ -173,7 +176,7 @@ public static class SeedData
         }
     }
 
-    private static async Task SeedPrayers(DataContext context)
+    internal static async Task SeedPrayers(DataContext context)
     {
         if (!context.Prayers.Any())
         {
