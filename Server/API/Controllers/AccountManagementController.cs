@@ -4,28 +4,34 @@ using Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AccountManagementController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSender<AppUser> emailSender, IConfiguration configuration) : ControllerBase
+public class AccountManagementController(
+    UserManager<AppUser> userManager,
+    SignInManager<AppUser> signInManager,
+    IEmailSender<AppUser> emailSender,
+    IConfiguration configuration
+) : ControllerBase
 {
-    private readonly string frontendBaseUrl = configuration["Frontend:BaseUrl"];
+    private readonly string frontendBaseUrl = configuration["Frontend:BaseUrl"]!;
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult Me()
+    public IActionResult Me()
     {
         return Ok();
     }
+
+    // ===================== USERS =====================
 
     [Authorize(Roles = "SuperAdmin")]
     [HttpGet("users")]
     public async Task<ActionResult<IEnumerable<object>>> GetUsers()
     {
-        var users = await userManager.Users.ToListAsync();
+        var users = userManager.Users.ToList(); // sync, ok pra Identity
 
         var result = new List<object>();
 
@@ -38,130 +44,56 @@ public class AccountManagementController(UserManager<AppUser> userManager, SignI
                 user.FirstName,
                 user.LastName,
                 user.Email,
-                Roles = roles,
+                Roles = roles
             });
         }
 
         return Ok(result);
     }
 
+
     [Authorize(Roles = "SuperAdmin")]
     [HttpDelete("users/{username}")]
-    public async Task<ActionResult> DeleteUserByUsername(string username)
+    public async Task<IActionResult> DeleteUserByUsername(string username)
     {
         var user = await userManager.FindByNameAsync(username);
         if (user == null)
-        {
             return NotFound(new { message = "User not found." });
-        }
 
         var currentUser = await userManager.GetUserAsync(User);
         if (currentUser != null && currentUser.UserName == username)
-        {
             return BadRequest(new { message = "You cannot delete your own account." });
-        }
 
         var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)
-        {
             return BadRequest(result.Errors);
-        }
 
-        return NoContent(); // 204
+        return NoContent();
     }
 
-
+    // ===================== CURRENT USER =====================
 
     [Authorize]
     [HttpGet("current-user")]
     public async Task<ActionResult<CurrentUserDto>> GetCurrentUser()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        if (email == null)
-            return Unauthorized();
-
-        var user = await userManager.Users
-            .Where(u => u.Email == email)
-            .Select(u => new CurrentUserDto
-            {
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Email = u.Email
-            })
-            .FirstOrDefaultAsync();
-
+        var user = await userManager.GetUserAsync(User);
         if (user == null)
             return Unauthorized();
 
-        return Ok(user);
-    }
-
-    [Authorize]
-    [HttpGet("user-role")]
-    public async Task<ActionResult<string>> GetCurrentRole()
-    {
-        var user = HttpContext.User;
-
-        if (user?.Identity == null || !user.Identity.IsAuthenticated)
-            return Unauthorized();
-
-        var role = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-
-        if (string.IsNullOrEmpty(role))
+        return Ok(new CurrentUserDto
         {
-            var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Unauthorized();
-        }
-
-        if (string.IsNullOrEmpty(role))
-            return NotFound("Role not found for user");
-
-        return Ok(new { role });
-    }
-
-
-    [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
-    {
-        var user = await userManager.FindByEmailAsync(dto.Email);
-        if (user == null) return Ok();
-
-        var token = await userManager.GeneratePasswordResetTokenAsync(user);
-
-        var resetLink = $"{frontendBaseUrl}/account/reset-password?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}";
-
-        await emailSender.SendPasswordResetLinkAsync(user, user.Email, resetLink);
-
-        return Ok();
-    }
-
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
-    {
-        var user = await userManager.FindByEmailAsync(dto.Email);
-        if (user == null)
-            return BadRequest(new { Message = "Invalid request" });
-
-        var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
-
-        if (!result.Succeeded)
-        {
-            var errors = result.Errors.Select(e => e.Description).ToArray();
-            return BadRequest(new { Message = "Password reset failed", Errors = errors });
-        }
-
-        return Ok();
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email
+        });
     }
 
     [Authorize]
     [HttpPut("update-profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        if (email == null)
-            return Unauthorized();
-
-        var user = await userManager.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var user = await userManager.GetUserAsync(User);
         if (user == null)
             return Unauthorized();
 
@@ -182,6 +114,27 @@ public class AccountManagementController(UserManager<AppUser> userManager, SignI
             user.Email
         });
     }
+
+    // ===================== ROLES =====================
+
+    [Authorize]
+    [HttpGet("user-role")]
+    public async Task<ActionResult<object>> GetCurrentRole()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+            return Unauthorized();
+
+        var roles = await userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault();
+
+        if (role == null)
+            return NotFound("Role not found for user");
+
+        return Ok(new { role });
+    }
+
+    // ===================== PASSWORD & EMAIL =====================
 
     [Authorize]
     [HttpPost("request-email-change")]
@@ -236,19 +189,54 @@ public class AccountManagementController(UserManager<AppUser> userManager, SignI
         return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=true&logout=true");
     }
 
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+            return Ok();
+
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+        var resetLink =
+            $"{frontendBaseUrl}/account/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}";
+
+        await emailSender.SendPasswordResetLinkAsync(user, user.Email!, resetLink);
+
+        return Ok();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+            return BadRequest(new { Message = "Invalid request" });
+
+        var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToArray();
+            return BadRequest(new { Message = "Password reset failed", Errors = errors });
+        }
+
+        return Ok();
+    }
+
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Unauthorized();
-
-        var user = await userManager.FindByIdAsync(userId);
+        var user = await userManager.GetUserAsync(User);
         if (user == null)
             return Unauthorized();
 
-        var result = await userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+        var result = await userManager.ChangePasswordAsync(
+            user,
+            dto.CurrentPassword,
+            dto.NewPassword
+        );
 
         if (!result.Succeeded)
         {
@@ -256,6 +244,11 @@ public class AccountManagementController(UserManager<AppUser> userManager, SignI
             return BadRequest(new { Message = "Password change failed", Errors = errors });
         }
 
-        return Ok(new { Message = "Password changed successfully" });
+        await signInManager.SignOutAsync();
+
+        return Ok(new
+        {
+            Message = "Password changed successfully. Please log in again."
+        });
     }
 }

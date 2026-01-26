@@ -15,6 +15,7 @@ import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { PASSWORD_PATTERN } from '../../constants/constants';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-account-settings-page',
@@ -43,6 +44,7 @@ export class AccountSettingsPageComponent implements OnInit {
   private accountManagementService = inject(AccountManagementService);
   private userSessionService = inject(UserSessionService);
   private snackBarService = inject(SnackbarService);
+  private router = inject(Router)
   private fb = inject(FormBuilder);
 
   ngOnInit(): void {
@@ -105,31 +107,35 @@ export class AccountSettingsPageComponent implements OnInit {
     });
   }
 
-  updatePassword(): void {
-    if (this.passwordForm.invalid) return;
 
-    const { currentPassword, newPassword, confirmPassword } =
-      this.passwordForm.value;
+updatePassword(): void {
+  if (this.passwordForm.invalid) return;
 
-    if (newPassword !== confirmPassword) {
-      this.snackBarService.error('New passwords do not match.');
-      return;
-    }
+  const { currentPassword, newPassword, confirmPassword } =
+    this.passwordForm.value;
 
-    this.accountManagementService
-      .changePassword({ currentPassword, newPassword })
-      .subscribe({
-        next: () => {
-          this.snackBarService.success('Password changed successfully.');
-          this.passwordForm.reset();
-        },
-        error: (err) => {
-          let errorMessage = 'Failed to change password.';
-          if (err.error?.message) errorMessage = err.error.message;
-          else if (err.error?.Errors)
-            errorMessage = err.error.Errors.join(', ');
-          this.snackBarService.error(errorMessage);
-        },
-      });
+  if (newPassword !== confirmPassword) {
+    this.snackBarService.error('New passwords do not match.');
+    return;
   }
+
+  this.accountManagementService
+    .changePassword({ currentPassword, newPassword })
+    .subscribe({
+      next: () => {
+        this.snackBarService.success('Password changed successfully.');
+
+        this.passwordForm.reset();
+
+        this.router.navigate(['/account/login']);
+      },
+      error: (err) => {
+        let errorMessage = 'Failed to change password.';
+        if (err.error?.message) errorMessage = err.error.message;
+        else if (err.error?.Errors)
+          errorMessage = err.error.Errors.join(', ');
+        this.snackBarService.error(errorMessage);
+      },
+    });
+}
 }
