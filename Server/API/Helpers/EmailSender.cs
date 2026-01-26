@@ -71,11 +71,12 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
 
     private async Task SendEmailAsync(string toEmail, string subject, string body)
     {
-        var smtpHost = _configuration["Smtp:Host"];
-        var smtpPort = int.Parse(_configuration["Smtp:Port"]);
-        var smtpUser = _configuration["Smtp:User"];
-        var smtpPass = _configuration["Smtp:Pass"];
-        var fromEmail = _configuration["Smtp:From"];
+        var smtpHost = _configuration["Smtp:Host"]!;
+        var smtpPort = int.Parse(_configuration["Smtp:Port"]!);
+        var smtpUser = _configuration["Smtp:User"]!;
+        var smtpPass = _configuration["Smtp:Pass"]!;
+        var fromEmail = _configuration["Smtp:From"]!;
+        var fromName = _configuration["Smtp:FromName"] ?? "Saints & Miracles";
 
         using var client = new SmtpClient(smtpHost, smtpPort)
         {
@@ -85,7 +86,7 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
 
         var mailMessage = new MailMessage
         {
-            From = new MailAddress(fromEmail),
+            From = new MailAddress(fromEmail, fromName),
             Subject = subject,
             Body = body,
             IsBodyHtml = true
@@ -95,4 +96,5 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
 
         await client.SendMailAsync(mailMessage);
     }
+
 }
