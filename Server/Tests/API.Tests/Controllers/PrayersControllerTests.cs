@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
-using Xunit;
 
 namespace API.Tests.Controllers;
 

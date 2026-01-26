@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Moq;
 using System.Security.Claims;
-using Xunit;
 
 namespace API.Tests.Controllers;
 
