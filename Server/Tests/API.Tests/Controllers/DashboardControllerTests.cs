@@ -8,9 +8,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Xunit;
 
-namespace Infrastructure.Tests.Controllers;
+namespace API.Tests.Controllers;
 
 public class DashboardControllerTests
 {

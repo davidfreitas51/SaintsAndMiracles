@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
 
-namespace Infrastructure.Tests.Controllers;
+namespace API.Tests.Controllers;
 
 public class ReligiousOrdersControllerTests
 {

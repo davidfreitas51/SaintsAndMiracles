@@ -11,9 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Security.Claims;
-using Xunit;
 
-namespace Infrastructure.Tests.Controllers;
+namespace API.Tests.Controllers;
 
 public class TagsControllerTests
 {
@@ -98,7 +97,7 @@ public class TagsControllerTests
                 {
                     Id = 1,
                     Name = "Miracle",
-                    TagType = default! // ✅ satisfy required member
+                    TagType = default!
                 }
             ],
             TotalCount = 1

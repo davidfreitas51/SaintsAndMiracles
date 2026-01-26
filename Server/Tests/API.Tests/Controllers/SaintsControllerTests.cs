@@ -1,5 +1,4 @@
 using API.Controllers;
-using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
 using Microsoft.AspNetCore.Http;
@@ -9,9 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Security.Claims;
-using Xunit;
 
-namespace Infrastructure.Tests.Controllers;
+namespace API.Tests.Controllers;
 
 public class SaintsControllerTests
 {
