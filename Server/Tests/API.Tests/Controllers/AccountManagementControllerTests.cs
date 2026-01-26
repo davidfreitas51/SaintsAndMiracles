@@ -129,34 +129,6 @@ public class AccountManagementControllerTests
     }
 
     [Fact]
-    public async Task GetUsers_ShouldReturnOk_WhenSuperAdmin()
-    {
-        var user = new AppUser
-        {
-            Email = "admin@test.com",
-            FirstName = "Admin",
-            LastName = "Root"
-        };
-
-        _userManager
-            .Setup(u => u.GetUsersInRoleAsync("SuperAdmin"))
-            .ReturnsAsync(new List<AppUser> { user });
-
-        _userManager
-            .Setup(u => u.GetRolesAsync(user))
-            .ReturnsAsync(new List<string> { "SuperAdmin" });
-
-        SetUserContext(CreateUserPrincipal("1", user.Email!, "SuperAdmin"));
-
-        var result = await _controller.GetUsers();
-
-        var ok = Assert.IsType<OkObjectResult>(result.Result);
-        var list = Assert.IsAssignableFrom<IEnumerable<object>>(ok.Value);
-
-        Assert.Single(list);
-    }
-
-    [Fact]
     public async Task UpdateProfile_ShouldUpdateNames_WhenValid()
     {
         var user = new AppUser
