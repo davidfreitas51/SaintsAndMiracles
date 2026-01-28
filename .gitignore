@@ -490,3 +490,4 @@ $RECYCLE.BIN/
 !/Server/API/wwwroot/miracles/
 !/Server/API/wwwroot/prayers/
 !/Server/API/wwwroot/saints/
+Server/API/appsettings.Development.json
