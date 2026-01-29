@@ -18,9 +18,7 @@ import { CountryCodePipe } from '../../shared/pipes/country-code.pipe';
 import { MatIconModule } from '@angular/material/icon';
 import { environment } from '../../../environments/environment';
 import { SaintFilters } from '../../features/saints/interfaces/saint-filter';
-import { PrayersService } from '../../core/services/prayers.service';
 import { Prayer } from '../../features/prayers/interfaces/prayer';
-import { MiraclesService } from '../../core/services/miracles.service';
 import { Miracle } from '../../features/miracles/interfaces/miracle';
 
 @Component({
@@ -41,12 +39,10 @@ import { Miracle } from '../../features/miracles/interfaces/miracle';
 })
 export class HomePageComponent implements OnInit {
   private saintsService = inject(SaintsService);
-  private miraclesService = inject(MiraclesService);
-  private prayersService = inject(PrayersService);
   private router = inject(Router);
 
   imageBaseUrl = environment.assetsUrl;
-  universalFeastOfTheDay: Saint | null = null;
+  universalFeastsOfTheDay: Saint[] = []
   saintsOfThisMonth: Saint[] = [];
   recentPrayers: Prayer[] = [];
   recentMiracles: Miracle[] = [];
@@ -62,9 +58,9 @@ export class HomePageComponent implements OnInit {
   }
 
   private loadSaintOfTheDay() {
-    this.saintsService.getSaintOfTheDay().subscribe({
+    this.saintsService.getSaintsOfTheDay().subscribe({
       next: (saint) => {
-        this.universalFeastOfTheDay = saint;
+        this.universalFeastsOfTheDay = saint;
       },
       error: (err) => {
         console.error('Failed to load universal feast saint:', err);
@@ -77,16 +73,7 @@ export class HomePageComponent implements OnInit {
     filters.feastMonth = (new Date().getMonth() + 1).toString();
     filters.orderBy = 'feastDay';
 
-    this.saintsService.getSaints(filters).subscribe({
-      next: (response) => {
-        this.saintsOfThisMonth = response.items.filter(
-          (s) => s.id !== this.universalFeastOfTheDay?.id
-        );
-      },
-      error: (err) => {
-        console.error('Failed to load saints of the month:', err);
-      },
-    });
+
   }
 
   scroll(direction: 'left' | 'right') {

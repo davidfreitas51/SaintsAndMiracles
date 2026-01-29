@@ -87,63 +87,74 @@
       </p>
     </div>
 
-    <!-- Today's Saint -->
-    <div class="p-6 pt-12 w-full max-w-4xl mx-auto">
-      <ng-container *ngIf="universalFeastOfTheDay">
+    <!-- Today's Saints -->
+    <div class="p-6 pt-12 w-full max-w-6xl mx-auto">
+      <ng-container *ngIf="universalFeastsOfTheDay.length">
         <h2
           class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-200 mb-8"
         >
-          Today's Saint
+          Today's Saints
         </h2>
-        <a
-          [routerLink]="['/saints', universalFeastOfTheDay.slug]"
-          class="block w-full"
-        >
-          <mat-card
-            class="flex flex-col md:flex-row items-center p-6 md:p-8 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer bg-white dark:bg-[#1e2022]"
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <a
+            *ngFor="let saint of universalFeastsOfTheDay"
+            [routerLink]="['/saints', saint.slug]"
+            class="block w-full"
           >
-            <div class="flex justify-center mb-4 md:mb-0 md:mr-6">
-              <img
-                [src]="imageBaseUrl + universalFeastOfTheDay.image"
-                [alt]="universalFeastOfTheDay.name"
-                class="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 object-cover rounded-full"
-              />
-            </div>
-            <div class="flex flex-col flex-1 text-center md:text-left">
-              <h3
-                class="text-lg sm:text-xl md:text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-100"
-              >
-                {{ universalFeastOfTheDay.name }}
-              </h3>
-              <div
-                class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-center md:justify-start gap-1"
-              >
-                <img
-                  *ngIf="universalFeastOfTheDay.country | countryCode as code"
-                  [src]="'https://flagcdn.com/w20/' + code + '.webp'"
-                  [alt]="universalFeastOfTheDay.country + ' flag'"
-                  class="w-4 h-4 object-contain"
-                />
-                <span
-                  >{{ universalFeastOfTheDay.country }} –
-                  {{ universalFeastOfTheDay.century | roman }}</span
-                >
+            <mat-card
+              class="flex flex-col p-6 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer bg-white dark:bg-[#1e2022]"
+            >
+              <!-- Top content -->
+              <div class="flex flex-col sm:flex-row items-center">
+                <div class="flex justify-center mb-4 sm:mb-0 sm:mr-6">
+                  <img
+                    [src]="imageBaseUrl + saint.image"
+                    [alt]="saint.name"
+                    class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-full"
+                  />
+                </div>
+
+                <div class="flex flex-col flex-1 text-center sm:text-left">
+                  <h3
+                    class="text-lg sm:text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100"
+                  >
+                    {{ saint.name }}
+                  </h3>
+
+                  <div
+                    class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-center sm:justify-start gap-1"
+                  >
+                    <img
+                      *ngIf="saint.country | countryCode as code"
+                      [src]="'https://flagcdn.com/w20/' + code + '.webp'"
+                      [alt]="saint.country + ' flag'"
+                      class="w-4 h-4 object-contain"
+                    />
+                    <span>
+                      {{ saint.country }} – {{ saint.century | roman }}
+                    </span>
+                  </div>
+
+                  <p
+                    class="text-sm text-gray-600 dark:text-gray-300 line-clamp-4"
+                  >
+                    {{ saint.description }}
+                  </p>
+                </div>
               </div>
-              <p
-                class="text-sm sm:text-base text-gray-600 dark:text-gray-300 line-clamp-4 flex-1"
-              >
-                {{ universalFeastOfTheDay.description }}
-              </p>
-              <a
-                [routerLink]="['/saints', universalFeastOfTheDay.slug]"
-                class="text-primary-app font-semibold text-xs hover:underline mt-4 inline-block self-center md:self-start"
-                (click)="$event.stopPropagation()"
-              >
-                Read More
-              </a>
-            </div>
-          </mat-card>
-        </a>
+
+              <!-- Card footer (true center) -->
+              <div class="w-full flex justify-center mt-4">
+                <span
+                  class="text-primary-app font-semibold text-sm hover:underline"
+                >
+                  Read More
+                </span>
+              </div>
+            </mat-card>
+          </a>
+        </div>
       </ng-container>
     </div>
 

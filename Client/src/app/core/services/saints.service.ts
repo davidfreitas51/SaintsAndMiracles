@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Observable, switchMap, map } from 'rxjs';
+import { Observable, switchMap, map, catchError, of, throwError } from 'rxjs';
 import { Saint } from '../../features/saints/interfaces/saint';
 import { NewSaintDto } from '../../features/saints/interfaces/new-saint-dto';
 import { SaintFilters } from '../../features/saints/interfaces/saint-filter';
@@ -89,8 +89,20 @@ export class SaintsService {
     );
   }
 
-  getSaintOfTheDay(): Observable<Saint | null> {
-    return this.http.get<Saint | null>(`${this.baseUrl}saints/of-the-day`);
+  getSaintsOfTheDay(): Observable<Saint[]> {
+    return this.http
+      .get<Saint[]>(`${this.baseUrl}saints/of-the-day`, {
+        observe: 'response',
+      })
+      .pipe(
+        map(response => response.body ?? []),
+        catchError(err => {
+          if (err.status === 204) {
+            return of([]);
+          }
+          return throwError(() => err);
+        })
+      );
   }
 
   private parseFeastDay(

@@ -12,6 +12,6 @@ public interface ISaintsRepository
     Task<bool> UpdateAsync(Saint saint);
     Task DeleteAsync(int id);
     Task<IReadOnlyList<string>> GetCountriesAsync();
-    Task<Saint?> GetSaintOfTheDayAsync(DateOnly feastDay);
+    Task<List<Saint>> GetSaintsOfTheDayAsync(DateOnly feastDay);
     Task<int> GetTotalSaintsAsync();
 }

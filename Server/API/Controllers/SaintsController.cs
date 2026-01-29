@@ -85,14 +85,14 @@ public class SaintsController(
     }
 
     [HttpGet("of-the-day")]
-    public async Task<IActionResult> GetSaintOfTheDay()
+    public async Task<IActionResult> GetSaintsOfTheDay()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var saint = await saintsRepository.GetSaintOfTheDayAsync(today);
+        var saints = await saintsRepository.GetSaintsOfTheDayAsync(DateOnly.FromDateTime(DateTime.UtcNow));
 
-        if (saint is null)
+        if (!saints.Any())
             return NoContent();
 
-        return Ok(saint);
+        return Ok(saints);
     }
+
 }

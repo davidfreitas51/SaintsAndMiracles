@@ -151,21 +151,33 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         );
     }
 
-    public async Task<Saint?> GetSaintOfTheDayAsync(DateOnly feastDay)
+    public async Task<List<Saint>> GetSaintsOfTheDayAsync(DateOnly feastDay)
     {
-        var cacheKey = cacheService.BuildKey("saint", $"oftheday_{feastDay:MMdd}", incrementVersion: false);
-
-        return await cacheService.GetOrSetAsync(
-            cacheKey,
-            () => context.Saints
-                .Include(s => s.Tags)
-                .Include(s => s.ReligiousOrder)
-                .Where(s => s.FeastDay.HasValue &&
-                            s.FeastDay.Value.Month == feastDay.Month &&
-                            s.FeastDay.Value.Day == feastDay.Day &&
-                            s.Tags.Any(t => t.Name == "Saint of the Day"))
-                .FirstOrDefaultAsync()
+        var cacheKey = cacheService.BuildKey(
+            "saint",
+            $"oftheday_{feastDay:MMdd}",
+            incrementVersion: false
         );
+
+        var cachedResult = await cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
+            {
+                var saints = await context.Saints
+                    .Include(s => s.Tags)
+                    .Include(s => s.ReligiousOrder)
+                    .Where(s =>
+                        s.FeastDay.HasValue &&
+                        s.FeastDay.Value.Month == feastDay.Month &&
+                        s.FeastDay.Value.Day == feastDay.Day &&
+                        s.Tags.Any(t => t.Name == "Saint of the Day")
+                    )
+                    .ToListAsync();
+
+                return saints;
+            });
+
+        return cachedResult ?? new List<Saint>();
     }
 
     private async Task<PagedResult<Saint>> FetchSaintsFromDb(SaintFilters filters)

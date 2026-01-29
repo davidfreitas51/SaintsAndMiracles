@@ -203,13 +203,20 @@ public class SaintsRepositoryTests
     }
 
     [Fact]
-    public async Task GetSaintOfTheDayAsync_ShouldReturnCorrectSaint()
+    public async Task GetSaintsOfTheDayAsync_ShouldReturnCorrectSaint()
     {
         var repo = CreateRepository(out _);
-        var saint = await repo.GetSaintOfTheDayAsync(new DateOnly(1, 10, 4));
-        Assert.NotNull(saint);
-        Assert.Equal("Francis of Assisi", saint!.Name);
+
+        var saints = await repo.GetSaintsOfTheDayAsync(new DateOnly(1, 10, 4));
+
+        Assert.NotNull(saints);
+        Assert.Single(saints);
+        Assert.Equal(
+            "Francis of Assisi",
+            saints[0].Name
+        );
     }
+
 
     [Fact]
     public async Task CreateAsync_ShouldAddNewSaint()

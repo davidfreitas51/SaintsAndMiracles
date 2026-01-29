@@ -242,14 +242,14 @@ public class SaintsControllerTests
     }
 
     [Fact]
-    public async Task GetSaintOfTheDay_ShouldReturnNoContent_WhenNull()
+    public async Task GetSaintsOfTheDay_ShouldReturnNoContent_WhenEmpty()
     {
         var controller = CreateController(out var repo, out _);
 
-        repo.Setup(r => r.GetSaintOfTheDayAsync(It.IsAny<DateOnly>()))
-            .ReturnsAsync((Saint?)null);
+        repo.Setup(r => r.GetSaintsOfTheDayAsync(It.IsAny<DateOnly>()))
+            .ReturnsAsync(new List<Saint>());
 
-        var result = await controller.GetSaintOfTheDay();
+        var result = await controller.GetSaintsOfTheDay();
 
         Assert.IsType<NoContentResult>(result);
     }
