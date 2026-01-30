@@ -260,4 +260,68 @@ public class SaintsRepositoryTests
         await repo.DeleteAsync(id);
         Assert.False(context.Saints.Any(s => s.Id == id));
     }
+
+    [Fact]
+    public async Task GetUpcomingFeasts_ShouldReturnSaintsOrderedByNextFeast()
+    {
+        var repo = CreateRepository(out _);
+        var today = new DateOnly(2024, 5, 1);
+
+        var result = await repo.GetUpcomingFeasts(today);
+
+        Assert.NotEmpty(result);
+        Assert.Equal("Joan of Arc", result[0].Name);
+        Assert.Equal("Augustine of Hippo", result[1].Name);
+        Assert.Equal("Padre Pio", result[2].Name);
+        Assert.Equal("Francis of Assisi", result[3].Name);
+        Assert.Equal("Teresa of Ávila", result[4].Name);
+    }
+
+    [Fact]
+    public async Task GetUpcomingFeasts_ShouldRollOverToNextYearForPastFeasts()
+    {
+        var repo = CreateRepository(out _);
+        var today = new DateOnly(2024, 12, 31);
+
+        var result = await repo.GetUpcomingFeasts(today);
+
+        Assert.NotEmpty(result);
+        Assert.Equal("Joan of Arc", result.First().Name);
+    }
+
+    [Fact]
+    public async Task GetUpcomingFeasts_ShouldRespectTakeLimit()
+    {
+        var repo = CreateRepository(out _);
+        var today = new DateOnly(2024, 1, 1);
+
+        var result = await repo.GetUpcomingFeasts(today, take: 3);
+
+        Assert.Equal(3, result.Count);
+    }
+
+    [Fact]
+    public async Task GetUpcomingFeasts_ShouldIgnoreSaintsWithoutFeastDay()
+    {
+        var repo = CreateRepository(out var context);
+
+        context.Saints.Add(new Saint
+        {
+            Name = "Test Saint Without Feast",
+            Slug = "test-no-feast",
+            Century = 10,
+            Country = "Testland",
+            Image = "image.png",
+            Description = "",
+            MarkdownPath = ""
+        });
+
+        context.SaveChanges();
+
+        var today = new DateOnly(2024, 1, 1);
+        var result = await repo.GetUpcomingFeasts(today);
+
+        Assert.DoesNotContain(result, s => s.Name == "Test Saint Without Feast");
+    }
+
 }

@@ -95,4 +95,16 @@ public class SaintsController(
         return Ok(saints);
     }
 
+    [HttpGet("upcoming")]
+    public async Task<IActionResult> GetUpcomingFeasts()
+    {
+        var saints = await saintsRepository.GetUpcomingFeasts(
+            DateOnly.FromDateTime(DateTime.UtcNow)
+        );
+
+        if (!saints.Any())
+            return NoContent();
+
+        return Ok(saints);
+    }
 }

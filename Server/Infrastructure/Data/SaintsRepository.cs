@@ -180,6 +180,51 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         return cachedResult ?? new List<Saint>();
     }
 
+    public async Task<List<Saint>> GetUpcomingFeasts(DateOnly today, int take = 10)
+    {
+        var cacheKey = cacheService.BuildKey(
+            "saint",
+            $"upcomingfeasts_{today:MMDD}",
+            incrementVersion: false
+        );
+
+        var cachedResult = await cacheService.GetOrSetAsync(
+            cacheKey,
+            async () =>
+            {
+                var saints = await context.Saints
+                    .Include(s => s.Tags)
+                    .Include(s => s.ReligiousOrder)
+                    .Where(s => s.FeastDay.HasValue)
+                    .ToListAsync();
+
+                var upcoming = saints
+                    .Select(s => new
+                    {
+                        Saint = s,
+                        NextFeast = GetNextFeastDate(s.FeastDay!.Value, today)
+                    })
+                    .Where(x => x.NextFeast > today)
+                    .OrderBy(x => x.NextFeast)
+                    .Take(take)
+                    .Select(x => x.Saint)
+                    .ToList();
+
+                return upcoming;
+            });
+
+        return cachedResult ?? new List<Saint>();
+    }
+
+    private static DateOnly GetNextFeastDate(DateOnly feastDay, DateOnly today)
+    {
+        var thisYear = new DateOnly(today.Year, feastDay.Month, feastDay.Day);
+
+        return thisYear >= today
+            ? thisYear
+            : thisYear.AddYears(1);
+    }
+
     private async Task<PagedResult<Saint>> FetchSaintsFromDb(SaintFilters filters)
     {
         var query = context.Saints

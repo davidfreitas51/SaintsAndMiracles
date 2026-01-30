@@ -90,19 +90,11 @@ export class SaintsService {
   }
 
   getSaintsOfTheDay(): Observable<Saint[]> {
-    return this.http
-      .get<Saint[]>(`${this.baseUrl}saints/of-the-day`, {
-        observe: 'response',
-      })
-      .pipe(
-        map(response => response.body ?? []),
-        catchError(err => {
-          if (err.status === 204) {
-            return of([]);
-          }
-          return throwError(() => err);
-        })
-      );
+    return this.http.get<Saint[]>(`${this.baseUrl}saints/of-the-day`);
+  }
+
+  getUpcomingSaints(): Observable<Saint[]> {
+    return this.http.get<Saint[]>(`${this.baseUrl}saints/upcoming`);
   }
 
   private parseFeastDay(

@@ -254,6 +254,58 @@ public class SaintsControllerTests
         Assert.IsType<NoContentResult>(result);
     }
 
+    [Fact]
+    public async Task GetUpcomingFeasts_ShouldReturnNoContent_WhenEmpty()
+    {
+        var controller = CreateController(out var repo, out _);
+
+        repo.Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<Saint>());
+
+        var result = await controller.GetUpcomingFeasts();
+
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task GetUpcomingFeasts_ShouldReturnOk_WhenSaintsExist()
+    {
+        var controller = CreateController(out var repo, out _);
+
+        var saints = new List<Saint>
+    {
+        CreateSaint(1, "Joan of Arc", "joan-of-arc"),
+        CreateSaint(2, "Francis of Assisi", "francis-of-assisi")
+    };
+
+        repo.Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
+            .ReturnsAsync(saints);
+
+        var result = await controller.GetUpcomingFeasts();
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var value = Assert.IsAssignableFrom<List<Saint>>(ok.Value);
+
+        Assert.Equal(2, value.Count);
+        Assert.Equal("Joan of Arc", value[0].Name);
+    }
+
+    [Fact]
+    public async Task GetUpcomingFeasts_ShouldCallRepository()
+    {
+        var controller = CreateController(out var repo, out _);
+
+        repo.Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<Saint> { CreateSaint() });
+
+        await controller.GetUpcomingFeasts();
+
+        repo.Verify(
+            r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()),
+            Times.Once
+        );
+    }
+
     private static Saint CreateSaint(
     int id = 1,
     string name = "Francis",

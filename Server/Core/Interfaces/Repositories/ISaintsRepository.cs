@@ -13,5 +13,6 @@ public interface ISaintsRepository
     Task DeleteAsync(int id);
     Task<IReadOnlyList<string>> GetCountriesAsync();
     Task<List<Saint>> GetSaintsOfTheDayAsync(DateOnly feastDay);
+    Task<List<Saint>> GetUpcomingFeasts(DateOnly today, int take = 10);
     Task<int> GetTotalSaintsAsync();
 }
