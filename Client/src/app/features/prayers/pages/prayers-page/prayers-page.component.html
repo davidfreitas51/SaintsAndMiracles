@@ -51,10 +51,11 @@
             <mat-label>Order By</mat-label>
             <mat-select
               [(value)]="prayerFilters.orderBy"
-              (selectionChange)="handleFilterChange('orderBy', $event)"
+              (selectionChange)="handleFilterChange($event.value)"
             >
-              <mat-option value="title">Title (A-Z)</mat-option>
-              <mat-option value="title_desc">Title (Z-A)</mat-option>
+              <mat-option *ngFor="let option of prayerOrderOptions" [value]="option.value">
+                {{ option.viewValue }}
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </div>

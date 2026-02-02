@@ -8,7 +8,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
 
 import { PrayersService } from '../../../../core/services/prayers.service';
 import { Prayer } from '../../interfaces/prayer';
@@ -16,7 +15,7 @@ import { PrayerFilters } from '../../interfaces/prayer-filter';
 import { environment } from '../../../../../environments/environment';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
-import { Tag } from '../../../../interfaces/tag';
+import { PrayerOrderBy } from '../../enums/prayerOrderBy';
 
 @Component({
   selector: 'app-prayers-page',
@@ -43,10 +42,15 @@ export class PrayersPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   public prayers: Prayer[] | null = null;
+  PrayerOrderBy = PrayerOrderBy
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
 
   prayerFilters: PrayerFilters = new PrayerFilters();
+  prayerOrderOptions = [
+    { value: PrayerOrderBy.Title, viewValue: 'Title (A-Z)' },
+    { value: PrayerOrderBy.TitleDesc, viewValue: 'Title (Z-A)' },
+  ];
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
@@ -102,8 +106,8 @@ export class PrayersPageComponent implements OnInit {
     });
   }
 
-  handleFilterChange(key: keyof PrayerFilters, event: MatSelectChange) {
-    (this.prayerFilters as any)[key] = event.value;
+  handleFilterChange(value: PrayerOrderBy) {
+    this.prayerFilters.orderBy = value;
     this.prayerFilters.pageNumber = 1;
     this.updateData();
   }

@@ -152,14 +152,12 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         if (filters.TagIds is { Count: > 0 })
             query = query.Where(p => p.Tags.Any(tag => filters.TagIds.Contains(tag.Id)));
 
-        query = string.IsNullOrWhiteSpace(filters.OrderBy)
-            ? query.OrderBy(p => p.Title)
-            : filters.OrderBy.ToLower() switch
-            {
-                "title" => query.OrderBy(p => p.Title),
-                "title_desc" => query.OrderByDescending(p => p.Title),
-                _ => query.OrderBy(p => p.Title)
-            };
+        query = filters.OrderBy switch
+        {
+            PrayerOrderBy.Title => query.OrderBy(p => p.Title),
+            PrayerOrderBy.TitleDesc => query.OrderByDescending(p => p.Title),
+            _ => query.OrderBy(p => p.Title)
+        };
 
         var totalCount = await query.CountAsync();
 

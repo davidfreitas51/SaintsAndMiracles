@@ -261,22 +261,26 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         if (filters.TagIds is { Count: > 0 })
             query = query.Where(s => s.Tags.Any(tag => filters.TagIds.Contains(tag.Id)));
 
-        query = string.IsNullOrWhiteSpace(filters.OrderBy)
-            ? query.OrderBy(s => s.Name)
-            : filters.OrderBy.ToLower() switch
-            {
-                "name" => query.OrderBy(s => s.Name),
-                "name_desc" => query.OrderByDescending(s => s.Name),
-                "century" => query.OrderBy(s => s.Century),
-                "century_desc" => query.OrderByDescending(s => s.Century),
-                "feastday" => query.OrderBy(s => s.FeastDay.HasValue
-                    ? s.FeastDay.Value.Month * 100 + s.FeastDay.Value.Day
-                    : int.MaxValue),
-                "feastday_desc" => query.OrderByDescending(s => s.FeastDay.HasValue
-                    ? s.FeastDay.Value.Month * 100 + s.FeastDay.Value.Day
-                    : int.MinValue),
-                _ => query.OrderBy(s => s.Name)
-            };
+        query = filters.OrderBy switch
+        {
+            SaintOrderBy.Name => query.OrderBy(s => s.Name),
+            SaintOrderBy.NameDesc => query.OrderByDescending(s => s.Name),
+            SaintOrderBy.Century => query.OrderBy(s => s.Century),
+            SaintOrderBy.CenturyDesc => query.OrderByDescending(s => s.Century),
+
+            SaintOrderBy.FeastDay => query
+                .OrderBy(s => s.FeastDay.HasValue ? s.FeastDay.Value.Month : 13)
+                .ThenBy(s => s.FeastDay.HasValue ? s.FeastDay.Value.Day : 32),
+
+            SaintOrderBy.FeastDayDesc => query
+                .OrderByDescending(s => s.FeastDay.HasValue ? s.FeastDay.Value.Month : 0)
+                .ThenByDescending(s => s.FeastDay.HasValue ? s.FeastDay.Value.Day : 0),
+
+
+            _ => query.OrderBy(s => s.Name)
+        };
+
+
 
         var totalCount = await query.CountAsync();
 

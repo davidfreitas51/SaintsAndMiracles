@@ -21,6 +21,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { MatDialog } from '@angular/material/dialog';
 import { AdvancedSearchMiraclesDialogComponent } from '../../components/advanced-search-miracles-dialog/advanced-search-miracles-dialog.component';
 import { Tag } from '../../../../interfaces/tag';
+import { MiracleOrderBy } from '../../enums/miracleOrderBy';
 
 countries.registerLocale(enLocale);
 
@@ -52,12 +53,19 @@ export class MiraclesPageComponent implements OnInit {
   private dialog = inject(MatDialog);
 
   public miracles: Miracle[] | null = null;
+  MiracleOrderBy = MiracleOrderBy
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
   countries: string[] = [];
   centuries: number[] = [];
 
   miracleFilters: MiracleFilters = new MiracleFilters();
+  miracleOrderOptions = [
+    { value: MiracleOrderBy.Title, viewValue: 'Title (A-Z)' },
+    { value: MiracleOrderBy.TitleDesc, viewValue: 'Title (Z-A)' },
+    { value: MiracleOrderBy.Century, viewValue: 'Century (Asc)' },
+    { value: MiracleOrderBy.CenturyDesc, viewValue: 'Century (Desc)' },
+  ];
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
@@ -120,8 +128,8 @@ export class MiraclesPageComponent implements OnInit {
     });
   }
 
-  handleFilterChange(key: keyof MiracleFilters, event: MatSelectChange) {
-    (this.miracleFilters as any)[key] = event.value;
+    handleFilterChange(value: MiracleOrderBy) {
+    this.miracleFilters.orderBy = value;
     this.miracleFilters.pageNumber = 1;
     this.updateData();
   }

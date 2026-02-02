@@ -2,7 +2,7 @@ namespace Core.Models;
 
 public class MiracleFilters
 {
-    public string OrderBy { get; set; } = "";
+    public MiracleOrderBy OrderBy { get; set; } = MiracleOrderBy.Title;
     public string Country { get; set; } = "";
     public string Century { get; set; } = "";
     public string Search { get; set; } = "";

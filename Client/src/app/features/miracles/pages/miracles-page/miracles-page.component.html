@@ -51,22 +51,14 @@
             </button>
           </mat-form-field>
 
-          <!-- Order By -->
-          <mat-form-field
-            appearance="fill"
-            class="min-w-[149px] w-full sm:w-[180px] rounded-full"
-          >
-            <mat-label>Order By</mat-label>
-            <mat-select
-              [(value)]="miracleFilters.orderBy"
-              (selectionChange)="handleFilterChange('orderBy', $event)"
-            >
-              <mat-option value="title">Title (A-Z)</mat-option>
-              <mat-option value="title_desc">Title (Z-A)</mat-option>
-              <mat-option value="century">Century (Asc)</mat-option>
-              <mat-option value="century_desc">Century (Desc)</mat-option>
-            </mat-select>
-          </mat-form-field>
+        <mat-form-field>
+          <mat-label>Order By</mat-label>
+          <mat-select [(value)]="miracleFilters.orderBy" (selectionChange)="handleFilterChange($event.value)">
+            <mat-option *ngFor="let option of miracleOrderOptions" [value]="option.value">
+              {{ option.viewValue }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
         </div>
       </div>
     </div>

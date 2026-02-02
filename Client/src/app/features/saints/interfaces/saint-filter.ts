@@ -1,5 +1,7 @@
+import { SaintOrderBy } from "../enums/saintOrderBy"
+
 export class SaintFilters{
-    orderBy: string = 'name'
+    orderBy: SaintOrderBy = SaintOrderBy.Name;
     country: string = ''
     century: string = ''
     search: string = ''

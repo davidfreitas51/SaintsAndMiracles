@@ -54,22 +54,19 @@
 
           <!-- Order By -->
           <mat-form-field
-            appearance="fill"
-            class="min-w-[150px] w-full sm:w-[180px] rounded-full"
-          >
+          appearance="fill"
+          class="min-w-[150px] w-full sm:w-[180px] rounded-full"
+            >
             <mat-label>Order By</mat-label>
             <mat-select
-              [(ngModel)]="saintFilters.orderBy"
-              (selectionChange)="handleFilterChange('orderBy', $event)"
+              [(value)]="saintFilters.orderBy"
+              (selectionChange)="handleFilterChange($event.value)"
             >
-              <mat-option value="name">Name (A-Z)</mat-option>
-              <mat-option value="name_desc">Name (Z-A)</mat-option>
-              <mat-option value="century">Century (Asc)</mat-option>
-              <mat-option value="century_desc">Century (Desc)</mat-option>
-              <mat-option value="feastday">Feast Day (Asc)</mat-option>
-              <mat-option value="feastday_desc">Feast Day (Desc)</mat-option>
+              <mat-option *ngFor="let option of saintOrderOptions" [value]="option.value">
+                {{ option.viewValue }}
+              </mat-option>
             </mat-select>
-          </mat-form-field>
+          </mat-form-field> 
         </div>
       </div>
     </div>

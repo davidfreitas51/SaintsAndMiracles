@@ -1,6 +1,6 @@
 public class SaintFilters
 {
-    public string OrderBy { get; set; } = "";
+    public SaintOrderBy OrderBy { get; set; } = SaintOrderBy.Name;
     public string Country { get; set; } = "";
     public string Century { get; set; } = "";
     public string Search { get; set; } = "";

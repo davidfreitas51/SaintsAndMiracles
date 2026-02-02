@@ -165,18 +165,14 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         if (filters.TagIds is { Count: > 0 })
             query = query.Where(m => m.Tags.Any(tag => filters.TagIds.Contains(tag.Id)));
 
-        query = string.IsNullOrWhiteSpace(filters.OrderBy)
-            ? query.OrderBy(m => m.Title)
-            : filters.OrderBy.ToLower() switch
-            {
-                "title" => query.OrderBy(m => m.Title),
-                "title_desc" => query.OrderByDescending(m => m.Title),
-                "century" => query.OrderBy(m => m.Century),
-                "century_desc" => query.OrderByDescending(m => m.Century),
-                "date" => query.OrderBy(m => m.Date),
-                "date_desc" => query.OrderByDescending(m => m.Date),
-                _ => query.OrderBy(m => m.Title)
-            };
+        query = filters.OrderBy switch
+        {
+            MiracleOrderBy.Title => query.OrderBy(m => m.Title),
+            MiracleOrderBy.TitleDesc => query.OrderByDescending(m => m.Title),
+            MiracleOrderBy.Century => query.OrderBy(m => m.Century),
+            MiracleOrderBy.CenturyDesc => query.OrderByDescending(m => m.Century),
+            _ => query.OrderBy(m => m.Title)
+        };
 
         var totalCount = await query.CountAsync();
 

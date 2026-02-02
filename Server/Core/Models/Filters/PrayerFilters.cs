@@ -2,7 +2,7 @@ namespace Core.Models.Filters;
 
 public class PrayerFilters
 {
-    public string OrderBy { get; set; } = "";
+    public PrayerOrderBy OrderBy { get; set; } = PrayerOrderBy.Title;
     public string Search { get; set; } = "";
     public List<int>? TagIds { get; set; }
 

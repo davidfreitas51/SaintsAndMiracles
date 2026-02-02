@@ -21,6 +21,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { MatDialog } from '@angular/material/dialog';
 import { AdvancedSearchSaintsDialogComponent } from '../../components/advanced-search-saints-dialog/advanced-search-saints-dialog.component';
 import { Tag } from '../../../../interfaces/tag';
+import { SaintOrderBy } from '../../enums/saintOrderBy';
 countries.registerLocale(enLocale);
 
 @Component({
@@ -54,10 +55,19 @@ export class SaintsPageComponent implements OnInit {
   months: string[] = [];
   religiousOrders: string[] = [];
   public saints: Saint[] | null = null;
+  SaintOrderBy = SaintOrderBy
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
 
   saintFilters: SaintFilters = new SaintFilters();
+  saintOrderOptions = [
+    { value: SaintOrderBy.Name, viewValue: 'Name (A-Z)' },
+    { value: SaintOrderBy.NameDesc, viewValue: 'Name (Z-A)' },
+    { value: SaintOrderBy.Century, viewValue: 'Century (Asc)' },
+    { value: SaintOrderBy.CenturyDesc, viewValue: 'Century (Desc)' },
+    { value: SaintOrderBy.FeastDay, viewValue: 'Feast Day (Asc)' },
+    { value: SaintOrderBy.FeastDayDesc, viewValue: 'Feast Day (Desc)' },
+  ];
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
@@ -127,12 +137,9 @@ export class SaintsPageComponent implements OnInit {
     });
   }
 
-  handleFilterChange(
-    key: keyof typeof this.saintFilters,
-    event: MatSelectChange
-  ) {
-    (this.saintFilters as any)[key] = event.value;
-    this.saintFilters.pageNumber = 1; // reset to first page on filter change
+  handleFilterChange(value: SaintOrderBy) {
+    this.saintFilters.orderBy = value;
+    this.saintFilters.pageNumber = 1;
     this.updateData();
   }
 
