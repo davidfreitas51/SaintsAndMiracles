@@ -1,6 +1,7 @@
 using Common;
 using Core.Enums;
 using Core.Models;
+using Core.Models.Filters;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

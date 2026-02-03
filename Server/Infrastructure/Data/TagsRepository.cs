@@ -2,6 +2,7 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
+using Core.Models.Filters;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

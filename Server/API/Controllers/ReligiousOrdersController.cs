@@ -2,6 +2,7 @@ using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
+using Core.Models.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

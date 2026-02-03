@@ -4,6 +4,7 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
+using Core.Models.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

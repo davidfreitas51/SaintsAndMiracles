@@ -1,4 +1,5 @@
 using Core.Models;
+using Core.Models.Filters;
 
 namespace Core.Interfaces;
 
