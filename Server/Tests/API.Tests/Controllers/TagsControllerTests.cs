@@ -97,7 +97,7 @@ public class TagsControllerTests
                 {
                     Id = 1,
                     Name = "Miracle",
-                    TagType = default!
+                    TagType = TagType.Miracle
                 }
             ],
             TotalCount = 1
@@ -121,7 +121,7 @@ public class TagsControllerTests
         {
             Id = 1,
             Name = "Saint",
-            TagType = default!
+            TagType = TagType.Saint
         };
 
         repo.Setup(r => r.GetByIdAsync(1))
@@ -153,14 +153,15 @@ public class TagsControllerTests
 
         var dto = new NewTagDto
         {
-            TagType = default!
+            Name = "Prayer",
+            TagType = TagType.Miracle
         };
 
         var created = new Tag
         {
             Id = 10,
-            Name = "Prayer",
-            TagType = default!
+            Name = dto.Name,
+            TagType = dto.TagType
         };
 
         service.Setup(s => s.CreateTagAsync(dto, "user-1"))
@@ -182,10 +183,13 @@ public class TagsControllerTests
         service.Setup(s => s.CreateTagAsync(It.IsAny<NewTagDto>(), "user-1"))
             .ReturnsAsync((Tag?)null);
 
-        var result = await controller.Create(new NewTagDto
+        var dto = new NewTagDto
         {
+            Name = "Saint",
             TagType = TagType.Saint
-        });
+        };
+
+        var result = await controller.Create(dto);
 
         Assert.IsType<BadRequestResult>(result);
     }
@@ -195,10 +199,13 @@ public class TagsControllerTests
     {
         var controller = CreateController(out _, out _, authenticated: false);
 
-        var result = await controller.Create(new NewTagDto
+        var dto = new NewTagDto
         {
+            Name = "Saint",
             TagType = TagType.Saint
-        });
+        };
+
+        var result = await controller.Create(dto);
 
         Assert.IsType<UnauthorizedResult>(result);
     }
@@ -216,10 +223,13 @@ public class TagsControllerTests
                 ))
             .ReturnsAsync(true);
 
-        var result = await controller.Update(1, new NewTagDto
+        var dto = new NewTagDto
         {
+            Name = "Saint",
             TagType = TagType.Saint
-        });
+        };
+
+        var result = await controller.Update(1, dto);
 
         Assert.IsType<NoContentResult>(result);
     }
@@ -237,10 +247,13 @@ public class TagsControllerTests
                 ))
             .ReturnsAsync(false);
 
-        var result = await controller.Update(1, new NewTagDto
+        var dto = new NewTagDto
         {
+            Name = "Saint",
             TagType = TagType.Saint
-        });
+        };
+
+        var result = await controller.Update(1, dto);
 
         Assert.IsType<NotFoundResult>(result);
     }

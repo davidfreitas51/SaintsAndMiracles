@@ -1,8 +1,7 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace Core.Attributes;
+namespace Core.Validation.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public sealed class MatchPropertyAttribute : ValidationAttribute

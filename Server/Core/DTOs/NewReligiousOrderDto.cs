@@ -1,6 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using Core.Validation.Attributes;
+
 namespace Core.DTOs;
 
 public class NewReligiousOrderDto
 {
-    public string Name { get; set; } = string.Empty;
+    [Required]
+    [SafeText]
+    public required string Name { get; set; }
 }

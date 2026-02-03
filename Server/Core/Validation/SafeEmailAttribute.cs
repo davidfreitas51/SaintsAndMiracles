@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mail;
 
-namespace Attributes;
+namespace Core.Validation.Attributes;
 
 [AttributeUsage(
     AttributeTargets.Property |

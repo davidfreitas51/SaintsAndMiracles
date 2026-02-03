@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Attributes;
+namespace Core.Validation.Attributes;
 
 [AttributeUsage(
     AttributeTargets.Property |

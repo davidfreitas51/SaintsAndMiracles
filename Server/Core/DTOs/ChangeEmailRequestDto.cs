@@ -1,6 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+using Core.Validation.Attributes;
+
 namespace Core.DTOs;
 
 public class ChangeEmailRequestDto
 {
-    public string NewEmail { get; set; } = null!;
+    [Required]
+    [EmailAddress]
+    [SafeEmail]
+    public required string NewEmail { get; set; }
 }

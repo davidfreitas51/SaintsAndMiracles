@@ -1,36 +1,44 @@
 using System.ComponentModel.DataAnnotations;
+using Core.Validation.Attributes;
 
 public class NewSaintDto
 {
     [Required]
-    [RegularExpression(@"^(?=.*[A-Za-z]).+$", ErrorMessage = "Name cannot be only numbers.")]
-    public string Name { get; set; } = default!;
+    [PersonName]
+    public required string Name { get; set; }
 
     [Required]
-    public string Country { get; set; } = default!;
+    [SafeText]
+    public required string Country { get; set; }
 
-    [Range(1, 21)]
+    [Range(-50, 21)]
     public int Century { get; set; }
 
     [Required]
-    public string Image { get; set; } = default!;
+    [SafePath]
+    public required string Image { get; set; }
 
     [Required]
-    public string Description { get; set; } = default!;
+    [SafeText]
+    public required string Description { get; set; }
 
     [Required]
-    public string MarkdownContent { get; set; } = default!;
+    [SafeText]
+    public required string MarkdownContent { get; set; }
 
+    [SafeText]
     public string? Title { get; set; }
 
     public DateOnly? FeastDay { get; set; }
 
+    [SafeText]
     public string? PatronOf { get; set; }
 
     public int? ReligiousOrderId { get; set; }
 
-    [MaxLength(5)]
+    [MaxItems(5)]
     public List<int>? TagIds { get; set; }
 
+    [SafeSlug]
     public string? Slug { get; set; }
 }

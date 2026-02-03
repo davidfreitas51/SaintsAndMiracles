@@ -94,15 +94,22 @@ public class MiraclesControllerTests
     private static NewMiracleDto CreateNewMiracleDto(
         string? title = null,
         string? description = null,
-        string? markdownContent = null)
+        string? markdownContent = null,
+        string? country = null,
+        string? image = null,
+        int century = 0)
     {
         return new NewMiracleDto
         {
             Title = title ?? "New Miracle",
+            Country = country ?? "Italy",
+            Century = century,
+            Image = image ?? "miracle.jpg",
             Description = description ?? "Miracle description",
             MarkdownContent = markdownContent ?? "miracle.md"
         };
     }
+
 
     #endregion
 

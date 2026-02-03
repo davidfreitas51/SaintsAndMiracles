@@ -1,18 +1,38 @@
 using System.ComponentModel.DataAnnotations;
+using Core.Validation.Attributes;
 
 namespace Core.DTOs;
 
 public class NewMiracleDto
 {
-    [RegularExpression(@"^(?=.*[A-Za-z]).+$", ErrorMessage = "Title cannot be only numbers.")]
-    public string Title { get; set; } = default!;
-    public string Country { get; set; } = default!;
-    public int Century { get; set; }
-    public string Image { get; set; } = default!;
-    public string Description { get; set; } = default!;
-    public string MarkdownContent { get; set; } = default!;
+    [Required]
+    [SafeText]
+    public required string Title { get; set; }
 
+    [Required]
+    [SafeText]
+    public required string Country { get; set; }
+
+    public int Century { get; set; }
+
+    [Required]
+    [SafePath]
+    public required string Image { get; set; }
+
+    [Required]
+    [SafeText]
+    public required string Description { get; set; }
+
+    [Required]
+    [SafeText]
+    public required string MarkdownContent { get; set; }
+
+    [SafeText]
     public string? Date { get; set; }
+
+    [SafeText]
     public string? LocationDetails { get; set; }
-    public List<int> TagIds { get; set; } = [];
+
+    [MaxItems(5)]
+    public List<int>? TagIds { get; set; }
 }

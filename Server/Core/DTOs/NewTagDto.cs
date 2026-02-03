@@ -1,9 +1,15 @@
+using System.ComponentModel.DataAnnotations;
 using Core.Enums;
+using Core.Validation.Attributes;
 
 namespace Core.DTOs;
 
 public class NewTagDto
 {
-    public string Name { get; set; } = string.Empty;
+    [Required]
+    [SafeText]
+    public required string Name { get; set; }
+
+    [Required]
     public required TagType TagType { get; set; }
 }

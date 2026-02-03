@@ -1,8 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Attributes;
-
+namespace Core.Validation.Attributes;
 [AttributeUsage(
     AttributeTargets.Property |
     AttributeTargets.Field |

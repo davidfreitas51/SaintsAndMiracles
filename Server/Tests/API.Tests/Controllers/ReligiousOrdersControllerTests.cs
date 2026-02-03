@@ -63,7 +63,6 @@ public class ReligiousOrdersControllerTests
             userManager
         );
 
-        // ✅ Always set HttpContext.User (never null)
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
@@ -150,12 +149,15 @@ public class ReligiousOrdersControllerTests
     {
         var controller = CreateController(out _, out var service);
 
-        var dto = new NewReligiousOrderDto();
+        var dto = new NewReligiousOrderDto
+        {
+            Name = "Benedictine Order"
+        };
 
         var created = new ReligiousOrder
         {
             Id = 10,
-            Name = "Benedictine Order"
+            Name = dto.Name
         };
 
         service.Setup(s => s.CreateReligiousOrderAsync(dto, "user-1"))
@@ -173,7 +175,10 @@ public class ReligiousOrdersControllerTests
     {
         var controller = CreateController(out _, out var service);
 
-        var dto = new NewReligiousOrderDto();
+        var dto = new NewReligiousOrderDto
+        {
+            Name = "Benedictine Order"
+        };
 
         service.Setup(s => s.CreateReligiousOrderAsync(dto, "user-1"))
             .ReturnsAsync((ReligiousOrder?)null);
@@ -188,7 +193,12 @@ public class ReligiousOrdersControllerTests
     {
         var controller = CreateController(out _, out _, authenticated: false);
 
-        var result = await controller.Create(new NewReligiousOrderDto());
+        var dto = new NewReligiousOrderDto
+        {
+            Name = "Benedictine Order"
+        };
+
+        var result = await controller.Create(dto);
 
         Assert.IsType<UnauthorizedResult>(result);
     }
@@ -206,7 +216,12 @@ public class ReligiousOrdersControllerTests
                 ))
             .ReturnsAsync(true);
 
-        var result = await controller.Update(1, new NewReligiousOrderDto());
+        var dto = new NewReligiousOrderDto
+        {
+            Name = "Carmelite Order"
+        };
+
+        var result = await controller.Update(1, dto);
 
         Assert.IsType<NoContentResult>(result);
     }
@@ -224,7 +239,12 @@ public class ReligiousOrdersControllerTests
                 ))
             .ReturnsAsync(false);
 
-        var result = await controller.Update(1, new NewReligiousOrderDto());
+        var dto = new NewReligiousOrderDto
+        {
+            Name = "Carmelite Order"
+        };
+
+        var result = await controller.Update(1, dto);
 
         Assert.IsType<NotFoundResult>(result);
     }

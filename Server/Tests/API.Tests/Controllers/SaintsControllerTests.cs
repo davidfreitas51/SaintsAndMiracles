@@ -1,4 +1,5 @@
 using API.Controllers;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
 using Microsoft.AspNetCore.Http;
@@ -31,19 +32,23 @@ public class SaintsControllerTests
         {
             Id = "user-1",
             UserName = "test@test.com",
-            Email = "test@test.com"
+            Email = "test@test.com",
+            EmailConfirmed = true
         };
 
-        context.Users.Add(user);
-        context.SaveChanges();
+        if (authenticated)
+        {
+            context.Users.Add(user);
+            context.SaveChanges();
+        }
 
         var store = new UserStore<AppUser>(context);
         var userManager = new UserManager<AppUser>(
             store,
             null!,
             new PasswordHasher<AppUser>(),
-            [],
-            [],
+            Array.Empty<IUserValidator<AppUser>>(),
+            Array.Empty<IPasswordValidator<AppUser>>(),
             null!,
             null!,
             null!,
@@ -56,29 +61,18 @@ public class SaintsControllerTests
             userManager
         );
 
-        if (authenticated)
+        controller.ControllerContext = new ControllerContext
         {
-            controller.ControllerContext = new ControllerContext
+            HttpContext = new DefaultHttpContext
             {
-                HttpContext = new DefaultHttpContext
-                {
-                    User = new ClaimsPrincipal(
+                User = authenticated
+                    ? new ClaimsPrincipal(
                         new ClaimsIdentity(
                             new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) },
                             "TestAuth"))
-                }
-            };
-        }
-        else
-        {
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext
-                {
-                    User = new ClaimsPrincipal(new ClaimsIdentity())
-                }
-            };
-        }
+                    : new ClaimsPrincipal(new ClaimsIdentity())
+            }
+        };
 
         return controller;
     }
@@ -91,7 +85,7 @@ public class SaintsControllerTests
         var controller = CreateController(out var repo, out _);
 
         repo.Setup(r => r.GetAllAsync(It.IsAny<SaintFilters>()))
-            .Returns(Task.FromResult(EmptyPagedResult<Saint>()));
+            .ReturnsAsync(EmptyPagedResult<Saint>());
 
         var result = await controller.GetAllSaints(new SaintFilters());
 
@@ -134,7 +128,17 @@ public class SaintsControllerTests
     {
         var controller = CreateController(out _, out _, authenticated: false);
 
-        var result = await controller.CreateSaint(new NewSaintDto());
+        var dto = new NewSaintDto
+        {
+            Name = "Francis",
+            Country = "Italy",
+            Century = 13,
+            Image = "image.jpg",
+            Description = "Saint description",
+            MarkdownContent = "saints/francis.md"
+        };
+
+        var result = await controller.CreateSaint(dto);
 
         Assert.IsType<UnauthorizedResult>(result);
     }
@@ -144,10 +148,20 @@ public class SaintsControllerTests
     {
         var controller = CreateController(out _, out var service);
 
+        var dto = new NewSaintDto
+        {
+            Name = "Francis",
+            Country = "Italy",
+            Century = 13,
+            Image = "image.jpg",
+            Description = "Saint description",
+            MarkdownContent = "saints/francis.md"
+        };
+
         service.Setup(s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), "user-1"))
             .ReturnsAsync((int?)null);
 
-        var result = await controller.CreateSaint(new NewSaintDto());
+        var result = await controller.CreateSaint(dto);
 
         var conflict = Assert.IsType<ConflictObjectResult>(result);
         Assert.Equal("A saint with the same name already exists.", conflict.Value);
@@ -158,10 +172,20 @@ public class SaintsControllerTests
     {
         var controller = CreateController(out _, out var service);
 
+        var dto = new NewSaintDto
+        {
+            Name = "Francis",
+            Country = "Italy",
+            Century = 13,
+            Image = "image.jpg",
+            Description = "Saint description",
+            MarkdownContent = "saints/francis.md"
+        };
+
         service.Setup(s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), "user-1"))
             .ReturnsAsync(10);
 
-        var result = await controller.CreateSaint(new NewSaintDto());
+        var result = await controller.CreateSaint(dto);
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(nameof(SaintsController.GetById), created.ActionName);
@@ -175,10 +199,20 @@ public class SaintsControllerTests
     {
         var controller = CreateController(out _, out var service);
 
-        service.Setup(s => s.UpdateSaintAsync(1, It.IsAny<NewSaintDto>(), "user-1"))
+        var dto = new NewSaintDto
+        {
+            Name = "Francis Updated",
+            Country = "Italy",
+            Century = 13,
+            Image = "image.jpg",
+            Description = "Saint description",
+            MarkdownContent = "saints/francis.md"
+        };
+
+        service.Setup(s => s.UpdateSaintAsync(1, dto, "user-1"))
             .ReturnsAsync(false);
 
-        var result = await controller.UpdateSaint(1, new NewSaintDto());
+        var result = await controller.UpdateSaint(1, dto);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -188,10 +222,20 @@ public class SaintsControllerTests
     {
         var controller = CreateController(out _, out var service);
 
-        service.Setup(s => s.UpdateSaintAsync(1, It.IsAny<NewSaintDto>(), "user-1"))
+        var dto = new NewSaintDto
+        {
+            Name = "Francis Updated",
+            Country = "Italy",
+            Century = 13,
+            Image = "image.jpg",
+            Description = "Saint description",
+            MarkdownContent = "saints/francis.md"
+        };
+
+        service.Setup(s => s.UpdateSaintAsync(1, dto, "user-1"))
             .ReturnsAsync(true);
 
-        var result = await controller.UpdateSaint(1, new NewSaintDto());
+        var result = await controller.UpdateSaint(1, dto);
 
         Assert.IsType<NoContentResult>(result);
     }
@@ -225,7 +269,6 @@ public class SaintsControllerTests
         service.Verify(s => s.DeleteSaintAsync(1, "user-1"), Times.Once);
     }
 
-
     // -------------------- EXTRA --------------------
 
     [Fact]
@@ -234,7 +277,7 @@ public class SaintsControllerTests
         var controller = CreateController(out var repo, out _);
 
         repo.Setup(r => r.GetCountriesAsync())
-            .ReturnsAsync(["Italy", "France"]);
+            .ReturnsAsync(new List<string> { "Italy", "France" });
 
         var result = await controller.GetSaintCountries();
 
@@ -273,10 +316,10 @@ public class SaintsControllerTests
         var controller = CreateController(out var repo, out _);
 
         var saints = new List<Saint>
-    {
-        CreateSaint(1, "Joan of Arc", "joan-of-arc"),
-        CreateSaint(2, "Francis of Assisi", "francis-of-assisi")
-    };
+        {
+            CreateSaint(1, "Joan of Arc", "joan-of-arc"),
+            CreateSaint(2, "Francis of Assisi", "francis-of-assisi")
+        };
 
         repo.Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
             .ReturnsAsync(saints);
@@ -307,9 +350,9 @@ public class SaintsControllerTests
     }
 
     private static Saint CreateSaint(
-    int id = 1,
-    string name = "Francis",
-    string slug = "francis")
+        int id = 1,
+        string name = "Francis",
+        string slug = "francis")
     {
         return new Saint
         {
@@ -325,10 +368,9 @@ public class SaintsControllerTests
     }
 
     private static PagedResult<T> EmptyPagedResult<T>() =>
-    new()
-    {
-        Items = [],
-        TotalCount = 0
-    };
-
+        new()
+        {
+            Items = new List<T>(),
+            TotalCount = 0
+        };
 }

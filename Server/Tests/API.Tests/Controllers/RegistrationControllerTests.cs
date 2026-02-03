@@ -94,8 +94,10 @@ public class RegistrationControllerTests
         LastName = "Doe",
         Email = "john@test.com",
         Password = "Password123!",
+        ConfirmPassword = "Password123!",
         InviteToken = "invite-token"
     };
+
 
     private static ResendConfirmationDto CreateResendDto() => new()
     {

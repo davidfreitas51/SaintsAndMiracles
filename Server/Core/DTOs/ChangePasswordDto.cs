@@ -1,7 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Core.DTOs;
 
 public class ChangePasswordDto
 {
-    public string CurrentPassword { get; set; }
-    public string NewPassword { get; set; }
+    [Required]
+    public required string CurrentPassword { get; set; }
+    
+    [Required]
+    public required string NewPassword { get; set; }
 }
