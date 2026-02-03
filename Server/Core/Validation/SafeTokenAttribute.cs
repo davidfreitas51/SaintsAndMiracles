@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
-using Core.Validation;
 
 namespace Core.Validation.Attributes;
 

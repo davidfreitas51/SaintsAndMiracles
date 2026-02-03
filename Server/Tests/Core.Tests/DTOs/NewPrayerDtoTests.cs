@@ -1,6 +1,5 @@
 using Core.DTOs;
 using Xunit;
-using System.Collections.Generic;
 
 namespace Core.Tests.DTOs
 {

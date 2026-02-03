@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
-using Core.Validation;
 
 namespace Core.Validation.Attributes;
 
@@ -39,9 +38,14 @@ public sealed class SafeEmailAttribute : SafeStringValidationAttribute
         try
         {
             var addr = new MailAddress(email);
-
             var parts = addr.Address.Split('@');
-            if (parts.Length != 2 || !parts[1].Contains('.'))
+            if (parts.Length != 2)
+                return CreateValidationError(validationContext, "is not a valid email address.");
+
+            string domain = parts[1];
+            var domainParts = domain.Split('.');
+
+            if (domainParts.Length < 2 || domainParts.Any(p => string.IsNullOrWhiteSpace(p)))
             {
                 return CreateValidationError(validationContext, "is not a valid email address.");
             }
@@ -50,7 +54,6 @@ public sealed class SafeEmailAttribute : SafeStringValidationAttribute
         {
             return CreateValidationError(validationContext, "is not a valid email address.");
         }
-
 
         return ValidationResult.Success;
     }

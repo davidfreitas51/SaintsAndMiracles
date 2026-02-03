@@ -1,5 +1,4 @@
 using API.Controllers;
-using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
 using Microsoft.AspNetCore.Http;

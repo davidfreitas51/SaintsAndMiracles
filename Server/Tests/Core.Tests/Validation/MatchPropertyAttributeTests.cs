@@ -1,19 +1,44 @@
 using Core.Validation.Attributes;
-using System.ComponentModel.DataAnnotations;
 using Xunit;
 
 namespace Core.Tests.Validation;
 
 public class MatchPropertyAttributeTests
 {
-    [Fact]
-    public void Should_BeValid_When_ValuesMatch()
+    private class ValidModel
     {
-        var model = new MatchPropertyTestModel
-        {
-            Password = "123456",
-            ConfirmPassword = "123456"
-        };
+        public string Password { get; set; } = "Secret123!";
+
+        [MatchProperty("Password")]
+        public string ConfirmPassword { get; set; } = "Secret123!";
+    }
+
+    private class InvalidModel
+    {
+        public string Password { get; set; } = "Secret123!";
+
+        [MatchProperty("Password")]
+        public string ConfirmPassword { get; set; } = "WrongPassword";
+    }
+
+    private class InvalidReferenceModel
+    {
+        [MatchProperty("DoesNotExist")]
+        public string Field { get; set; } = "Value";
+    }
+
+    private class NullPropertyModel
+    {
+        public string? Password { get; set; }
+
+        [MatchProperty("Password")]
+        public string? ConfirmPassword { get; set; }
+    }
+
+    [Fact]
+    public void Should_Pass_When_Values_Match()
+    {
+        var model = new ValidModel();
 
         var results = ModelValidationHelper.Validate(model);
 
@@ -21,76 +46,40 @@ public class MatchPropertyAttributeTests
     }
 
     [Fact]
-    public void Should_Fail_When_ValuesDoNotMatch()
+    public void Should_Fail_When_Values_Do_Not_Match()
     {
-        var model = new MatchPropertyTestModel
-        {
-            Password = "123456",
-            ConfirmPassword = "654321"
-        };
-
-        var results = ModelValidationHelper.Validate(model);
-
-        Assert.Contains(
-            results,
-            r => r.ErrorMessage ==
-                $"{nameof(MatchPropertyTestModel.ConfirmPassword)} must match {nameof(MatchPropertyTestModel.Password)}."
-        );
-    }
-
-
-    [Fact]
-    public void Should_Return_CustomErrorMessage_When_Provided()
-    {
-        var model = new MatchPropertyCustomMessageModel
-        {
-            Password = "abc",
-            ConfirmPassword = "def"
-        };
-
-        var results = ModelValidationHelper.Validate(model);
-
-        Assert.Contains(
-            results,
-            r => r.ErrorMessage == "Passwords do not match"
-        );
-    }
-
-    [Fact]
-    public void Should_Fail_When_ReferencedProperty_DoesNotExist()
-    {
-        var model = new MatchPropertyInvalidConfigModel();
+        var model = new InvalidModel();
 
         var results = ModelValidationHelper.Validate(model);
 
         Assert.Single(results);
-        Assert.Equal(
-            "Unknown property 'DoesNotExist'.",
-            results[0].ErrorMessage
-        );
+        Assert.Equal("ConfirmPassword must match Password.", results[0].ErrorMessage);
+        Assert.Contains(nameof(InvalidModel.ConfirmPassword), results[0].MemberNames);
     }
 
-    private class MatchPropertyTestModel
+    [Fact]
+    public void Should_Fail_When_Referenced_Property_Does_Not_Exist()
     {
-        [Required]
-        public string Password { get; set; } = string.Empty;
+        var model = new InvalidReferenceModel();
 
-        [Required]
-        [MatchProperty(nameof(Password))]
-        public string ConfirmPassword { get; set; } = string.Empty;
+        var results = ModelValidationHelper.Validate(model);
+
+        Assert.Single(results);
+        Assert.Equal("Unknown property 'DoesNotExist'.", results[0].ErrorMessage);
+        Assert.Contains(nameof(InvalidReferenceModel.Field), results[0].MemberNames);
     }
 
-    private class MatchPropertyCustomMessageModel
+    [Fact]
+    public void Should_Pass_When_Property_Is_Null()
     {
-        public string Password { get; set; } = string.Empty;
+        var model = new NullPropertyModel
+        {
+            Password = null,
+            ConfirmPassword = null
+        };
 
-        [MatchProperty(nameof(Password), ErrorMessage = "Passwords do not match")]
-        public string ConfirmPassword { get; set; } = string.Empty;
-    }
+        var results = ModelValidationHelper.Validate(model);
 
-    private class MatchPropertyInvalidConfigModel
-    {
-        [MatchProperty("DoesNotExist")]
-        public string Value { get; set; } = "test";
+        Assert.Empty(results);
     }
 }

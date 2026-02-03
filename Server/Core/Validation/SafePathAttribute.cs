@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 
 namespace Core.Validation.Attributes;
 
