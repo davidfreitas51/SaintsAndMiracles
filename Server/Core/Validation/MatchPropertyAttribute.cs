@@ -23,7 +23,8 @@ public sealed class MatchPropertyAttribute : ValidationAttribute
         if (otherProperty == null)
         {
             return new ValidationResult(
-                $"Unknown property '{_otherPropertyName}'."
+                $"Unknown property '{_otherPropertyName}'.",
+                new[] { validationContext.MemberName! }
             );
         }
 
@@ -34,7 +35,7 @@ public sealed class MatchPropertyAttribute : ValidationAttribute
             string errorMessage = ErrorMessage
                 ?? $"{validationContext.MemberName} must match {_otherPropertyName}.";
 
-            return new ValidationResult(errorMessage);
+            return new ValidationResult(errorMessage, new[] { validationContext.MemberName! });
         }
 
         return ValidationResult.Success;

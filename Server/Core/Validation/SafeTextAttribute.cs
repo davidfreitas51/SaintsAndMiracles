@@ -2,13 +2,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
 namespace Core.Validation.Attributes;
+
 [AttributeUsage(
     AttributeTargets.Property |
     AttributeTargets.Field |
     AttributeTargets.Parameter,
     AllowMultiple = false,
     Inherited = true)]
-public sealed class SafeTextAttribute : ValidationAttribute
+public sealed class SafeTextAttribute : SafeStringValidationAttribute
 {
     private static readonly Regex HtmlTagRegex =
         new(@"<[^>]+>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -22,23 +23,32 @@ public sealed class SafeTextAttribute : ValidationAttribute
             return ValidationResult.Success;
 
         if (value is not string text)
-            return new ValidationResult("SafeText can only be applied to string fields.");
+        {
+            return CreateValidationError(
+                validationContext,
+                "SafeText can only be applied to string fields."
+            );
+        }
 
         if (string.IsNullOrWhiteSpace(text))
             return ValidationResult.Success;
 
         if (HtmlTagRegex.IsMatch(text))
         {
-            return new ValidationResult(
+            return CreateValidationError(
+                validationContext,
                 ErrorMessage ??
-                $"{validationContext.MemberName} must not contain HTML tags.");
+                $"{validationContext.MemberName} must not contain HTML tags."
+            );
         }
 
         if (HtmlEntityRegex.IsMatch(text))
         {
-            return new ValidationResult(
+            return CreateValidationError(
+                validationContext,
                 ErrorMessage ??
-                $"{validationContext.MemberName} must not contain HTML entities.");
+                $"{validationContext.MemberName} must not contain HTML entities."
+            );
         }
 
         return ValidationResult.Success;

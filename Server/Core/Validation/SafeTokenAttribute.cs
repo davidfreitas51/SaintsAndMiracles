@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
+using Core.Validation;
 
 namespace Core.Validation.Attributes;
 
@@ -9,10 +10,9 @@ namespace Core.Validation.Attributes;
     AttributeTargets.Parameter,
     AllowMultiple = false,
     Inherited = true)]
-public sealed class SafeTokenAttribute : ValidationAttribute
+public sealed class SafeTokenAttribute : SafeStringValidationAttribute
 {
-    private static readonly Regex _safeTokenRegex =
-        new(@"^[A-Za-z0-9\-_]+$", RegexOptions.Compiled);
+    private static readonly Regex _safeTokenRegex = new(@"^[A-Za-z0-9\-_]+$", RegexOptions.Compiled);
 
     public int MinLength { get; init; } = 32;
     public int MaxLength { get; init; } = 128;
@@ -23,32 +23,19 @@ public sealed class SafeTokenAttribute : ValidationAttribute
             return ValidationResult.Success;
 
         if (value is not string token)
-            return new ValidationResult("SafeToken can only be applied to string fields.");
+            return CreateValidationError(validationContext, "can only be applied to string fields.");
 
         token = token.Trim();
 
         if (token.Length < MinLength || token.Length > MaxLength)
-        {
-            return Error(validationContext,
-                $"must be between {MinLength} and {MaxLength} characters.");
-        }
+            return CreateValidationError(validationContext, $"must be between {MinLength} and {MaxLength} characters.");
 
-        foreach (var ch in token)
-        {
-            if (char.IsWhiteSpace(ch) || char.IsControl(ch))
-            {
-                return Error(validationContext, "must not contain whitespace or control characters.");
-            }
-        }
+        if (token.Any(char.IsWhiteSpace) || token.Any(char.IsControl))
+            return CreateValidationError(validationContext, "must not contain whitespace or control characters.");
 
         if (!_safeTokenRegex.IsMatch(token))
-        {
-            return Error(validationContext, "contains invalid characters.");
-        }
+            return CreateValidationError(validationContext, "contains invalid characters.");
 
         return ValidationResult.Success;
     }
-
-    private ValidationResult Error(ValidationContext context, string message)
-        => new(ErrorMessage ?? $"{context.MemberName} {message}");
 }

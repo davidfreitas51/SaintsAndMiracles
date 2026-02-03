@@ -9,38 +9,48 @@ namespace Core.Validation.Attributes;
     AttributeTargets.Parameter,
     AllowMultiple = false,
     Inherited = true)]
-public sealed class MaxItemsAttribute : ValidationAttribute
+public sealed class MaxItemsAttribute : SafeStringValidationAttribute
 {
     public int Max { get; }
 
     public MaxItemsAttribute(int max)
     {
         if (max <= 0)
-            throw new ArgumentOutOfRangeException(nameof(max), "Max must be greater than zero.");
+            throw new ArgumentOutOfRangeException(
+                nameof(max),
+                "Max must be greater than zero."
+            );
 
         Max = max;
     }
 
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    protected override ValidationResult? IsValid(
+        object? value,
+        ValidationContext validationContext)
     {
         if (value is null)
             return ValidationResult.Success;
 
         if (value is not IEnumerable collection)
         {
-            return new ValidationResult(
-                ErrorMessage ?? "MaxItems can only be applied to collections.");
+            return CreateValidationError(
+                validationContext,
+                "must be a collection."
+            );
         }
 
-        int count = 0;
+        var count = 0;
+
         foreach (var _ in collection)
         {
             count++;
+
             if (count > Max)
             {
-                return new ValidationResult(
-                    ErrorMessage ??
-                    $"The field {validationContext.MemberName} must contain at most {Max} items.");
+                return CreateValidationError(
+                    validationContext,
+                    $"must contain at most {Max} items."
+                );
             }
         }
 

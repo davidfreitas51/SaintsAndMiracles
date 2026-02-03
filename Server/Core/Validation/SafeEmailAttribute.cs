@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mail;
+using System.Text.RegularExpressions;
+using Core.Validation;
 
 namespace Core.Validation.Attributes;
 
@@ -9,62 +11,47 @@ namespace Core.Validation.Attributes;
     AttributeTargets.Parameter,
     AllowMultiple = false,
     Inherited = true)]
-public sealed class SafeEmailAttribute : ValidationAttribute
+public sealed class SafeEmailAttribute : SafeStringValidationAttribute
 {
     public int MaxLength { get; init; } = 254;
 
+    private static readonly Regex UnsafeCharsRegex = new(@"[<>&""']", RegexOptions.Compiled);
+
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        if (value is null)
-            return ValidationResult.Success;
+        if (value is null || string.IsNullOrWhiteSpace(value as string))
+            return CreateValidationError(validationContext, "cannot be null or empty.");
 
-        if (value is not string email)
-            return new ValidationResult("SafeEmail can only be applied to string fields.");
-
-        email = email.Trim();
-
-        if (email.Length == 0)
-            return ValidationResult.Success;
+        string email = ((string)value).Trim();
 
         if (email.Length > MaxLength)
-        {
-            return Error(validationContext,
-                $"must not exceed {MaxLength} characters.");
-        }
+            return CreateValidationError(validationContext, $"must not exceed {MaxLength} characters.");
 
-        foreach (var ch in email)
-        {
-            if (char.IsControl(ch))
-            {
-                return Error(validationContext,
-                    "contains invalid control characters.");
-            }
-        }
+        if (email.Any(char.IsControl))
+            return CreateValidationError(validationContext, "contains invalid control characters.");
 
         if (email.Contains(' '))
-        {
-            return Error(validationContext,
-                "must not contain spaces.");
-        }
+            return CreateValidationError(validationContext, "must not contain spaces.");
+
+        if (UnsafeCharsRegex.IsMatch(email))
+            return CreateValidationError(validationContext, "contains unsafe characters.");
 
         try
         {
             var addr = new MailAddress(email);
-            if (addr.Address != email)
+
+            var parts = addr.Address.Split('@');
+            if (parts.Length != 2 || !parts[1].Contains('.'))
             {
-                return Error(validationContext,
-                    "is not a valid email address.");
+                return CreateValidationError(validationContext, "is not a valid email address.");
             }
         }
         catch
         {
-            return Error(validationContext,
-                "is not a valid email address.");
+            return CreateValidationError(validationContext, "is not a valid email address.");
         }
+
 
         return ValidationResult.Success;
     }
-
-    private ValidationResult Error(ValidationContext context, string message)
-        => new(ErrorMessage ?? $"{context.MemberName} {message}");
 }

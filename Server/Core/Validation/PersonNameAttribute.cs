@@ -9,39 +9,42 @@ namespace Core.Validation.Attributes;
     AttributeTargets.Parameter,
     AllowMultiple = false,
     Inherited = true)]
-public sealed class PersonNameAttribute : ValidationAttribute
+public sealed class PersonNameAttribute : SafeStringValidationAttribute
 {
-    private static readonly Regex _regex =
-        new(@"^[\p{L}\p{M}'\- ]+$", RegexOptions.Compiled);
+    private static readonly Regex Regex = new(
+        @"^[\p{L}\p{M}'\- ]+$",
+        RegexOptions.Compiled);
 
     public int MinLength { get; init; } = 2;
     public int MaxLength { get; init; } = 100;
 
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    protected override ValidationResult? IsValid(
+        object? value,
+        ValidationContext validationContext)
     {
         if (value is null)
             return ValidationResult.Success;
 
         if (value is not string name)
-            return new ValidationResult("PersonName can only be applied to string fields.");
+            return CreateValidationError(
+                validationContext,
+                "must be a string."
+            );
 
         name = name.Trim();
 
         if (name.Length < MinLength || name.Length > MaxLength)
-        {
-            return Error(validationContext,
-                $"must be between {MinLength} and {MaxLength} characters.");
-        }
+            return CreateValidationError(
+                validationContext,
+                $"must be between {MinLength} and {MaxLength} characters."
+            );
 
-        if (!_regex.IsMatch(name))
-        {
-            return Error(validationContext,
-                "contains invalid characters for a person name.");
-        }
+        if (!Regex.IsMatch(name))
+            return CreateValidationError(
+                validationContext,
+                "contains invalid characters for a person name."
+            );
 
         return ValidationResult.Success;
     }
-
-    private ValidationResult Error(ValidationContext context, string message)
-        => new(ErrorMessage ?? $"{context.MemberName} {message}");
 }

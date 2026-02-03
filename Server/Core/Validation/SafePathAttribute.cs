@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 
 namespace Core.Validation.Attributes;
 
@@ -8,15 +9,20 @@ namespace Core.Validation.Attributes;
     AttributeTargets.Parameter,
     AllowMultiple = false,
     Inherited = true)]
-public sealed class SafePathAttribute : ValidationAttribute
+public sealed class SafePathAttribute : SafeStringValidationAttribute
 {
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    protected override ValidationResult? IsValid(
+        object? value,
+        ValidationContext validationContext)
     {
         if (value is null)
             return ValidationResult.Success;
 
         if (value is not string path)
-            return new ValidationResult("SafePath can only be applied to string fields.");
+            return CreateValidationError(
+                validationContext,
+                "can only be applied to string fields."
+            );
 
         if (string.IsNullOrWhiteSpace(path))
             return ValidationResult.Success;
@@ -25,27 +31,36 @@ public sealed class SafePathAttribute : ValidationAttribute
 
         if (Path.IsPathRooted(path))
         {
-            return Error(validationContext, "must be a relative path.");
+            return CreateValidationError(
+                validationContext,
+                "must be a relative path."
+            );
         }
 
         if (path.Contains(".."))
         {
-            return Error(validationContext, "must not contain '..'.");
+            return CreateValidationError(
+                validationContext,
+                "must not contain '..'."
+            );
         }
 
         if (path.Contains(':'))
         {
-            return Error(validationContext, "must not contain ':' characters.");
+            return CreateValidationError(
+                validationContext,
+                "must not contain ':' characters."
+            );
         }
 
         if (path.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
         {
-            return Error(validationContext, "contains invalid path characters.");
+            return CreateValidationError(
+                validationContext,
+                "contains invalid path characters."
+            );
         }
 
         return ValidationResult.Success;
     }
-
-    private ValidationResult Error(ValidationContext context, string message)
-        => new(ErrorMessage ?? $"{context.MemberName} {message}");
 }
