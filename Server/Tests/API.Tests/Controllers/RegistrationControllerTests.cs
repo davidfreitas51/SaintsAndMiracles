@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using API.Controllers;
 using Core.DTOs;
 using Core.Interfaces.Services;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Moq;
-using System.Security.Claims;
 
 namespace API.Tests.Controllers;
 
@@ -126,20 +126,28 @@ public class RegistrationControllerTests
     [Fact]
     public async Task Register_ShouldReturnBadRequest_WhenEmailExists()
     {
-        var controller = CreateController(
-            out var userManager, out _, out var tokens, out _
-        );
+        // Arrange
+        var controller = CreateController(out var userManager, out _, out var tokens, out _);
 
         tokens.Setup(t => t.GetValidTokenAsync(It.IsAny<string>()))
             .ReturnsAsync(new AccountToken { Role = "Admin" });
 
-        userManager.Setup(u => u.FindByEmailAsync(It.IsAny<string>()))
-            .ReturnsAsync(new AppUser());
+        userManager.Setup(u => u.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Failed(
+                new IdentityError { Code = "DuplicateEmail", Description = "Email already exists" }
+            ));
 
-        var result = await controller.Register(CreateRegisterDto());
+        var dto = CreateRegisterDto();
 
-        Assert.IsType<BadRequestObjectResult>(result);
+        // Act
+        var result = await controller.Register(dto);
+
+        // Assert
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        var apiError = Assert.IsType<ApiErrorResponse>(badRequest.Value);
+        Assert.Contains("Email already exists", apiError.Details);
     }
+
 
     [Fact]
     public async Task Register_ShouldReturnCreated_WhenSuccessful()

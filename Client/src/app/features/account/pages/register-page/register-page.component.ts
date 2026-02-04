@@ -12,7 +12,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { RegistrationService } from '../../../../core/services/registration.service';
-import { PASSWORD_PATTERN } from '../../constants/constants';
 
 @Component({
   selector: 'app-register-page',
@@ -40,7 +39,6 @@ export class RegisterPageComponent {
   backendErrors: string[] = [];
   hidePassword = true;
   hideConfirmPassword = true;
-  passwordPattern = PASSWORD_PATTERN
 
   registerDto: RegisterDto = {
     firstName: '',

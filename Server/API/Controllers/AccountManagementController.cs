@@ -31,7 +31,7 @@ public class AccountManagementController(
     [HttpGet("users")]
     public async Task<ActionResult<IEnumerable<object>>> GetUsers()
     {
-        var users = userManager.Users.ToList(); // sync, ok pra Identity
+        var users = userManager.Users.ToList();
 
         var result = new List<object>();
 
@@ -138,7 +138,7 @@ public class AccountManagementController(
 
     [Authorize]
     [HttpPost("request-email-change")]
-    public async Task<IActionResult> RequestEmailChange([FromBody] ChangeEmailRequestDto dto)
+    public async Task<IActionResult> RequestEmailChange(ChangeEmailRequestDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null)
@@ -150,10 +150,6 @@ public class AccountManagementController(
 
         if (user.Email == dto.NewEmail)
             return BadRequest(new { Message = "New email must be different from current email." });
-
-        var existingUser = await userManager.FindByEmailAsync(dto.NewEmail);
-        if (existingUser != null)
-            return BadRequest(new { Message = "This email is already registered by another user." });
 
         var token = await userManager.GenerateChangeEmailTokenAsync(user, dto.NewEmail);
 
@@ -168,6 +164,7 @@ public class AccountManagementController(
 
         return Ok(new { Message = "Confirmation email sent to new address." });
     }
+
 
     [Authorize]
     [HttpGet("confirm-email-change")]

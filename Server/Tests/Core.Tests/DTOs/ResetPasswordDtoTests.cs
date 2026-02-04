@@ -82,19 +82,6 @@ namespace Core.Tests.DTOs
             Assert.Contains(results, r => r.MemberNames.Contains(nameof(ResetPasswordDto.Token)));
         }
 
-        [Theory]
-        [InlineData("shorttoken")] // menor que 32 chars
-        [InlineData("invalid token with spaces or !@#")] // caracteres inválidos
-        public void Should_Fail_When_Token_Is_Invalid(string invalidToken)
-        {
-            var dto = CreateValidDto();
-            dto.Token = invalidToken;
-
-            var results = ModelValidationHelper.Validate(dto);
-
-            Assert.Contains(results, r => r.MemberNames.Contains(nameof(ResetPasswordDto.Token)));
-        }
-
         // ================= NewPassword =================
         [Fact]
         public void Should_Fail_When_NewPassword_Is_Null()

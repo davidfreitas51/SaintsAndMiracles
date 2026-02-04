@@ -57,7 +57,17 @@ public static class ServiceCollectionExtensions
         services.AddIdentity<AppUser, IdentityRole>(options =>
         {
             options.SignIn.RequireConfirmedEmail = true;
-            options.Password.RequiredLength = 8;
+
+            options.User.RequireUniqueEmail = true;
+
+            options.Password.RequiredLength = 12;
+            options.Password.RequireDigit = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
         })
         .AddEntityFrameworkStores<DataContext>()
         .AddDefaultTokenProviders();

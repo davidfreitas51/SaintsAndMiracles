@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HeaderComponent } from "../../../../shared/components/header/header.component";
@@ -8,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-email-confirmed-page',
-  imports: [CommonModule, HeaderComponent, FooterComponent, RouterLink, MatCardModule, MatButtonModule],
+  imports: [HeaderComponent, FooterComponent, RouterLink, MatCardModule, MatButtonModule],
   templateUrl: './email-confirmed-page.component.html',
   styleUrl: './email-confirmed-page.component.scss',
 })

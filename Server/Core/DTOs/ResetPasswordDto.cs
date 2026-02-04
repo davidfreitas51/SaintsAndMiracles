@@ -11,7 +11,7 @@ public class ResetPasswordDto
     public required string Email { get; set; }
 
     [Required]
-    [SafeToken]
+    [SafeText]
     public required string Token { get; set; }
 
     [Required]

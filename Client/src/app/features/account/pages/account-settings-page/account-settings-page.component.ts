@@ -14,7 +14,6 @@ import { UserSessionService } from '../../../../core/services/user-session.servi
 import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { PASSWORD_PATTERN } from '../../constants/constants';
 import { Router } from '@angular/router';
 
 @Component({
@@ -66,7 +65,7 @@ export class AccountSettingsPageComponent implements OnInit {
         currentPassword: ['', Validators.required],
         newPassword: [
           '',
-          [Validators.required, Validators.pattern(PASSWORD_PATTERN)],
+          [Validators.required],
         ],
         confirmPassword: ['', Validators.required],
       },

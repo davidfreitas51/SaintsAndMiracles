@@ -22,10 +22,6 @@ public class RegistrationController(
         if (tokenRecord == null)
             return BadRequest(new ApiErrorResponse { Message = "Invalid or expired token" });
 
-        var existingUser = await signInManager.UserManager.FindByEmailAsync(registerDto.Email);
-        if (existingUser != null)
-            return BadRequest(new ApiErrorResponse { Message = "Email is already registered" });
-
         var user = new AppUser
         {
             FirstName = registerDto.FirstName,
@@ -47,6 +43,8 @@ public class RegistrationController(
         var roleResult = await signInManager.UserManager.AddToRoleAsync(user, tokenRecord.Role);
         if (!roleResult.Succeeded)
         {
+            await signInManager.UserManager.DeleteAsync(user);
+
             return BadRequest(new ApiErrorResponse
             {
                 Message = "Failed to assign role",
