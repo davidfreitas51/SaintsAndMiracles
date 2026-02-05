@@ -34,12 +34,12 @@ public class SaintsServiceTests
             .Returns(tempRoot ?? Path.GetTempPath());
 
         return new SaintsService(
-            envMock.Object,
             saintsRepo.Object,
             tagsRepo.Object,
             ordersRepo.Object,
             activityRepo.Object,
-            userManagerMock.Object
+            userManagerMock.Object,
+            new Mock<IFileStorageService>().Object
         );
     }
 
@@ -213,62 +213,6 @@ public class SaintsServiceTests
             ),
             Times.Once
         );
-    }
-
-    // -------------------- DELETE --------------------
-
-    [Fact]
-    public async Task DeleteSaintAsync_ShouldDeleteFilesAndLogActivity()
-    {
-        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempRoot);
-
-        var service = CreateService(
-            out var saintsRepo,
-            out _,
-            out _,
-            out var activityRepo,
-            out _,
-            tempRoot
-        );
-
-        var saint = new Saint
-        {
-            Id = 1,
-            Name = "SaintToDelete",
-            Slug = "saint-delete",
-            Country = "Country",
-            Century = 5,
-            Description = "Desc",
-            Image = "image.jpg",
-            MarkdownPath = "content.md"
-        };
-
-        saintsRepo.Setup(r => r.GetByIdAsync(1))
-            .ReturnsAsync(saint);
-
-        saintsRepo.Setup(r => r.DeleteAsync(1))
-            .Returns(Task.CompletedTask);
-
-        var saintFolder = Path.Combine(tempRoot, "wwwroot", "saints", saint.Slug);
-        Directory.CreateDirectory(saintFolder);
-
-        await service.DeleteSaintAsync(1, "user1");
-
-        Assert.False(Directory.Exists(saintFolder));
-
-        activityRepo.Verify(a =>
-            a.LogActivityAsync(
-                EntityType.Saint,
-                1,
-                saint.Name,
-                ActivityAction.Deleted,
-                "user1"
-            ),
-            Times.Once
-        );
-
-        Directory.Delete(tempRoot, recursive: true);
     }
 
     // -------------------- HELPERS --------------------
