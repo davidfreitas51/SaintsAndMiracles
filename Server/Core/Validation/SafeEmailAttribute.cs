@@ -33,7 +33,7 @@ public sealed class SafeEmailAttribute : SafeStringValidationAttribute
             return CreateValidationError(validationContext, "must not contain spaces.");
 
         if (UnsafeCharsRegex.IsMatch(email))
-            return CreateValidationError(validationContext, "contains unsafe characters.");
+            return CreateValidationError(validationContext, "invalid format.");
 
         try
         {

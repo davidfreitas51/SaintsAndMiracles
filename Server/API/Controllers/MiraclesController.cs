@@ -3,14 +3,15 @@ using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
+using Core.Validation.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class MiraclesController(
     IMiraclesRepository miraclesRepository,
     IMiraclesService miraclesService,
@@ -23,7 +24,7 @@ public class MiraclesController(
         return Ok(miracles);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:int:min(1)}")]
     public async Task<IActionResult> GetById(int id)
     {
         var miracle = await miraclesRepository.GetByIdAsync(id);
@@ -31,14 +32,14 @@ public class MiraclesController(
     }
 
     [HttpGet("{slug}")]
-    public async Task<IActionResult> GetMiracleBySlug(string slug)
+    public async Task<IActionResult> GetMiracleBySlug([FromRoute][SafeSlug] string slug)
     {
         var miracle = await miraclesRepository.GetBySlugAsync(slug);
         return miracle is null ? NotFound() : Ok(miracle);
     }
 
-    [HttpPost]
     [Authorize]
+    [HttpPost]
     public async Task<IActionResult> CreateMiracle([FromBody] NewMiracleDto newMiracle)
     {
         var user = await userManager.GetUserAsync(User);
@@ -51,33 +52,31 @@ public class MiraclesController(
         return CreatedAtAction(nameof(GetById), new { id = created.Value }, null);
     }
 
-    [HttpPut("{id}")]
     [Authorize]
+    [HttpPut("{id:int:min(1)}")]
     public async Task<IActionResult> UpdateMiracle(int id, [FromBody] NewMiracleDto updatedMiracle)
     {
         var user = await userManager.GetUserAsync(User);
         if (user is null) return Unauthorized();
 
         var updated = await miraclesService.UpdateMiracleAsync(id, updatedMiracle, user.Id);
-        if (!updated)
-            return NotFound();
 
-        return NoContent();
+        return updated ? NoContent() : NotFound();
     }
 
-    [HttpDelete("{id:int}")]
     [Authorize]
+    [HttpDelete("{id:int:min(1)}")]
     public async Task<IActionResult> DeleteMiracle(int id)
     {
         var user = await userManager.GetUserAsync(User);
         if (user is null) return Unauthorized();
 
         var miracle = await miraclesRepository.GetByIdAsync(id);
-        if (miracle is null)
-            return NotFound();
+        if (miracle is null) return NotFound();
 
         await miraclesService.DeleteMiracleAsync(miracle.Slug, user.Id);
-        return Ok();
+
+        return NoContent();
     }
 
     [HttpGet("countries")]

@@ -9,13 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Route("api/religious-orders")]
 [ApiController]
+[Route("api/religious-orders")]
 public class ReligiousOrdersController(
     IReligiousOrdersRepository ordersRepository,
     IReligiousOrdersService ordersService,
-    UserManager<AppUser> userManager
-) : ControllerBase
+    UserManager<AppUser> userManager) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] EntityFilters filters)
@@ -24,15 +23,15 @@ public class ReligiousOrdersController(
         return Ok(orders);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:int:min(1)}")]
     public async Task<IActionResult> GetById(int id)
     {
         var order = await ordersRepository.GetByIdAsync(id);
         return order is null ? NotFound() : Ok(order);
     }
 
-    [HttpPost]
     [Authorize]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] NewReligiousOrderDto dto)
     {
         var user = await userManager.GetUserAsync(User);
@@ -45,8 +44,8 @@ public class ReligiousOrdersController(
             : BadRequest();
     }
 
-    [HttpPut("{id:int}")]
     [Authorize]
+    [HttpPut("{id:int:min(1)}")]
     public async Task<IActionResult> Update(int id, [FromBody] NewReligiousOrderDto dto)
     {
         var user = await userManager.GetUserAsync(User);
@@ -57,8 +56,8 @@ public class ReligiousOrdersController(
         return updated ? NoContent() : NotFound();
     }
 
-    [HttpDelete("{id:int}")]
     [Authorize]
+    [HttpDelete("{id:int:min(1)}")]
     public async Task<IActionResult> Delete(int id)
     {
         var user = await userManager.GetUserAsync(User);

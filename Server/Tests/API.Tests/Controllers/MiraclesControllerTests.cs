@@ -261,7 +261,7 @@ public class MiraclesControllerTests
     }
 
     [Fact]
-    public async Task DeleteMiracle_ShouldReturnOk_WhenSuccessful()
+    public async Task DeleteMiracle_ShouldReturnNoContent_WhenSuccessful()
     {
         var controller = CreateController(out var repo, out var service, out _);
 
@@ -275,7 +275,7 @@ public class MiraclesControllerTests
 
         var result = await controller.DeleteMiracle(1);
 
-        Assert.IsType<OkResult>(result);
+        Assert.IsType<NoContentResult>(result);
     }
 
     #endregion

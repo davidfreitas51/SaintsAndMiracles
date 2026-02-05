@@ -42,7 +42,7 @@ public class SafePathAttributeTests
         var results = ModelValidationHelper.Validate(dto);
         Assert.Single(results);
         Assert.Contains(nameof(dto.Path), results[0].MemberNames);
-        Assert.Contains("must be a relative path", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class SafePathAttributeTests
         var results = ModelValidationHelper.Validate(dto);
         Assert.Single(results);
         Assert.Contains(nameof(dto.Path), results[0].MemberNames);
-        Assert.Contains("must not contain ':'", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class SafePathAttributeTests
 
         Assert.Single(results);
         Assert.Contains(nameof(dto.Path), results[0].MemberNames);
-        Assert.Contains("contains invalid path characters", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]

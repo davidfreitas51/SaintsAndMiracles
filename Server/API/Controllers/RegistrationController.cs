@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Core.DTOs;
 using Core.Interfaces.Services;
 using Core.Models;
@@ -7,16 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class RegistrationController(
     SignInManager<AppUser> signInManager,
     IAccountTokensService accountTokensService,
-    IEmailSender<AppUser> emailSender
-) : ControllerBase
+    IEmailSender<AppUser> emailSender) : ControllerBase
 {
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterDto registerDto)
+    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
         var tokenRecord = await accountTokensService.GetValidTokenAsync(registerDto.InviteToken);
         if (tokenRecord == null)
@@ -67,22 +67,16 @@ public class RegistrationController(
         return Created("", new { Message = "User created. Please check your email to confirm." });
     }
 
-
     [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(string userId, string token,
+    public async Task<IActionResult> ConfirmEmail(
+        [FromQuery][Required][MaxLength(100)] string userId,
+        [FromQuery][Required][MaxLength(8000)] string token,
         [FromServices] IWebHostEnvironment env,
         [FromServices] IConfiguration config)
     {
-        string? frontUrl;
-
-        if (env.IsDevelopment())
-        {
-            frontUrl = "http://localhost:4200";
-        }
-        else
-        {
-            frontUrl = config["Frontend:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
-        }
+        string frontUrl = env.IsDevelopment()
+            ? "http://localhost:4200"
+            : config["Frontend:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
 
         var user = await signInManager.UserManager.FindByIdAsync(userId);
         if (user == null)
@@ -95,7 +89,6 @@ public class RegistrationController(
         return Redirect($"{frontUrl}/account/email-confirmed?success=true");
     }
 
-
     [HttpPost("resend-confirmation")]
     public async Task<IActionResult> ResendConfirmation([FromBody] ResendConfirmationDto resendConfirmation)
     {
@@ -107,7 +100,6 @@ public class RegistrationController(
             return BadRequest(new ApiErrorResponse { Message = "Email already confirmed" });
 
         var token = await signInManager.UserManager.GenerateEmailConfirmationTokenAsync(user);
-
         var confirmationLink = Url.Action(
             "ConfirmEmail",
             "Registration",

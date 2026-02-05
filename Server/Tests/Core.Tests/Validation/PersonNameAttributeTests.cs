@@ -70,7 +70,7 @@ public class PersonNameAttributeTests
 
         Assert.Single(results);
         Assert.Contains(nameof(dto.Name), results[0].MemberNames);
-        Assert.Contains("invalid characters", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]

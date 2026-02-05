@@ -46,7 +46,7 @@ public class SafeTextAttributeTests
 
         Assert.Single(results);
         Assert.Contains(nameof(dto.Text), results[0].MemberNames);
-        Assert.Contains("must not contain HTML tags", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class SafeTextAttributeTests
 
         Assert.Single(results);
         Assert.Contains(nameof(dto.Text), results[0].MemberNames);
-        Assert.Contains("must not contain HTML entities", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]

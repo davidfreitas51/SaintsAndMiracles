@@ -3,61 +3,28 @@ using API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    });
+// Controllers + JSON
+builder.Services.AddApiControllers();
 
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyHeader()
-              .AllowAnyMethod()
-              .WithOrigins("http://localhost:4200")
-              .AllowCredentials();
-    });
-});
+// Infrastructure
+builder.Services.AddCorsPolicy();
+builder.Services.AddRateLimiting();
+builder.Services.AddApplicationCookieConfig();
 
 builder.Services.AddApplicationServices();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddIdentityServices();
 builder.Services.AddAuthorization();
 
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.Name = "AuthCookie";
-
-    options.Events.OnRedirectToLogin = context =>
-    {
-        context.Response.StatusCode = 401;
-        return Task.CompletedTask;
-    };
-    options.Events.OnRedirectToAccessDenied = context =>
-    {
-        context.Response.StatusCode = 403;
-        return Task.CompletedTask;
-    };
-
-    options.ExpireTimeSpan = TimeSpan.FromDays(14);
-    options.SlidingExpiration = true;
-});
-
-
 var app = builder.Build();
 
 // Seed
 await app.SeedDatabaseAsync();
 
-// Middlewares
+// Middleware pipeline
 app.UseCors();
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

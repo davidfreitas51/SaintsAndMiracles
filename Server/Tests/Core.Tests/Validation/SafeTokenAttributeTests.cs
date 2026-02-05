@@ -27,7 +27,7 @@ public class SafeTokenAttributeTests
         var results = ModelValidationHelper.Validate(dto);
         Assert.Single(results);
         Assert.Contains(nameof(dto.Token), results[0].MemberNames);
-        Assert.Contains("must be between", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class SafeTokenAttributeTests
         var results = ModelValidationHelper.Validate(dto);
         Assert.Single(results);
         Assert.Contains(nameof(dto.Token), results[0].MemberNames);
-        Assert.Contains("contains invalid characters", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Theory]
@@ -61,7 +61,7 @@ public class SafeTokenAttributeTests
         var results = ModelValidationHelper.Validate(dto);
         Assert.Single(results);
         Assert.Contains(nameof(dto.Token), results[0].MemberNames);
-        Assert.Contains("must not contain whitespace or control characters", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]
@@ -72,6 +72,6 @@ public class SafeTokenAttributeTests
         var context = new ValidationContext(dto) { MemberName = "Token" };
         var result = attr.GetValidationResult(123, context);
         Assert.NotNull(result);
-        Assert.Contains("can only be applied to string fields", result!.ErrorMessage);
+        Assert.Contains("invalid format", result!.ErrorMessage);
     }
 }

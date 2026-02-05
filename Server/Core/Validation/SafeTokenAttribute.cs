@@ -22,18 +22,18 @@ public sealed class SafeTokenAttribute : SafeStringValidationAttribute
             return ValidationResult.Success;
 
         if (value is not string token)
-            return CreateValidationError(validationContext, "can only be applied to string fields.");
+            return CreateValidationError(validationContext, "invalid format");
 
         token = token.Trim();
 
         if (token.Length < MinLength || token.Length > MaxLength)
-            return CreateValidationError(validationContext, $"must be between {MinLength} and {MaxLength} characters.");
+            return CreateValidationError(validationContext, $"invalid format.");
 
         if (token.Any(char.IsWhiteSpace) || token.Any(char.IsControl))
-            return CreateValidationError(validationContext, "must not contain whitespace or control characters.");
+            return CreateValidationError(validationContext, "invalid format.");
 
         if (!_safeTokenRegex.IsMatch(token))
-            return CreateValidationError(validationContext, "contains invalid characters.");
+            return CreateValidationError(validationContext, "invalid format.");
 
         return ValidationResult.Success;
     }

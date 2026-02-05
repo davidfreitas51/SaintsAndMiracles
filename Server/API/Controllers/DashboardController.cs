@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
@@ -9,9 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-[Route("api/[controller]")]
-[Authorize]
 [ApiController]
+[Authorize]
+[Route("api/[controller]")]
 public class DashboardController(
     ISaintsRepository saintsRepository,
     IMiraclesRepository miraclesRepository,
@@ -22,29 +23,27 @@ public class DashboardController(
     [HttpGet("summary")]
     public async Task<IActionResult> GetSummary()
     {
-        var totalSaintsTask = await saintsRepository.GetTotalSaintsAsync();
-        var totalMiraclesTask = await miraclesRepository.GetTotalMiraclesAsync();
-        var totalPrayersTask = await prayersRepository.GetTotalPrayersAsync();
-        var totalAccountsTask = await userManager.Users.CountAsync(u => u.EmailConfirmed);
-
         var summary = new DashboardSummaryDto
         {
-            TotalSaints = totalSaintsTask,
-            TotalMiracles = totalMiraclesTask,
-            TotalPrayers = totalPrayersTask,
-            TotalAccounts = totalAccountsTask
+            TotalSaints = await saintsRepository.GetTotalSaintsAsync(),
+            TotalMiracles = await miraclesRepository.GetTotalMiraclesAsync(),
+            TotalPrayers = await prayersRepository.GetTotalPrayersAsync(),
+            TotalAccounts = await userManager.Users.CountAsync(u => u.EmailConfirmed)
         };
 
         return Ok(summary);
     }
 
     [HttpGet("recent")]
-    public async Task<IActionResult> GetRecentActivity(int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> GetRecentActivity(
+        [FromQuery][Range(1, int.MaxValue)] int pageNumber = 1,
+        [FromQuery][Range(1, 100)] int pageSize = 10)
     {
-        var pagedActivities = await recentActivityRepository.GetRecentActivitiesAsync(pageNumber, pageSize);
+        var pagedActivities =
+            await recentActivityRepository.GetRecentActivitiesAsync(pageNumber, pageSize);
 
         var userIds = pagedActivities.Items
-            .Where(a => !string.IsNullOrEmpty(a.UserId))
+            .Where(a => a.UserId != null)
             .Select(a => a.UserId!)
             .Distinct()
             .ToList();
@@ -53,7 +52,7 @@ public class DashboardController(
             .Where(u => userIds.Contains(u.Id))
             .ToListAsync();
 
-        var result = pagedActivities.Items.Select(a => new
+        var items = pagedActivities.Items.Select(a => new
         {
             a.EntityName,
             a.EntityId,
@@ -61,15 +60,14 @@ public class DashboardController(
             a.Action,
             a.CreatedAt,
             UserEmail = users.FirstOrDefault(u => u.Id == a.UserId)?.Email
-        }).ToList();
+        });
 
         return Ok(new
         {
-            Items = result,
+            Items = items,
             pagedActivities.TotalCount,
             pagedActivities.PageNumber,
             pagedActivities.PageSize
         });
     }
-
 }

@@ -55,7 +55,7 @@ public class NotHtmlAttributeTests
 
         Assert.Single(results);
         Assert.Contains(nameof(dto.Text), results[0].MemberNames);
-        Assert.Contains("must not contain HTML", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Fact]

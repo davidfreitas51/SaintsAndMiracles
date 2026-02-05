@@ -11,7 +11,7 @@ namespace API.Controllers;
 public class AuthenticationController(SignInManager<AppUser> signInManager, IEmailSender<AppUser> emailSender) : ControllerBase
 {
     [HttpPost("Login")]
-    public async Task<IActionResult> Login(LoginDto loginDto)
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
         var user = await signInManager.UserManager.FindByEmailAsync(loginDto.Email);
 
@@ -78,7 +78,7 @@ public class AuthenticationController(SignInManager<AppUser> signInManager, IEma
     }
 
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
     {
         var user = await signInManager.UserManager.FindByEmailAsync(model.Email);
         if (user == null) return BadRequest(new { Message = "Invalid request" });

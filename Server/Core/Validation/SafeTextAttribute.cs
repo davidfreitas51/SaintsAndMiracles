@@ -38,7 +38,7 @@ public sealed class SafeTextAttribute : SafeStringValidationAttribute
             return CreateValidationError(
                 validationContext,
                 ErrorMessage ??
-                $"{validationContext.MemberName} must not contain HTML tags."
+                $"invalid format"
             );
         }
 
@@ -47,7 +47,7 @@ public sealed class SafeTextAttribute : SafeStringValidationAttribute
             return CreateValidationError(
                 validationContext,
                 ErrorMessage ??
-                $"{validationContext.MemberName} must not contain HTML entities."
+                $"invalid format"
             );
         }
 

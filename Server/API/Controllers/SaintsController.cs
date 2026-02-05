@@ -1,14 +1,16 @@
 using Core.Interfaces;
+using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
+using Core.Validation.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class SaintsController(
     ISaintsRepository saintsRepository,
     ISaintsService saintsService,
@@ -21,7 +23,7 @@ public class SaintsController(
         return Ok(saints);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:int:min(1)}")]
     public async Task<IActionResult> GetById(int id)
     {
         var saint = await saintsRepository.GetByIdAsync(id);
@@ -29,14 +31,14 @@ public class SaintsController(
     }
 
     [HttpGet("{slug}")]
-    public async Task<IActionResult> GetSaintBySlug(string slug)
+    public async Task<IActionResult> GetSaintBySlug([FromRoute][SafeSlug] string slug)
     {
         var saint = await saintsRepository.GetBySlugAsync(slug);
         return saint is null ? NotFound() : Ok(saint);
     }
 
-    [HttpPost]
     [Authorize]
+    [HttpPost]
     public async Task<IActionResult> CreateSaint([FromBody] NewSaintDto newSaint)
     {
         var user = await userManager.GetUserAsync(User);
@@ -49,22 +51,19 @@ public class SaintsController(
         return CreatedAtAction(nameof(GetById), new { id = created.Value }, null);
     }
 
-    [HttpPut("{id}")]
     [Authorize]
+    [HttpPut("{id:int:min(1)}")]
     public async Task<IActionResult> UpdateSaint(int id, [FromBody] NewSaintDto updatedSaint)
     {
         var user = await userManager.GetUserAsync(User);
         if (user is null) return Unauthorized();
 
         var updated = await saintsService.UpdateSaintAsync(id, updatedSaint, user.Id);
-        if (!updated)
-            return NotFound();
-
-        return NoContent();
+        return updated ? NoContent() : NotFound();
     }
 
-    [HttpDelete("{id:int}")]
     [Authorize]
+    [HttpDelete("{id:int:min(1)}")]
     public async Task<IActionResult> DeleteSaint(int id)
     {
         var user = await userManager.GetUserAsync(User);
@@ -90,22 +89,13 @@ public class SaintsController(
     {
         var saints = await saintsRepository.GetSaintsOfTheDayAsync(DateOnly.FromDateTime(DateTime.UtcNow));
 
-        if (!saints.Any())
-            return NoContent();
-
-        return Ok(saints);
+        return saints.Any() ? Ok(saints) : NoContent();
     }
 
     [HttpGet("upcoming")]
     public async Task<IActionResult> GetUpcomingFeasts()
     {
-        var saints = await saintsRepository.GetUpcomingFeasts(
-            DateOnly.FromDateTime(DateTime.UtcNow)
-        );
-
-        if (!saints.Any())
-            return NoContent();
-
-        return Ok(saints);
+        var saints = await saintsRepository.GetUpcomingFeasts(DateOnly.FromDateTime(DateTime.UtcNow));
+        return saints.Any() ? Ok(saints) : NoContent();
     }
 }

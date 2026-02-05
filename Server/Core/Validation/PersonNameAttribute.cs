@@ -42,7 +42,7 @@ public sealed class PersonNameAttribute : SafeStringValidationAttribute
         if (!Regex.IsMatch(name))
             return CreateValidationError(
                 validationContext,
-                "contains invalid characters for a person name."
+                "invalid format."
             );
 
         return ValidationResult.Success;

@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Core.DTOs;
 using Core.Models;
+using Core.Validation.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -53,15 +55,16 @@ public class AccountManagementController(
 
 
     [Authorize(Roles = "SuperAdmin")]
-    [HttpDelete("users/{username}")]
-    public async Task<IActionResult> DeleteUserByUsername(string username)
+    [HttpDelete("users/{email}")]
+    public async Task<IActionResult> DeleteUserByEmail(
+        [FromRoute, Required, SafeEmail] string email)
     {
-        var user = await userManager.FindByNameAsync(username);
+        var user = await userManager.FindByEmailAsync(email);
         if (user == null)
             return NotFound(new { message = "User not found." });
 
         var currentUser = await userManager.GetUserAsync(User);
-        if (currentUser != null && currentUser.UserName == username)
+        if (currentUser != null && currentUser.Email == email)
             return BadRequest(new { message = "You cannot delete your own account." });
 
         var result = await userManager.DeleteAsync(user);
@@ -138,7 +141,7 @@ public class AccountManagementController(
 
     [Authorize]
     [HttpPost("request-email-change")]
-    public async Task<IActionResult> RequestEmailChange(ChangeEmailRequestDto dto)
+    public async Task<IActionResult> RequestEmailChange([FromBody] ChangeEmailRequestDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null)
@@ -165,18 +168,25 @@ public class AccountManagementController(
         return Ok(new { Message = "Confirmation email sent to new address." });
     }
 
-
-    [Authorize]
+    
     [HttpGet("confirm-email-change")]
-    public async Task<IActionResult> ConfirmEmailChange(string userId, string email, string token)
+    public async Task<IActionResult> ConfirmEmailChange(
+        [FromQuery][Required][MaxLength(100)] string userId,
+        [FromQuery][Required][EmailAddress][MaxLength(256)] string email,
+        [FromQuery][Required][MaxLength(8000)] string token)
     {
+        var failUrl = $"{frontendBaseUrl}/account/email-confirmed?success=false";
+
+        email = email.Trim();
+        token = Uri.UnescapeDataString(token);
+
         var user = await userManager.FindByIdAsync(userId);
         if (user == null)
-            return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=false");
+            return Redirect(failUrl);
 
         var result = await userManager.ChangeEmailAsync(user, email, token);
         if (!result.Succeeded)
-            return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=false");
+            return Redirect(failUrl);
 
         user.UserName = email;
         await userManager.UpdateAsync(user);

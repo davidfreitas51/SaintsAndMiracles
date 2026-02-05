@@ -32,7 +32,7 @@ public sealed class SafePathAttribute : SafeStringValidationAttribute
         {
             return CreateValidationError(
                 validationContext,
-                "must be a relative path."
+                "invalid format"
             );
         }
 
@@ -48,7 +48,7 @@ public sealed class SafePathAttribute : SafeStringValidationAttribute
         {
             return CreateValidationError(
                 validationContext,
-                "must not contain ':' characters."
+                "invalid format"
             );
         }
 
@@ -56,7 +56,7 @@ public sealed class SafePathAttribute : SafeStringValidationAttribute
         {
             return CreateValidationError(
                 validationContext,
-                "contains invalid path characters."
+                "invalid format"
             );
         }
 

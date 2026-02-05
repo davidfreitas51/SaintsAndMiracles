@@ -21,7 +21,7 @@ public sealed class NotHtmlAttribute : SafeStringValidationAttribute
         if (HtmlTagRegex.IsMatch(text))
             return CreateValidationError(
                 validationContext,
-                "must not contain HTML."
+                "invalid format"
             );
 
         return ValidationResult.Success;

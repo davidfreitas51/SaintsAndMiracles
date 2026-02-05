@@ -89,7 +89,7 @@ public class SafeEmailAttributeTests
 
         Assert.Single(results);
         Assert.Contains(nameof(dto.Email), results[0].MemberNames);
-        Assert.Contains("contains unsafe characters", results[0].ErrorMessage);
+        Assert.Contains("invalid format", results[0].ErrorMessage);
     }
 
     [Theory]
