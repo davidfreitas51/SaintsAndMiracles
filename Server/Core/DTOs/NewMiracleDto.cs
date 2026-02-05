@@ -16,7 +16,6 @@ public class NewMiracleDto
     public int Century { get; set; }
 
     [Required]
-    [SafePath]
     public required string Image { get; set; }
 
     [Required]

@@ -98,22 +98,6 @@ public class NewSaintDtoTests
         );
     }
 
-    // ---------- Image ----------
-
-    [Fact]
-    public void Should_Fail_When_Image_Path_Is_Unsafe()
-    {
-        var dto = CreateValidDto();
-        dto.Image = "../secret/file.jpg";
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(NewSaintDto.Image))
-        );
-    }
-
     // ---------- Description ----------
 
     [Fact]

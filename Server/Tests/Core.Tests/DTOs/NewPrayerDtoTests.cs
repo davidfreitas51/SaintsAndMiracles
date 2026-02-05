@@ -105,16 +105,6 @@ namespace Core.Tests.DTOs
         }
 
         // ================= Image =================
-        [Fact]
-        public void Should_Pass_When_Image_Is_Null()
-        {
-            var dto = CreateValidDto();
-            dto.Image = null;
-
-            var results = ModelValidationHelper.Validate(dto);
-
-            Assert.Empty(results);
-        }
 
         [Fact]
         public void Should_Pass_When_Image_Is_ValidPath()

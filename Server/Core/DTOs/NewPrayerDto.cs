@@ -13,7 +13,7 @@ public class NewPrayerDto
     [SafeText]
     public required string Description { get; set; }
 
-    [SafePath]
+    [Required]
     public string? Image { get; set; }
 
     [Required]

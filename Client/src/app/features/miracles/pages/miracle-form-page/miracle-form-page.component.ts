@@ -80,7 +80,7 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     const filter = new EntityFilters({ type: TagType.Miracle });
-    filter.pageSize = 9999;
+    filter.pageSize = 1000;
     this.tagsService.getTags(filter).subscribe((res) => {
       this.tagsList = res.items;
       this.cdr.detectChanges();

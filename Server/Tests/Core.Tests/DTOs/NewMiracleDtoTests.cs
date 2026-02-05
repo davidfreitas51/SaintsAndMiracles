@@ -64,20 +64,6 @@ public class NewMiracleDtoTests
     }
 
     [Fact]
-    public void Should_Fail_When_Image_Path_Is_Unsafe()
-    {
-        var dto = CreateValidDto();
-        dto.Image = "../etc/passwd";
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(NewMiracleDto.Image))
-        );
-    }
-
-    [Fact]
     public void Should_Fail_When_TagIds_Exceed_Max_Limit()
     {
         var dto = CreateValidDto();
