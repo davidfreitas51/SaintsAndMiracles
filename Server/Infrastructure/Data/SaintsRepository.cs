@@ -114,9 +114,11 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
             return;
 
         context.Saints.Remove(saint);
-        await context.SaveChangesAsync();
-    }
+        var deleted = await context.SaveChangesAsync() > 0;
 
+        if (deleted)
+            InvalidateSaintCaches(saint);
+    }
 
     public async Task<IReadOnlyList<string>> GetCountriesAsync()
     {

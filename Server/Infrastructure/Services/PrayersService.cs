@@ -7,6 +7,8 @@ using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.Extensions.Hosting;
 
+namespace Infrastructure.Services;
+
 public class PrayersService(
     IHostEnvironment env,
     IPrayersRepository prayersRepository,

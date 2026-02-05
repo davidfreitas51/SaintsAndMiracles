@@ -104,6 +104,7 @@ public static class ServiceCollectionExtensions
         services.AddMemoryCache();
 
         // Repositories
+        services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<ISaintsRepository, SaintsRepository>();
         services.AddScoped<IMiraclesRepository, MiraclesRepository>();
         services.AddScoped<IPrayersRepository, PrayersRepository>();

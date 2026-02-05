@@ -101,7 +101,7 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
   }
 
   private loadTagsAndOrders(): void {
-    const filter = new EntityFilters({ type: TagType.Saint, pageSize: 1000 });
+    const filter = new EntityFilters({ type: TagType.Saint, pageSize: 100 });
 
     this.tagsService
       .getTags(filter)
