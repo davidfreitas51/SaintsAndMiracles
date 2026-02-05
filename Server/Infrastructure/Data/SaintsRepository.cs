@@ -83,6 +83,11 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         trackedSaint.FeastDay = saint.FeastDay;
         trackedSaint.ReligiousOrderId = saint.ReligiousOrderId;
         trackedSaint.UpdatedAt = DateTime.UtcNow;
+        trackedSaint.Slug = saint.Slug;
+        trackedSaint.MarkdownPath = saint.MarkdownPath;
+        trackedSaint.Image = saint.Image;
+        trackedSaint.Title = saint.Title;
+        trackedSaint.PatronOf = saint.PatronOf;
 
         trackedSaint.Tags.RemoveAll(t => !saint.Tags.Any(st => st.Id == t.Id));
 

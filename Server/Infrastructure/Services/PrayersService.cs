@@ -1,157 +1,121 @@
-using System.Text.RegularExpressions;
 using Core.DTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Models;
-using Microsoft.Extensions.Hosting;
 
 namespace Infrastructure.Services;
 
 public class PrayersService(
-    IHostEnvironment env,
     IPrayersRepository prayersRepository,
+    ITagsRepository tagsRepository,
     IRecentActivityRepository recentActivityRepository,
-    ITagsRepository tagsRepository) : IPrayersService
+    IFileStorageService fileStorage) : IPrayersService
 {
+    private readonly IPrayersRepository _prayersRepository = prayersRepository;
+    private readonly ITagsRepository _tagsRepository = tagsRepository;
+    private readonly IRecentActivityRepository _recentActivityRepository = recentActivityRepository;
+    private readonly IFileStorageService _fileStorage = fileStorage;
+
     public async Task<int?> CreatePrayerAsync(NewPrayerDto newPrayer, string? userId)
     {
-        var slug = GenerateSlug(newPrayer.Title);
-        if (await prayersRepository.SlugExistsAsync(slug))
+        var slug = _fileStorage.GenerateSlug(newPrayer.Title);
+        if (await _prayersRepository.SlugExistsAsync(slug))
             return null;
 
-        var (markdownPath, imagePath) = await SaveFilesAsync(newPrayer, slug);
+        var (markdownPath, imagePath) = await _fileStorage.SaveFilesAsync(
+            folderName: "prayers",
+            slug: slug,
+            markdownContent: newPrayer.MarkdownContent,
+            image: newPrayer.Image
+        );
 
-        var tags = new List<Tag>();
-        if (newPrayer.TagIds != null && newPrayer.TagIds.Any())
-            tags = await tagsRepository.GetByIdsAsync(newPrayer.TagIds);
+        var tags = (newPrayer.TagIds != null && newPrayer.TagIds.Any())
+            ? await _tagsRepository.GetByIdsAsync(newPrayer.TagIds)
+            : new List<Tag>();
 
         var prayer = new Prayer
         {
             Title = newPrayer.Title,
             Description = newPrayer.Description,
-            Image = imagePath ?? "",
-            MarkdownPath = markdownPath,
             Slug = slug,
+            MarkdownPath = markdownPath,
+            Image = imagePath ?? "",
             Tags = tags
         };
 
-        var created = await prayersRepository.CreateAsync(prayer);
+        var created = await _prayersRepository.CreateAsync(prayer);
+        if (!created) return null;
 
-        if (created)
-        {
-            await recentActivityRepository.LogActivityAsync(
-                EntityType.Prayer,
-                prayer.Id,
-                prayer.Title,
-                ActivityAction.Created,
-                userId
-            );
-        }
+        await _recentActivityRepository.LogActivityAsync(
+            EntityType.Prayer,
+            prayer.Id,
+            prayer.Title,
+            ActivityAction.Created,
+            userId
+        );
 
-        return created ? prayer.Id : (int?)null;
+        return prayer.Id;
     }
 
     public async Task<bool> UpdatePrayerAsync(int id, NewPrayerDto updatedPrayer, string? userId)
     {
-        var existingPrayer = await prayersRepository.GetByIdAsync(id);
-        if (existingPrayer == null)
-            return false;
+        var existingPrayer = await _prayersRepository.GetByIdAsync(id);
+        if (existingPrayer == null) return false;
 
-        var slug = GenerateSlug(updatedPrayer.Title);
-        var (markdownPath, imagePath) = await UpdateFilesAsync(updatedPrayer, slug);
+        var oldSlug = existingPrayer.Slug;
+        var newSlug = _fileStorage.GenerateSlug(updatedPrayer.Title);
+
+        var (markdownPath, imagePath) = await _fileStorage.SaveFilesAsync(
+            folderName: "prayers",
+            slug: newSlug,
+            markdownContent: updatedPrayer.MarkdownContent,
+            image: updatedPrayer.Image,
+            existingImagePath: existingPrayer.Image
+        );
 
         existingPrayer.Title = updatedPrayer.Title;
         existingPrayer.Description = updatedPrayer.Description;
-        existingPrayer.Slug = slug;
+        existingPrayer.Slug = newSlug;
+        existingPrayer.MarkdownPath = markdownPath;
+        existingPrayer.Image = imagePath ?? existingPrayer.Image;
 
-        if (!string.IsNullOrWhiteSpace(imagePath))
-            existingPrayer.Image = imagePath;
+        existingPrayer.Tags = (updatedPrayer.TagIds != null && updatedPrayer.TagIds.Any())
+            ? await _tagsRepository.GetByIdsAsync(updatedPrayer.TagIds)
+            : new List<Tag>();
 
-        if (!string.IsNullOrWhiteSpace(markdownPath))
-            existingPrayer.MarkdownPath = markdownPath;
+        var updated = await _prayersRepository.UpdateAsync(existingPrayer);
+        if (!updated) return false;
 
-        if (updatedPrayer.TagIds != null && updatedPrayer.TagIds.Any())
-            existingPrayer.Tags = await tagsRepository.GetByIdsAsync(updatedPrayer.TagIds);
-        else
-            existingPrayer.Tags = new List<Tag>();
+        if (!string.Equals(oldSlug, newSlug, StringComparison.OrdinalIgnoreCase))
+            await _fileStorage.DeleteFolderAsync("prayers", oldSlug);
 
-        var updated = await prayersRepository.UpdateAsync(existingPrayer);
+        await _recentActivityRepository.LogActivityAsync(
+            EntityType.Prayer,
+            existingPrayer.Id,
+            existingPrayer.Title,
+            ActivityAction.Updated,
+            userId
+        );
 
-        if (updated)
-        {
-            await recentActivityRepository.LogActivityAsync(
-                EntityType.Prayer,
-                existingPrayer.Id,
-                existingPrayer.Title,
-                ActivityAction.Updated,
-                userId
-            );
-        }
-
-        return updated;
+        return true;
     }
 
     public async Task DeletePrayerAsync(string slug, string? userId)
     {
-        var prayer = await prayersRepository.GetBySlugAsync(slug);
+        var prayer = await _prayersRepository.GetBySlugAsync(slug);
         if (prayer == null) return;
 
-        var wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
-        var prayerFolder = Path.Combine(wwwroot, "prayers", slug);
+        await _fileStorage.DeleteFolderAsync("prayers", slug);
+        await _prayersRepository.DeleteAsync(prayer);
 
-        if (Directory.Exists(prayerFolder))
-            Directory.Delete(prayerFolder, recursive: true);
-
-        await prayersRepository.DeleteAsync(prayer);
-
-        await recentActivityRepository.LogActivityAsync(
+        await _recentActivityRepository.LogActivityAsync(
             EntityType.Prayer,
             prayer.Id,
             prayer.Title,
             ActivityAction.Deleted,
             userId
         );
-    }
-
-    private string GenerateSlug(string title)
-    {
-        return Regex.Replace(title.ToLower(), @"[^a-z0-9]+", "-").Trim('-');
-    }
-
-    public async Task<(string markdownPath, string? imagePath)> SaveFilesAsync(NewPrayerDto prayerDto, string slug)
-    {
-        var wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
-        var prayerFolder = Path.Combine(wwwroot, "prayers", slug);
-        Directory.CreateDirectory(prayerFolder);
-
-        var markdownPath = Path.Combine(prayerFolder, "markdown.md");
-        await File.WriteAllTextAsync(markdownPath, prayerDto.MarkdownContent);
-        var relativeMarkdownPath = $"/prayers/{slug}/markdown.md";
-
-        string? relativeImagePath = null;
-        if (!string.IsNullOrWhiteSpace(prayerDto.Image) && prayerDto.Image.StartsWith("data:image/"))
-        {
-            var match = Regex.Match(prayerDto.Image, @"data:image/(?<type>.+?);base64,(?<data>.+)");
-            if (match.Success)
-            {
-                var extension = match.Groups["type"].Value;
-                var base64Data = match.Groups["data"].Value;
-                var imageBytes = Convert.FromBase64String(base64Data);
-
-                var imagePath = Path.Combine(prayerFolder, $"image.{extension}");
-                await File.WriteAllBytesAsync(imagePath, imageBytes);
-
-                relativeImagePath = $"/prayers/{slug}/image.{extension}";
-            }
-        }
-
-        return (relativeMarkdownPath, relativeImagePath);
-    }
-
-    public async Task<(string markdownPath, string? imagePath)> UpdateFilesAsync(NewPrayerDto prayerDto, string slug)
-    {
-        return await SaveFilesAsync(prayerDto, slug);
     }
 }

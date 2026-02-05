@@ -74,6 +74,11 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         trackedMiracle.Country = miracle.Country;
         trackedMiracle.Century = miracle.Century;
         trackedMiracle.Date = miracle.Date;
+        trackedMiracle.LocationDetails = miracle.LocationDetails;
+        trackedMiracle.Slug = miracle.Slug;
+        trackedMiracle.MarkdownPath = miracle.MarkdownPath;
+        trackedMiracle.Image = miracle.Image;
+        trackedMiracle.Tags = miracle.Tags;
         trackedMiracle.UpdatedAt = DateTime.UtcNow;
 
         trackedMiracle.Tags.RemoveAll(t => !miracle.Tags.Any(mt => mt.Id == t.Id));

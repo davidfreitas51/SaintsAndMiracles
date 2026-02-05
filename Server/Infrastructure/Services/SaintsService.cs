@@ -37,7 +37,6 @@ public class SaintsService : ISaintsService
         if (await saintsRepository.SlugExistsAsync(slug))
             return null;
 
-        // Salva arquivos usando FileStorageService na pasta "saints"
         var (markdownPath, imagePath) = await fileStorage.SaveFilesAsync("saints", slug, newSaint.MarkdownContent, newSaint.Image);
 
         var tags = (newSaint.TagIds != null && newSaint.TagIds.Any())
@@ -82,18 +81,16 @@ public class SaintsService : ISaintsService
         var oldSlug = saint.Slug;
         var newSlug = fileStorage.GenerateSlug(updatedSaint.Name);
 
-        string? oldImagePath = saint.Image; // guarda path antigo
+        string? oldImagePath = saint.Image;
 
-        // Cria a pasta nova primeiro
         var (markdownPath, imagePath) = await fileStorage.SaveFilesAsync(
             folderName: "saints",
             slug: newSlug,
             markdownContent: updatedSaint.MarkdownContent,
             image: updatedSaint.Image,
-            existingImagePath: oldImagePath // mantém a imagem antiga se não for base64
+            existingImagePath: oldImagePath
         );
 
-        // Atualiza a entidade
         saint.Name = updatedSaint.Name;
         saint.Slug = newSlug;
         saint.MarkdownPath = markdownPath;
@@ -104,24 +101,19 @@ public class SaintsService : ISaintsService
         saint.Title = updatedSaint.Title;
         saint.FeastDay = updatedSaint.FeastDay;
         saint.PatronOf = updatedSaint.PatronOf;
-        saint.ReligiousOrder = updatedSaint.ReligiousOrderId.HasValue
-            ? await religiousOrdersRepository.GetByIdAsync(updatedSaint.ReligiousOrderId.Value)
-            : null;
+        saint.ReligiousOrderId = updatedSaint.ReligiousOrderId;
         saint.Tags = (updatedSaint.TagIds != null && updatedSaint.TagIds.Any())
             ? await tagsRepository.GetByIdsAsync(updatedSaint.TagIds)
             : new List<Tag>();
 
-        // Atualiza no banco
         var updatedResult = await saintsRepository.UpdateAsync(saint);
         if (!updatedResult) return false;
 
-        // Apaga a pasta antiga **só depois de tudo**
         if (!string.Equals(oldSlug, newSlug, StringComparison.OrdinalIgnoreCase))
         {
             await fileStorage.DeleteFolderAsync("saints", oldSlug);
         }
 
-        // Log de atividade
         await recentActivityRepository.LogActivityAsync(
             EntityType.Saint, saint.Id, saint.Name, ActivityAction.Updated, userId
         );
@@ -134,7 +126,6 @@ public class SaintsService : ISaintsService
         var saint = await saintsRepository.GetByIdAsync(id);
         if (saint == null) return;
 
-        // Apaga a pasta e arquivos
         await fileStorage.DeleteFolderAsync("saints", saint.Slug);
 
         await saintsRepository.DeleteAsync(saint.Id);

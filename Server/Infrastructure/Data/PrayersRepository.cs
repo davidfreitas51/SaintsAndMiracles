@@ -71,6 +71,10 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
 
         trackedPrayer.Title = prayer.Title;
         trackedPrayer.Description = prayer.Description;
+        trackedPrayer.Slug = prayer.Slug;
+        trackedPrayer.MarkdownPath = prayer.MarkdownPath;
+        trackedPrayer.Image = prayer.Image;
+        trackedPrayer.Tags = prayer.Tags;
         trackedPrayer.UpdatedAt = DateTime.UtcNow;
 
         trackedPrayer.Tags.RemoveAll(t => !prayer.Tags.Any(pt => pt.Id == t.Id));

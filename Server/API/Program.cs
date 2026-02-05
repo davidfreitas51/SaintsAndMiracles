@@ -1,4 +1,3 @@
-using System.Text.Json;
 using API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
