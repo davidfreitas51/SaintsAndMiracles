@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Hosting;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
 
 namespace Infrastructure.Services;
 
@@ -46,33 +48,32 @@ public class FileStorageService(IHostEnvironment env) : IFileStorageService
         var folder = Path.Combine(_wwwroot, folderName, slug);
         Directory.CreateDirectory(folder);
 
-        // --- Markdown ---
         var markdownPath = Path.Combine(folder, "markdown.md");
         await File.WriteAllTextAsync(markdownPath, markdownContent);
         var relativeMarkdownPath = $"/{folderName}/{slug}/markdown.md";
 
-        // --- Imagem ---
         string? relativeImagePath = null;
 
         if (!string.IsNullOrWhiteSpace(image))
         {
-            if (image.StartsWith("data:image/")) // Nova imagem base64
+            if (image.StartsWith("data:image/"))
             {
-                // deleta imagem antiga
                 if (!string.IsNullOrWhiteSpace(existingImagePath))
                     TryDeleteFile(Path.Combine(_wwwroot, existingImagePath.TrimStart('/')));
 
                 var match = Regex.Match(image, @"data:image/(?<type>.+?);base64,(?<data>.+)");
                 if (match.Success)
                 {
-                    var ext = match.Groups["type"].Value;
                     var bytes = Convert.FromBase64String(match.Groups["data"].Value);
-                    var imagePath = Path.Combine(folder, $"image.{ext}");
-                    await File.WriteAllBytesAsync(imagePath, bytes);
-                    relativeImagePath = $"/{folderName}/{slug}/image.{ext}";
+
+                    using var img = Image.Load(bytes);
+                    var webpPath = Path.Combine(folder, "image.webp");
+                    await img.SaveAsync(webpPath, new WebpEncoder { Quality = 80 });
+
+                    relativeImagePath = $"/{folderName}/{slug}/image.webp";
                 }
             }
-            else // Path antigo
+            else
             {
                 var oldImageFullPath = Path.Combine(_wwwroot, image.TrimStart('/'));
                 if (File.Exists(oldImageFullPath))
@@ -87,7 +88,6 @@ public class FileStorageService(IHostEnvironment env) : IFileStorageService
         }
         else if (!string.IsNullOrWhiteSpace(existingImagePath))
         {
-            // Mantém imagem existente ao renomear
             var oldImageFullPath = Path.Combine(_wwwroot, existingImagePath.TrimStart('/'));
             if (File.Exists(oldImageFullPath))
             {
