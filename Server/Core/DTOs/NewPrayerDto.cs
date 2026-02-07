@@ -14,6 +14,7 @@ public class NewPrayerDto
     public required string Description { get; set; }
 
     [Required]
+    [ImageSource]
     public string? Image { get; set; }
 
     [Required]

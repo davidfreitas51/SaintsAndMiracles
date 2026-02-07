@@ -15,6 +15,7 @@ public class NewSaintDto
     public int Century { get; set; }
 
     [Required]
+    [ImageSource]
     public required string Image { get; set; }
 
     [Required]

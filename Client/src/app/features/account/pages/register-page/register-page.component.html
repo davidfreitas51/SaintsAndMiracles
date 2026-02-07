@@ -25,19 +25,22 @@
 
             @if (firstName?.touched && firstName?.invalid) {
               <mat-error>
-                @if (firstName?.errors?.["required"]) {
-                  First name is required
-                }
-
-                @if (firstName?.errors?.["personName"]?.reason === "length") {
-                  Minimum
-                  {{ firstName?.errors?.["personName"]?.minLength }} characters
-                }
-
-                @if (
-                  firstName?.errors?.["personName"]?.reason === "invalidFormat"
-                ) {
-                  Only letters, spaces, apostrophes and hyphens allowed
+                @switch (true) {
+                  @case (firstName.errors?.["required"]) {
+                    First name is required
+                  }
+                  @case (
+                    firstName.errors?.["personName"]?.reason === "length"
+                  ) {
+                    Minimum
+                    {{ lastName?.errors?.["personName"]?.minLength }} characters
+                  }
+                  @case (
+                    firstName?.errors?.["personName"]?.reason ===
+                    "invalidFormat"
+                  ) {
+                    Only letters, spaces, apostrophes and hyphens allowed
+                  }
                 }
               </mat-error>
             }
@@ -53,19 +56,19 @@
 
             @if (lastName?.touched && lastName?.invalid) {
               <mat-error>
-                @if (lastName?.errors?.["required"]) {
-                  Last name is required
-                }
-
-                @if (lastName?.errors?.["personName"]?.reason === "length") {
-                  Minimum
-                  {{ lastName?.errors?.["personName"]?.minLength }} characters
-                }
-
-                @if (
-                  lastName?.errors?.["personName"]?.reason === "invalidFormat"
-                ) {
-                  Only letters, spaces, apostrophes and hyphens allowed
+                @switch (true) {
+                  @case (lastName.errors?.["required"]) {
+                    Last name is required
+                  }
+                  @case (lastName.errors?.["personName"]?.reason === "length") {
+                    Minimum
+                    {{ lastName?.errors?.["personName"]?.minLength }} characters
+                  }
+                  @case (
+                    lastName?.errors?.["personName"]?.reason === "invalidFormat"
+                  ) {
+                    Only letters, spaces, apostrophes and hyphens allowed
+                  }
                 }
               </mat-error>
             }
@@ -81,16 +84,18 @@
 
             @if (email?.touched && email?.invalid) {
               <mat-error>
-                @if (email?.errors?.["required"]) {
-                  Email is required
-                }
+                @switch (true) {
+                  @case (email?.errors?.["required"]) {
+                    Email is required
+                  }
 
-                @if (email?.errors?.["email"]) {
-                  Invalid email address
-                }
+                  @case (email?.errors?.["email"]) {
+                    Invalid email address
+                  }
 
-                @if (email?.errors?.["safeEmail"]) {
-                  This email domain is not allowed
+                  @case (email?.errors?.["safeEmail"]) {
+                    This email domain is not allowed
+                  }
                 }
               </mat-error>
             }
@@ -162,12 +167,14 @@
 
             @if (showErrors) {
               <mat-error>
-                @if (confirm.errors?.["required"]) {
-                  Confirmation is required
-                }
+                @switch (true) {
+                  @case (confirm.errors?.["required"]) {
+                    Confirmation is required
+                  }
 
-                @if (confirm.errors?.["mismatch"]) {
-                  Passwords do not match
+                  @case (confirm.errors?.["mismatch"]) {
+                    Passwords do not match
+                  }
                 }
               </mat-error>
             }
