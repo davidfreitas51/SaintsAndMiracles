@@ -18,8 +18,8 @@ Overwhelmed, the priest stopped the Mass and began to weep. Word of the miracle 
 
 Unlike many miracles that fade with time, the miraculous elements at Lanciano **have remained intact to this day**:
 
-* The **Flesh**, still preserved, has the appearance of cardiac muscle (specifically, the **myocardium** of the heart).
-* The **Blood**, originally in liquid form, has coagulated into **five distinct clots**, each irregular in shape and size.
+- The **Flesh**, still preserved, has the appearance of cardiac muscle (specifically, the **myocardium** of the heart).
+- The **Blood**, originally in liquid form, has coagulated into **five distinct clots**, each irregular in shape and size.
 
 Inexplicably, when weighed separately, **each clot has the same weight** as all five together—a mysterious sign interpreted as a symbol of the **wholeness of Christ present in even the smallest fragment of the Eucharist**.
 
@@ -29,9 +29,9 @@ Inexplicably, when weighed separately, **each clot has the same weight** as all 
 
 In **1970–1971**, under the commission of the **Archbishop of Lanciano**, a rigorous scientific study was conducted by **Dr. Edoardo Linoli**, a professor of anatomy and pathology. The findings were astonishing:
 
-* The **Flesh** is indeed human tissue from the **left ventricle of the heart**.
-* The **Blood** is human, type **AB**—the same blood type found on the **Shroud of Turin**.
-* No preservatives were found in either the Flesh or the Blood, despite over 1,200 years of exposure.
+- The **Flesh** is indeed human tissue from the **left ventricle of the heart**.
+- The **Blood** is human, type **AB**—the same blood type found on the **Shroud of Turin**.
+- No preservatives were found in either the Flesh or the Blood, despite over 1,200 years of exposure.
 
 These results were confirmed by international scientific and ecclesiastical authorities, with no natural explanation for the preservation or the transformation.
 
@@ -43,7 +43,7 @@ The Miracle of Lanciano is the **oldest recorded Eucharistic miracle** authentic
 
 It affirms the words of Christ:
 
-> *“This is My Body… This is My Blood.”*
+> _“This is My Body… This is My Blood.”_
 > —Luke 22:19–20
 
 and echoes the Church’s constant teaching that, at every valid Mass, bread and wine truly become **Jesus Christ—Body, Blood, Soul, and Divinity**—under the appearance of bread and wine.
@@ -62,7 +62,7 @@ Many who visit report a **renewal of faith**, **healing of doubts**, and a deepe
 
 In an age when the Eucharist is often misunderstood or taken lightly, the Miracle of Lanciano stands as a **silent yet thunderous witness** to the truth that the **Mass is not a symbol**, but an encounter with the **living God**.
 
-> *“O sacred banquet, in which Christ is received, the memory of His Passion is renewed, the mind is filled with grace, and a pledge of future glory is given to us.”*
+> _“O sacred banquet, in which Christ is received, the memory of His Passion is renewed, the mind is filled with grace, and a pledge of future glory is given to us.”_
 > —Antiphon of Corpus Christi
 
 ---

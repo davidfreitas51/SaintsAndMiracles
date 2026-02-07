@@ -54,19 +54,22 @@
 
           <!-- Order By -->
           <mat-form-field
-          appearance="fill"
-          class="min-w-[150px] w-full sm:w-[180px] rounded-full"
-            >
+            appearance="fill"
+            class="min-w-[150px] w-full sm:w-[180px] rounded-full"
+          >
             <mat-label>Order By</mat-label>
             <mat-select
               [(value)]="saintFilters.orderBy"
               (selectionChange)="handleFilterChange($event.value)"
             >
-              <mat-option *ngFor="let option of saintOrderOptions" [value]="option.value">
+              <mat-option
+                *ngFor="let option of saintOrderOptions"
+                [value]="option.value"
+              >
                 {{ option.viewValue }}
               </mat-option>
             </mat-select>
-          </mat-form-field> 
+          </mat-form-field>
         </div>
       </div>
     </div>
@@ -74,71 +77,73 @@
     <div
       class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
     >
-      @if(saints && saints.length > 0){ @for (saint of saints; track saint.id) {
-      <ng-container>
-        <mat-card
-          (click)="redirectToSaintDetails(saint.slug)"
-          class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
-        >
-          <div class="flex justify-center mb-2">
-            <img
-              [src]="imageBaseUrl + saint.image"
-              [alt]="saint.name"
-              class="w-16 h-16 object-cover rounded-full"
-            />
-          </div>
-
-          <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1">{{ saint.name }}</h3>
-
-            <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
+      @if (saints && saints.length > 0) {
+        @for (saint of saints; track saint.id) {
+          <ng-container>
+            <mat-card
+              (click)="redirectToSaintDetails(saint.slug)"
+              class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
             >
-              <img
-                *ngIf="saint.country | countryCode as flagCode"
-                [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-                [alt]="saint.country + ' flag'"
-                class="w-4 h-4 object-contain"
-              />
-              <span>{{ saint.country }} – {{ saint.century | roman }}</span>
-            </div>
+              <div class="flex justify-center mb-2">
+                <img
+                  [src]="imageBaseUrl + saint.image"
+                  [alt]="saint.name"
+                  class="w-16 h-16 object-cover rounded-full"
+                />
+              </div>
 
-            <p
-              class="text-xs line-clamp-3 flex-1 text-gray-600 dark:text-gray-300"
-            >
-              {{ saint.description }}
-            </p>
+              <div class="flex flex-col flex-1 text-center">
+                <h3 class="text-sm font-semibold mb-1">{{ saint.name }}</h3>
 
-            <a
-              [routerLink]="['/saints', saint.slug]"
-              class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
-              (click)="$event.stopPropagation()"
-            >
-              Read More
-            </a>
-          </div>
-        </mat-card>
-      </ng-container>
-      } } @else {
-      <div class="col-span-full text-center text-gray-500 text-sm mt-6">
-        No saints found matching your filters.
-      </div>
+                <div
+                  class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
+                >
+                  <img
+                    *ngIf="saint.country | countryCode as flagCode"
+                    [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
+                    [alt]="saint.country + ' flag'"
+                    class="w-4 h-4 object-contain"
+                  />
+                  <span>{{ saint.country }} – {{ saint.century | roman }}</span>
+                </div>
+
+                <p
+                  class="text-xs line-clamp-3 flex-1 text-gray-600 dark:text-gray-300"
+                >
+                  {{ saint.description }}
+                </p>
+
+                <a
+                  [routerLink]="['/saints', saint.slug]"
+                  class="text-primary-app font-semibold pt-5 text-xs hover:underline mt-auto inline-block self-center"
+                  (click)="$event.stopPropagation()"
+                >
+                  Read More
+                </a>
+              </div>
+            </mat-card>
+          </ng-container>
+        }
+      } @else {
+        <div class="col-span-full text-center text-gray-500 text-sm mt-6">
+          No saints found matching your filters.
+        </div>
       }
     </div>
 
-    @if(saints && saints.length > 0){
-    <div class="py-6 flex justify-center">
-      <div class="rounded-xl overflow-hidden shadow-sm">
-        <mat-paginator
-          [length]="totalCount"
-          [pageIndex]="saintFilters.pageNumber - 1"
-          [pageSize]="saintFilters.pageSize"
-          [pageSizeOptions]="[25, 50, 100, 200]"
-          showFirstLastButtons
-          (page)="handlePageChange($event)"
-        ></mat-paginator>
+    @if (saints && saints.length > 0) {
+      <div class="py-6 flex justify-center">
+        <div class="rounded-xl overflow-hidden shadow-sm">
+          <mat-paginator
+            [length]="totalCount"
+            [pageIndex]="saintFilters.pageNumber - 1"
+            [pageSize]="saintFilters.pageSize"
+            [pageSizeOptions]="[25, 50, 100, 200]"
+            showFirstLastButtons
+            (page)="handlePageChange($event)"
+          ></mat-paginator>
+        </div>
       </div>
-    </div>
     }
   </main>
 

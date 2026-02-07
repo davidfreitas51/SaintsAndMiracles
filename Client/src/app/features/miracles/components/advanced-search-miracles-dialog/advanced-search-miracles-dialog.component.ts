@@ -33,7 +33,7 @@ import { MiraclesService } from '../../../../core/services/miracles.service';
 })
 export class AdvancedSearchMiraclesDialogComponent implements OnInit {
   readonly dialogRef = inject(
-    MatDialogRef<AdvancedSearchMiraclesDialogComponent>
+    MatDialogRef<AdvancedSearchMiraclesDialogComponent>,
   );
   readonly tagsService = inject(TagsService);
   readonly saintsService = inject(SaintsService);

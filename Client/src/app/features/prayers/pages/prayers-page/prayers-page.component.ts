@@ -42,7 +42,7 @@ export class PrayersPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   public prayers: Prayer[] | null = null;
-  PrayerOrderBy = PrayerOrderBy
+  PrayerOrderBy = PrayerOrderBy;
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
 

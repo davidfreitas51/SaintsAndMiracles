@@ -114,7 +114,7 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
 
           if (this.paginator) {
             this.paginator.length = res.totalCount;
-            this.paginator.pageIndex = res.pageNumber - 1; 
+            this.paginator.pageIndex = res.pageNumber - 1;
             this.paginator.pageSize = res.pageSize;
           }
         },
@@ -198,7 +198,7 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
   }
 
   onPageChange(event: PageEvent): void {
-    this.filters.page = event.pageIndex + 1; 
+    this.filters.page = event.pageIndex + 1;
     this.filters.pageSize = event.pageSize;
     this.loadEntities();
   }

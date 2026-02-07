@@ -55,7 +55,7 @@ export class SaintsPageComponent implements OnInit {
   months: string[] = [];
   religiousOrders: string[] = [];
   public saints: Saint[] | null = null;
-  SaintOrderBy = SaintOrderBy
+  SaintOrderBy = SaintOrderBy;
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
 
@@ -174,7 +174,7 @@ export class SaintsPageComponent implements OnInit {
         this.saintFilters.feastMonth = result.feastMonth;
         this.saintFilters.religiousOrderId = result.order;
         this.saintFilters.tagIds = result.tags.map((t: Tag) => t.id);
-        this.saintFilters.pageNumber = 1; 
+        this.saintFilters.pageNumber = 1;
         this.updateData();
       }
     });

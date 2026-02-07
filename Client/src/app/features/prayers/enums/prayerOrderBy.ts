@@ -1,6 +1,6 @@
 export enum PrayerOrderBy {
-    Title = 'Title',
-    TitleDesc = 'TitleDesc',
-    Century = 'Century',
-    CenturyDesc = 'CenturyDesc'
+  Title = 'Title',
+  TitleDesc = 'TitleDesc',
+  Century = 'Century',
+  CenturyDesc = 'CenturyDesc',
 }

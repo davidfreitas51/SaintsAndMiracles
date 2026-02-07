@@ -6,7 +6,10 @@ import { UserSessionService } from '../services/user-session.service';
 
 @Injectable({ providedIn: 'root' })
 export class SuperAdminGuard implements CanActivate {
-  constructor(private session: UserSessionService, private router: Router) {}
+  constructor(
+    private session: UserSessionService,
+    private router: Router,
+  ) {}
 
   canActivate(): Observable<boolean> {
     return this.session.initUser().pipe(
@@ -14,10 +17,10 @@ export class SuperAdminGuard implements CanActivate {
         const role = this.session.getUserRole();
         const isSuperAdmin = role === 'SuperAdmin';
         if (!isSuperAdmin) {
-          this.router.navigate(['admin/dashboard']); 
+          this.router.navigate(['admin/dashboard']);
         }
         return isSuperAdmin;
-      })
+      }),
     );
   }
 }

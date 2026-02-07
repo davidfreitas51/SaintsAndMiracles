@@ -14,7 +14,7 @@ export class DashboardService {
 
   getSummary(): Observable<DashboardSummaryDto> {
     return this.http.get<DashboardSummaryDto>(
-      `${this.baseUrl}dashboard/summary`
+      `${this.baseUrl}dashboard/summary`,
     );
   }
 
@@ -26,7 +26,7 @@ export class DashboardService {
           pageNumber: pageNumber.toString(),
           pageSize: pageSize.toString(),
         },
-      }
+      },
     );
   }
 }

@@ -8,6 +8,6 @@ export interface Prayer {
   markdownPath: string;
   slug: string;
   tags: Tag[];
-  createdAt: string; 
-  updatedAt: string; 
+  createdAt: string;
+  updatedAt: string;
 }

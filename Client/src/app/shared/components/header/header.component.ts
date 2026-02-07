@@ -46,7 +46,7 @@ export class HeaderComponent implements OnInit {
     const htmlEl = document.documentElement;
     const storedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia(
-      '(prefers-color-scheme: dark)'
+      '(prefers-color-scheme: dark)',
     ).matches;
 
     if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {

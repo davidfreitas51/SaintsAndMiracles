@@ -4,7 +4,7 @@ In **1531**, just a decade after the Spanish conquest of Mexico, the indigenous 
 
 On the morning of **December 9**, while walking to Mass, Juan Diego encountered a **radiant woman** atop **Tepeyac Hill**. She spoke in his native tongue and revealed herself as the **Virgin Mary**, saying:
 
-> *“I am the ever-virgin Holy Mary, Mother of the true God.”*
+> _“I am the ever-virgin Holy Mary, Mother of the true God.”_
 
 She asked that a church be built on that very hill in her honor.
 
@@ -32,9 +32,9 @@ The bishop fell to his knees in awe. Within days, construction of the shrine beg
 
 The image was filled with **symbolism that spoke to both Spanish and indigenous hearts**:
 
-* **Her dark skin and features** revealed her solidarity with the native people.
-* **The black sash around her waist** indicated pregnancy, making her the first depiction of **Mary as pregnant with Christ** in the New World.
-* **The stars on her mantle**, **sun behind her**, and **crescent moon beneath her feet** echoed imagery familiar in indigenous cosmology—yet all pointed to her supremacy as the **Mother of the true God**.
+- **Her dark skin and features** revealed her solidarity with the native people.
+- **The black sash around her waist** indicated pregnancy, making her the first depiction of **Mary as pregnant with Christ** in the New World.
+- **The stars on her mantle**, **sun behind her**, and **crescent moon beneath her feet** echoed imagery familiar in indigenous cosmology—yet all pointed to her supremacy as the **Mother of the true God**.
 
 Through this image, millions of indigenous people were led to the Catholic faith. Within a decade, **over 9 million conversions** occurred—an event unparalleled in Church history.
 
@@ -46,9 +46,9 @@ Juan Diego’s tilma, made of **ayate fiber**, should have disintegrated after 2
 
 Scientific examinations have revealed:
 
-* **No brush strokes**—the image appears to be **imprinted**, not painted.
-* The eyes of Mary contain **microscopic reflections** of people present at the moment the tilma was opened.
-* The colors remain vibrant despite centuries of exposure, candle smoke, and humidity.
+- **No brush strokes**—the image appears to be **imprinted**, not painted.
+- The eyes of Mary contain **microscopic reflections** of people present at the moment the tilma was opened.
+- The colors remain vibrant despite centuries of exposure, candle smoke, and humidity.
 
 No natural or human explanation has been able to fully account for the tilma’s preservation or creation.
 
@@ -66,7 +66,7 @@ The **Basilica of Our Lady of Guadalupe** in Mexico City now stands near Tepeyac
 
 The **Miracle of Guadalupe** is more than a Marian apparition—it is a message of **hope, unity, and maternal love**. Our Lady spoke the language of a conquered people, appeared to the lowly, and offered a bridge between two civilizations—introducing **Christ, the true God**, through **His mother**.
 
-> *“Am I not here, I who am your Mother?”*
+> _“Am I not here, I who am your Mother?”_
 > —Our Lady of Guadalupe to Juan Diego
 
 ---
@@ -75,4 +75,4 @@ The **Miracle of Guadalupe** is more than a Marian apparition—it is a message 
 
 Declared **Patroness of the Americas** and **Empress of the Americas**, Our Lady of Guadalupe continues to call her children to **conversion, compassion, and trust**. Her image remains a sign that **God exalts the lowly** and that **Mary is truly Mother to all peoples**, inviting them to her Son.
 
-> *“Let not your heart be disturbed… Do not fear that sickness, nor any other sickness or anguish. Am I not here, I who am your Mother?”*
+> _“Let not your heart be disturbed… Do not fear that sickness, nor any other sickness or anguish. Am I not here, I who am your Mother?”_

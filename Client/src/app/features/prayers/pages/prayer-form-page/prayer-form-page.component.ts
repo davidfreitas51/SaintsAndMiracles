@@ -155,7 +155,7 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
           const errorMessage =
             typeof err.error === 'string'
               ? err.error
-              : err.error?.message ?? 'Unexpected error.';
+              : (err.error?.message ?? 'Unexpected error.');
           this.snackBarService.error('Error creating prayer: ' + errorMessage);
         },
       });
@@ -226,7 +226,7 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
     if (!control) return;
 
     const textarea = document.querySelector<HTMLTextAreaElement>(
-      'textarea[formControlName="markdownContent"]'
+      'textarea[formControlName="markdownContent"]',
     );
     if (!textarea) return;
 
@@ -238,14 +238,14 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
     control.setValue(
       value.substring(0, selectionStart) +
         newText +
-        value.substring(selectionEnd)
+        value.substring(selectionEnd),
     );
 
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(
         selectionStart + start.length,
-        selectionEnd + start.length
+        selectionEnd + start.length,
       );
     }, 0);
   }

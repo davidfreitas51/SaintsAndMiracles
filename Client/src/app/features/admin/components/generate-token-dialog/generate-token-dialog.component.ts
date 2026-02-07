@@ -40,7 +40,7 @@ export class GenerateTokenDialogComponent {
       },
       error: () => {
         this.snackbarService.error(
-          'An error has occurred while generating the token.'
+          'An error has occurred while generating the token.',
         );
       },
     });

@@ -1,4 +1,4 @@
-import { Tag } from "../../../interfaces/tag";
+import { Tag } from '../../../interfaces/tag';
 
 export interface Miracle {
   id: number;

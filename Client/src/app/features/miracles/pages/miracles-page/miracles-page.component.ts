@@ -53,7 +53,7 @@ export class MiraclesPageComponent implements OnInit {
   private dialog = inject(MatDialog);
 
   public miracles: Miracle[] | null = null;
-  MiracleOrderBy = MiracleOrderBy
+  MiracleOrderBy = MiracleOrderBy;
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
   countries: string[] = [];
@@ -128,7 +128,7 @@ export class MiraclesPageComponent implements OnInit {
     });
   }
 
-    handleFilterChange(value: MiracleOrderBy) {
+  handleFilterChange(value: MiracleOrderBy) {
     this.miracleFilters.orderBy = value;
     this.miracleFilters.pageNumber = 1;
     this.updateData();
@@ -154,7 +154,7 @@ export class MiraclesPageComponent implements OnInit {
     const dialogRef = this.dialog.open(AdvancedSearchMiraclesDialogComponent, {
       height: '600px',
       width: '600px',
-      data: this.miracleFilters, 
+      data: this.miracleFilters,
     });
 
     dialogRef.afterClosed().subscribe((result) => {

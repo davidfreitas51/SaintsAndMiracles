@@ -13,7 +13,7 @@ export class SaintsService {
   private baseUrl = environment.apiUrl;
 
   getSaints(
-    filters: SaintFilters
+    filters: SaintFilters,
   ): Observable<{ items: Saint[]; totalCount: number }> {
     let params = new HttpParams();
 
@@ -35,7 +35,7 @@ export class SaintsService {
 
     return this.http.get<{ items: Saint[]; totalCount: number }>(
       `${this.baseUrl}saints`,
-      { params }
+      { params },
     );
   }
 
@@ -54,7 +54,7 @@ export class SaintsService {
       title: formValue.title || null,
       patronOf: formValue.patronOf || null,
       religiousOrderId: formValue.religiousOrder || null,
-      tagIds: formValue.tagIds || [], 
+      tagIds: formValue.tagIds || [],
       feastDay: this.formatFeastDayToIso(formValue.feastDay),
     };
 
@@ -63,7 +63,7 @@ export class SaintsService {
 
   updateSaint(
     id: string,
-    formValue: NewSaintDto & { feastDay?: string }
+    formValue: NewSaintDto & { feastDay?: string },
   ): Observable<void> {
     const payload = {
       ...formValue,
@@ -84,8 +84,8 @@ export class SaintsService {
           .get(`${environment.assetsUrl}${saint.markdownPath}`, {
             responseType: 'text',
           })
-          .pipe(map((markdown) => ({ saint, markdown })))
-      )
+          .pipe(map((markdown) => ({ saint, markdown }))),
+      ),
     );
   }
 
@@ -98,7 +98,7 @@ export class SaintsService {
   }
 
   private parseFeastDay(
-    feastDay?: string | null
+    feastDay?: string | null,
   ): { day: number; month: number } | null {
     if (!feastDay) return null;
 
@@ -133,7 +133,7 @@ export class SaintsService {
 
   public formatFeastDayFromIso(
     feastDayIso: string | null,
-    opts?: { raw?: boolean }
+    opts?: { raw?: boolean },
   ): string | null {
     if (!feastDayIso) return null;
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(feastDayIso);

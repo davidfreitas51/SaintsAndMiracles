@@ -113,7 +113,7 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
               description: miracle.description,
               markdownContent: markdown,
               date: miracle.date,
-              location: miracle.locationDetails, 
+              location: miracle.locationDetails,
             });
             setTimeout(() => this.autoResizeOnLoad());
             this.cdr.detectChanges();
@@ -175,7 +175,7 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
           const errorMessage =
             typeof err.error === 'string'
               ? err.error
-              : err.error?.message ?? 'Unexpected error.';
+              : (err.error?.message ?? 'Unexpected error.');
           this.snackBarService.error('Error creating miracle: ' + errorMessage);
         },
       });
@@ -246,7 +246,7 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
     if (!control) return;
 
     const textarea = document.querySelector<HTMLTextAreaElement>(
-      'textarea[formControlName="markdownContent"]'
+      'textarea[formControlName="markdownContent"]',
     );
     if (!textarea) return;
 
@@ -258,14 +258,14 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
     control.setValue(
       value.substring(0, selectionStart) +
         newText +
-        value.substring(selectionEnd)
+        value.substring(selectionEnd),
     );
 
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(
         selectionStart + start.length,
-        selectionEnd + start.length
+        selectionEnd + start.length,
       );
     }, 0);
   }

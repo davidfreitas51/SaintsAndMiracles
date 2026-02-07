@@ -1,4 +1,4 @@
-import { PrayerOrderBy } from "../enums/prayerOrderBy";
+import { PrayerOrderBy } from '../enums/prayerOrderBy';
 
 export class PrayerFilters {
   orderBy: PrayerOrderBy = PrayerOrderBy.Title;

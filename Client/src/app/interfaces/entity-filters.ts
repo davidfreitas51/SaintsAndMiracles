@@ -1,7 +1,7 @@
 export enum TagType {
   Saint = 0,
   Miracle = 1,
-  Prayer = 2
+  Prayer = 2,
 }
 
 export class EntityFilters {
@@ -13,5 +13,5 @@ export class EntityFilters {
   public search: string = '';
   public page: number = 1;
   public pageSize: number = 10;
-  public type?: TagType; 
+  public type?: TagType;
 }

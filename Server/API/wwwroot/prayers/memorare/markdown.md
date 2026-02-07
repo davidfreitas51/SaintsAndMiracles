@@ -34,6 +34,6 @@ Asks for her help while expressing trust in her maternal care and God’s mercy.
 
 The Memorare has a rich history:
 
-* **15th century**: Popularized in France through devotion to the Blessed Virgin.
-* **Early modern period**: Promoted by St. Francis de Sales and other saints as a powerful prayer of intercession.
-* **Modern usage**: Continues as a staple of Marian devotion, often recited individually or in groups seeking Mary’s help.
+- **15th century**: Popularized in France through devotion to the Blessed Virgin.
+- **Early modern period**: Promoted by St. Francis de Sales and other saints as a powerful prayer of intercession.
+- **Modern usage**: Continues as a staple of Marian devotion, often recited individually or in groups seeking Mary’s help.

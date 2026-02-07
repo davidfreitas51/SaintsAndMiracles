@@ -3,160 +3,171 @@
 
   <main class="flex-grow">
     @if (saint) {
-    <div
-      class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-12 gap-10"
-    >
-      <!-- Main Content (left 10 cols) -->
-      <section class="md:col-span-10 space-y-10 pr-8 border-gray-200 dark:text-gray-200">
-        <div class="flex flex-col md:flex-row md:items-center gap-6">
-          <img
-            [src]="imageBaseUrl + saint.image"
-            [alt]="saint.name"
-            class="w-full md:w-60 rounded-xl shadow-md"
-          />
-          <div class="space-y-2 text-gray-800 dark:text-gray-200">
-            <!-- Nome -->
-            <h1 class="text-4xl font-bold">
-              {{
-                saint.name.startsWith("Our Lady")
-                  ? saint.name
-                  : "Saint " + saint.name
-              }}
-            </h1>
+      <div
+        class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-12 gap-10"
+      >
+        <!-- Main Content (left 10 cols) -->
+        <section
+          class="md:col-span-10 space-y-10 pr-8 border-gray-200 dark:text-gray-200"
+        >
+          <div class="flex flex-col md:flex-row md:items-center gap-6">
+            <img
+              [src]="imageBaseUrl + saint.image"
+              [alt]="saint.name"
+              class="w-full md:w-60 rounded-xl shadow-md"
+            />
+            <div class="space-y-2 text-gray-800 dark:text-gray-200">
+              <!-- Nome -->
+              <h1 class="text-4xl font-bold">
+                {{
+                  saint.name.startsWith("Our Lady")
+                    ? saint.name
+                    : "Saint " + saint.name
+                }}
+              </h1>
 
-            <!-- Tags -->
-            <div class="flex flex-wrap gap-2 mt-1">
-              @for (tag of saint.tags; track $index) {
-              <span
-                class="text-xs font-medium px-3 py-1 rounded-full bg-green-600 text-white shadow-sm"
+              <!-- Tags -->
+              <div class="flex flex-wrap gap-2 mt-1">
+                @for (tag of saint.tags; track $index) {
+                  <span
+                    class="text-xs font-medium px-3 py-1 rounded-full bg-green-600 text-white shadow-sm"
+                  >
+                    {{ tag.name }}
+                  </span>
+                }
+              </div>
+
+              <!-- Contexto histórico e país -->
+              <div
+                class="flex items-center text-sm text-gray-600 gap-4 mt-2 dark:text-gray-200"
               >
-                {{ tag.name }}
-              </span>
+                <span
+                  ><strong>Century:</strong> {{ saint.century | roman }}</span
+                >
+                <span class="flex items-center">
+                  <strong class="mr-1">Country:</strong> {{ saint.country }}
+                  <img
+                    *ngIf="saint.country | countryCode as code"
+                    [src]="'https://flagcdn.com/w20/' + code + '.webp'"
+                    [alt]="saint.country + ' flag'"
+                    class="ml-1 w-4 h-4 object-contain"
+                  />
+                </span>
+              </div>
+              @if (saint.title) {
+                <p class="text-sm text-gray-600 dark:text-gray-200">
+                  Title: <strong>{{ saint.title }}</strong>
+                </p>
+              }
+              @if (saint.feastDay) {
+                <p class="text-sm text-gray-600 dark:text-gray-200">
+                  Feast Day:
+                  <strong>{{ saint.feastDay | date: "MMMM d" }}</strong>
+                </p>
+              }
+              @if (saint.patronOf) {
+                <p class="text-sm text-gray-600 dark:text-gray-200">
+                  Patron of: <strong>{{ saint.patronOf }}</strong>
+                </p>
+              }
+              @if (saint.religiousOrder && saint.religiousOrder.name) {
+                <p class="text-sm text-gray-600 dark:text-gray-200">
+                  Religious Order:
+                  <strong>{{ saint.religiousOrder.name }}</strong>
+                </p>
               }
             </div>
-
-            <!-- Contexto histórico e país -->
-            <div class="flex items-center text-sm text-gray-600 gap-4 mt-2 dark:text-gray-200">
-              <span><strong>Century:</strong> {{ saint.century | roman }}</span>
-              <span class="flex items-center">
-                <strong class="mr-1">Country:</strong> {{ saint.country }}
-                <img
-                  *ngIf="saint.country | countryCode as code"
-                  [src]="'https://flagcdn.com/w20/' + code + '.webp'"
-                  [alt]="saint.country + ' flag'"
-                  class="ml-1 w-4 h-4 object-contain"
-                />
-              </span>
-            </div>
-            @if (saint.title) {
-            <p class="text-sm text-gray-600 dark:text-gray-200">
-              Title: <strong>{{ saint.title }}</strong>
-            </p>
-            } @if (saint.feastDay) {
-            <p class="text-sm text-gray-600 dark:text-gray-200">
-              Feast Day: <strong>{{ saint.feastDay | date : "MMMM d" }}</strong>
-            </p>
-            } @if (saint.patronOf) {
-            <p class="text-sm text-gray-600 dark:text-gray-200">
-              Patron of: <strong>{{ saint.patronOf }}</strong>
-            </p>
-            } @if (saint.religiousOrder && saint.religiousOrder.name) {
-            <p class="text-sm text-gray-600 dark:text-gray-200">
-              Religious Order: <strong>{{ saint.religiousOrder.name }}</strong>
-            </p>
-            }
           </div>
-        </div>
 
-        <!-- Markdown Content -->
-        <div class="prose prose-lg max-w-none prose-indigo mt-4">
-          <div class="markdown-content" [innerHTML]="markdownContent"></div>
-        </div>
-      </section>
+          <!-- Markdown Content -->
+          <div class="prose prose-lg max-w-none prose-indigo mt-4">
+            <div class="markdown-content" [innerHTML]="markdownContent"></div>
+          </div>
+        </section>
 
-      <!-- Sidebar (right 2 cols) -->
-      <aside
-        class="md:col-span-2 sticky top-28 space-y-10 hidden md:block pl-4 border-l border-gray-200"
-      >
-        <!-- Table of Contents -->
-        <div>
-          <h3
-            class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3"
-          >
-            Sections
-          </h3>
-          <ul class="space-y-2 pl-2">
-            @for (heading of headings; track $index) {
-            <li>
-              <a
-                (click)="scrollTo(heading.id)"
-                class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-sm dark:text-blue-400"
-              >
-                {{ heading.text }}
-              </a>
-            </li>
-            }
-          </ul>
-        </div>
+        <!-- Sidebar (right 2 cols) -->
+        <aside
+          class="md:col-span-2 sticky top-28 space-y-10 hidden md:block pl-4 border-l border-gray-200"
+        >
+          <!-- Table of Contents -->
+          <div>
+            <h3
+              class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3"
+            >
+              Sections
+            </h3>
+            <ul class="space-y-2 pl-2">
+              @for (heading of headings; track $index) {
+                <li>
+                  <a
+                    (click)="scrollTo(heading.id)"
+                    class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-sm dark:text-blue-400"
+                  >
+                    {{ heading.text }}
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
 
-        <!-- Related Content -->
-        <div>
-          <h3
-            class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3"
-          >
-            Related Content
-          </h3>
-          <ul class="space-y-3 pl-2">
-            <li>
-              <a
-                [routerLink]="['/saints']"
-                [queryParams]="{ country: saint.country }"
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
-              >
-                Saints from {{ saint.country }}
-              </a>
-            </li>
-            <li>
-              <a
-                [routerLink]="['/saints']"
-                [queryParams]="{ century: saint.century }"
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
-              > 
-                Saints from the {{ saint.century | roman }} century
-              </a>
-            </li>
-            <li>
-              <a
-                [routerLink]="['/miracles']"
-                [queryParams]="{ country: saint.country }"
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
-              >
-                Miracles from {{ saint.country }}
-              </a>
-            </li>
-            <li>
-              <a
-                [routerLink]="['/miracles']"
-                [queryParams]="{ century: saint.century }"
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
-              >
-                Miracles from the {{ saint.century | roman }} century
-              </a>
-            </li>
-            <li>
-              <a
-                routerLink="/about"
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
-              >
-                About Us
-              </a>
-            </li>
-          </ul>
-        </div>
-      </aside>
-    </div>
+          <!-- Related Content -->
+          <div>
+            <h3
+              class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3"
+            >
+              Related Content
+            </h3>
+            <ul class="space-y-3 pl-2">
+              <li>
+                <a
+                  [routerLink]="['/saints']"
+                  [queryParams]="{ country: saint.country }"
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
+                >
+                  Saints from {{ saint.country }}
+                </a>
+              </li>
+              <li>
+                <a
+                  [routerLink]="['/saints']"
+                  [queryParams]="{ century: saint.century }"
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
+                >
+                  Saints from the {{ saint.century | roman }} century
+                </a>
+              </li>
+              <li>
+                <a
+                  [routerLink]="['/miracles']"
+                  [queryParams]="{ country: saint.country }"
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
+                >
+                  Miracles from {{ saint.country }}
+                </a>
+              </li>
+              <li>
+                <a
+                  [routerLink]="['/miracles']"
+                  [queryParams]="{ century: saint.century }"
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
+                >
+                  Miracles from the {{ saint.century | roman }} century
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/about"
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline block"
+                >
+                  About Us
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
     } @else {
-    <div class="text-center text-lg py-20 text-gray-400">Loading...</div>
+      <div class="text-center text-lg py-20 text-gray-400">Loading...</div>
     }
   </main>
 

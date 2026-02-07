@@ -6,7 +6,10 @@ import { UserSessionService } from '../services/user-session.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-  constructor(private session: UserSessionService, private router: Router) {}
+  constructor(
+    private session: UserSessionService,
+    private router: Router,
+  ) {}
 
   canActivate(): Observable<boolean> {
     return this.session.initUser().pipe(
@@ -14,7 +17,7 @@ export class AuthGuard implements CanActivate {
         if (user) return true;
         this.router.navigate(['/account/login']);
         return false;
-      })
+      }),
     );
   }
 }

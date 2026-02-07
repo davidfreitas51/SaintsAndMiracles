@@ -51,14 +51,20 @@
             </button>
           </mat-form-field>
 
-        <mat-form-field>
-          <mat-label>Order By</mat-label>
-          <mat-select [(value)]="miracleFilters.orderBy" (selectionChange)="handleFilterChange($event.value)">
-            <mat-option *ngFor="let option of miracleOrderOptions" [value]="option.value">
-              {{ option.viewValue }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+          <mat-form-field>
+            <mat-label>Order By</mat-label>
+            <mat-select
+              [(value)]="miracleFilters.orderBy"
+              (selectionChange)="handleFilterChange($event.value)"
+            >
+              <mat-option
+                *ngFor="let option of miracleOrderOptions"
+                [value]="option.value"
+              >
+                {{ option.viewValue }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
       </div>
     </div>
@@ -68,51 +74,53 @@
       class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
     >
       @for (miracle of miracles; track miracle.id) {
-      <ng-container>
-        <mat-card
-          (click)="redirectToMiracleDetails(miracle.slug)"
-          class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
-        >
-          <div class="flex justify-center mb-2">
-            <img
-              [src]="imageBaseUrl + miracle.image"
-              [alt]="miracle.title"
-              class="w-16 h-16 object-cover rounded-full"
-            />
-          </div>
-
-          <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1 line-clamp-1">
-              {{ miracle.title }}
-            </h3>
-
-            <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1 line-clamp-1"
-            >
+        <ng-container>
+          <mat-card
+            (click)="redirectToMiracleDetails(miracle.slug)"
+            class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
+          >
+            <div class="flex justify-center mb-2">
               <img
-                *ngIf="miracle.country | countryCode as flagCode"
-                [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-                [alt]="miracle.country + ' flag'"
-                class="w-4 h-4 object-contain"
+                [src]="imageBaseUrl + miracle.image"
+                [alt]="miracle.title"
+                class="w-16 h-16 object-cover rounded-full"
               />
-              <span>{{ miracle.country }} – {{ miracle.century | roman }}</span>
             </div>
 
-            <p
-              class="text-xs text-gray-600 line-clamp-3 flex-1 dark:text-gray-300"
-            >
-              {{ miracle.description }}
-            </p>
+            <div class="flex flex-col flex-1 text-center">
+              <h3 class="text-sm font-semibold mb-1 line-clamp-1">
+                {{ miracle.title }}
+              </h3>
 
-            <a
-              [routerLink]="['/miracles', miracle.slug]"
-              class="text-primary-app font-semibold pt-2 text-xs hover:underline mt-auto inline-block self-center"
-            >
-              Read More
-            </a>
-          </div>
-        </mat-card>
-      </ng-container>
+              <div
+                class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1 line-clamp-1"
+              >
+                <img
+                  *ngIf="miracle.country | countryCode as flagCode"
+                  [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
+                  [alt]="miracle.country + ' flag'"
+                  class="w-4 h-4 object-contain"
+                />
+                <span
+                  >{{ miracle.country }} – {{ miracle.century | roman }}</span
+                >
+              </div>
+
+              <p
+                class="text-xs text-gray-600 line-clamp-3 flex-1 dark:text-gray-300"
+              >
+                {{ miracle.description }}
+              </p>
+
+              <a
+                [routerLink]="['/miracles', miracle.slug]"
+                class="text-primary-app font-semibold pt-2 text-xs hover:underline mt-auto inline-block self-center"
+              >
+                Read More
+              </a>
+            </div>
+          </mat-card>
+        </ng-container>
       }
     </div>
 

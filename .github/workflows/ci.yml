@@ -2,9 +2,9 @@ name: SaintsNMiracles CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   build-and-test:
@@ -19,8 +19,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: Client/package-lock.json
 
       # 3. Instala dependências e build do Angular
@@ -34,7 +34,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: "9.0.x"
 
       # 5. Restaura dependências do .NET
       - name: Restore .NET dependencies
@@ -49,4 +49,3 @@ jobs:
         run: |
           dotnet test ./Server/Tests/API.Tests/API.Tests.csproj --framework net9.0 --verbosity normal
           dotnet test ./Server/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj --framework net9.0 --verbosity normal
-

@@ -1,4 +1,4 @@
-import { MiracleOrderBy } from "../enums/miracleOrderBy";
+import { MiracleOrderBy } from '../enums/miracleOrderBy';
 
 export class MiracleFilters {
   orderBy: MiracleOrderBy = MiracleOrderBy.Title;

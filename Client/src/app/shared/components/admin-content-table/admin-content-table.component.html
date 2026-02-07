@@ -39,8 +39,8 @@
               col === "century"
                 ? (element[col] | roman)
                 : col === "feastDay"
-                ? (element[col] | feastDayFormat)
-                : formatCell(element, col)
+                  ? (element[col] | feastDayFormat)
+                  : formatCell(element, col)
             }}
           </ng-container>
           <ng-template #actionsTpl>

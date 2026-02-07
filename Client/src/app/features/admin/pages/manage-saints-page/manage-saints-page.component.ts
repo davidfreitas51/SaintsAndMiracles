@@ -54,7 +54,8 @@ export class ManageSaintsPageComponent {
       data: {
         entityName: 'Tag',
         getAllFn: (filters: EntityFilters) => this.tagsService.getTags(filters),
-        createFn: (name: string) => this.tagsService.createTag(name, TagType.Saint),
+        createFn: (name: string) =>
+          this.tagsService.createTag(name, TagType.Saint),
         updateFn: (entity: any) => this.tagsService.updateTag(entity),
         deleteFn: (id: number) => this.tagsService.deleteTag(id),
       },

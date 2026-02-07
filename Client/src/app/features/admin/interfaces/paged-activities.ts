@@ -1,4 +1,4 @@
-import { RecentActivity } from "./recent-activity";
+import { RecentActivity } from './recent-activity';
 
 export interface PagedRecentActivity {
   items: RecentActivity[];

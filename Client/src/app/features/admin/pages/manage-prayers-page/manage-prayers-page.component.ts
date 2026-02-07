@@ -53,7 +53,7 @@ export class ManagePrayersPageComponent {
         entityName: 'Tag',
         getAllFn: (filters: EntityFilters) =>
           this.tagsService.getTags(
-            new EntityFilters({ ...filters, type: TagType.Prayer })
+            new EntityFilters({ ...filters, type: TagType.Prayer }),
           ),
         createFn: (name: string) =>
           this.tagsService.createTag(name, TagType.Prayer),

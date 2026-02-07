@@ -66,21 +66,23 @@
         >Tags</label
       >
       <div class="flex flex-wrap gap-2 mt-1">
-        @for (tag of tags; track $index) { @if (selectedTags.includes(tag)) {
-        <button
-          (click)="unselectTag(tag)"
-          class="text-xs font-medium px-3 py-1 rounded-full bg-green-600 text-white shadow-sm dark:bg-green-700"
-        >
-          {{ tag.name }}
-        </button>
-        } @else {
-        <button
-          (click)="selectTag(tag)"
-          class="text-xs font-medium px-3 py-1 rounded-full bg-gray-200 text-gray-800 shadow-sm dark:bg-gray-700 dark:text-gray-100"
-        >
-          {{ tag.name }}
-        </button>
-        } }
+        @for (tag of tags; track $index) {
+          @if (selectedTags.includes(tag)) {
+            <button
+              (click)="unselectTag(tag)"
+              class="text-xs font-medium px-3 py-1 rounded-full bg-green-600 text-white shadow-sm dark:bg-green-700"
+            >
+              {{ tag.name }}
+            </button>
+          } @else {
+            <button
+              (click)="selectTag(tag)"
+              class="text-xs font-medium px-3 py-1 rounded-full bg-gray-200 text-gray-800 shadow-sm dark:bg-gray-700 dark:text-gray-100"
+            >
+              {{ tag.name }}
+            </button>
+          }
+        }
       </div>
     </div>
   </div>

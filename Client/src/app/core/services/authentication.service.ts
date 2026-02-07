@@ -29,7 +29,7 @@ export class AuthenticationService {
           this.session.setUser(user);
 
           this.session.fetchUserRole();
-        })
+        }),
       );
   }
 
@@ -41,7 +41,7 @@ export class AuthenticationService {
       .pipe(
         tap(() => {
           this.session.clearSession();
-        })
+        }),
       );
   }
 }

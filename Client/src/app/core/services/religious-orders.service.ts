@@ -13,7 +13,7 @@ export class ReligiousOrdersService {
   private baseUrl = environment.apiUrl + 'religious-orders';
 
   getOrders(
-    filters: EntityFilters
+    filters: EntityFilters,
   ): Observable<{ items: ReligiousOrder[]; totalCount: number }> {
     let params = new HttpParams();
 
@@ -27,7 +27,7 @@ export class ReligiousOrdersService {
       this.baseUrl,
       {
         params,
-      }
+      },
     );
   }
 

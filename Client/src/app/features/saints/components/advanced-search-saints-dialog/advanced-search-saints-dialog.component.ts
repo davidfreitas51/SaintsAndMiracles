@@ -33,7 +33,7 @@ import { SaintFilters } from '../../interfaces/saint-filter';
 })
 export class AdvancedSearchSaintsDialogComponent implements OnInit {
   readonly dialogRef = inject(
-    MatDialogRef<AdvancedSearchSaintsDialogComponent>
+    MatDialogRef<AdvancedSearchSaintsDialogComponent>,
   );
   readonly tagsService = inject(TagsService);
   readonly religiousOrdersService = inject(ReligiousOrdersService);
@@ -75,15 +75,15 @@ export class AdvancedSearchSaintsDialogComponent implements OnInit {
       next: (res) => {
         this.tags = res.items;
 
-          if (this.data.tagIds?.length) {
-            const ids = this.data.tagIds.map((t) => t);
-            this.selectedTags = this.tags.filter((tag) => ids.includes(tag.id));
-          }
-        },
-        error: (err) => {
-          console.error('Failed to load tags', err);
-        },
-      });
+        if (this.data.tagIds?.length) {
+          const ids = this.data.tagIds.map((t) => t);
+          this.selectedTags = this.tags.filter((tag) => ids.includes(tag.id));
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load tags', err);
+      },
+    });
 
     this.saintsService.getCountries().subscribe({
       next: (res) => {
