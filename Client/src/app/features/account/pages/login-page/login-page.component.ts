@@ -14,7 +14,7 @@ import { AuthenticationService } from '../../../../core/services/authentication.
 import { RegistrationService } from '../../../../core/services/registration.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { safeEmailValidator } from '../../../../shared/validators/safe-email.validator';
-import { finalize } from 'rxjs';
+import { catchError, EMPTY, finalize, tap, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-login-page',
@@ -65,26 +65,28 @@ export class LoginPageComponent {
 
     this.authenticationService
       .login(dto)
-      .pipe(finalize(() => (this.isSubmitting = false)))
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/admin']);
-        },
-        error: (err) => {
+      .pipe(
+        catchError((err) => {
           const msg = err?.error || err?.message || 'Invalid credentials';
 
           if (msg.includes('Email not confirmed')) {
-            this.registrationService
-              .resendConfirmation(dto.email)
-              .subscribe(() => {
+            return this.registrationService.resendConfirmation(dto.email).pipe(
+              tap(() => {
                 this.snackbarService.error(
                   'Your email is not confirmed. A new confirmation email has been sent.',
                 );
-              });
-          } else {
-            this.snackbarService.error(msg);
+              }),
+              switchMap(() => EMPTY),
+            );
           }
-        },
+
+          this.snackbarService.error(msg);
+          return EMPTY;
+        }),
+        finalize(() => (this.isSubmitting = false)),
+      )
+      .subscribe(() => {
+        this.router.navigate(['/admin']);
       });
   }
 }
