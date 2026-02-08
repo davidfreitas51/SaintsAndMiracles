@@ -76,7 +76,7 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
         var smtpUser = _configuration["Smtp:User"]!;
         var smtpPass = _configuration["Smtp:Pass"]!;
         var fromEmail = _configuration["Smtp:From"]!;
-        var fromName = _configuration["Smtp:FromName"] ?? "Saints & Miracles";
+        var fromName = _configuration["Smtp:FromName"] ?? "Saints Archive";
 
         using var client = new SmtpClient(smtpHost, smtpPort)
         {
