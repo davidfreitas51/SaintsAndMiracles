@@ -83,8 +83,15 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         {
             if (!trackedPrayer.Tags.Any(t => t.Id == tag.Id))
             {
-                var existingTag = await context.Tags.FindAsync(tag.Id) ?? tag;
-                trackedPrayer.Tags.Add(existingTag);
+                var existingTag = await context.Tags.FindAsync(tag.Id);
+                if (existingTag != null)
+                {
+                    trackedPrayer.Tags.Add(existingTag);
+                }
+                else
+                {
+                    trackedPrayer.Tags.Add(tag);
+                }
             }
         }
 

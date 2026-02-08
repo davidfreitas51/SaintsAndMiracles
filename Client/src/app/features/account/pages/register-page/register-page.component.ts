@@ -76,16 +76,8 @@ export class RegisterPageComponent implements OnInit {
       return;
     }
 
-    const dto: RegisterDto = {
-      firstName: this.form.controls.firstName.value,
-      lastName: this.form.controls.lastName.value,
-      email: this.form.controls.email.value,
-      password: this.form.controls.password.value,
-      confirmPassword: this.form.controls.confirmPassword.value,
-      inviteToken: this.form.controls.token.value,
-    };
-
     this.isSubmitting = true;
+    const dto = this.buildRegisterDto();
 
     this.registrationService
       .register(dto)
@@ -112,5 +104,18 @@ export class RegisterPageComponent implements OnInit {
           }
         },
       });
+  }
+
+  private buildRegisterDto(): RegisterDto {
+    const dto: RegisterDto = {
+      firstName: this.form.controls.firstName.value,
+      lastName: this.form.controls.lastName.value,
+      email: this.form.controls.email.value,
+      password: this.form.controls.password.value,
+      confirmPassword: this.form.controls.confirmPassword.value,
+      inviteToken: this.form.controls.token.value,
+    };
+
+    return dto;
   }
 }

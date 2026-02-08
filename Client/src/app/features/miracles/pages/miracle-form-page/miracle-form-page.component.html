@@ -13,17 +13,14 @@
           for="imageInput"
           class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden dark:border-gray-700"
         >
-          <ng-container
-            *ngIf="form.get('image')?.value; else croppedOrPlaceholder"
-          >
+          @if (form.controls.image.value) {
             <img
               [src]="getImagePreview()"
               alt="Selected image"
               class="object-cover w-full h-full rounded"
             />
-          </ng-container>
-          <ng-template #croppedOrPlaceholder>
-            <ng-container *ngIf="croppedImage; else placeholderIcon">
+          } @else {
+            @if (croppedImage) {
               <div class="flex items-center justify-center">
                 <img
                   [src]="croppedImage"
@@ -31,8 +28,26 @@
                   class="object-cover w-full h-full rounded"
                 />
               </div>
-            </ng-container>
-          </ng-template>
+            } @else {
+              <div class="flex items-center justify-center w-full h-full"></div>
+            }
+          }
+          @if (croppedImage) {
+            <div class="flex items-center justify-center">
+              <img
+                [src]="croppedImage"
+                alt="Selected image"
+                class="object-cover w-full h-full rounded"
+              />
+            </div>
+          } @else {
+            <div class="flex items-center justify-center">
+              <mat-icon
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
+                fontIcon="add_a_photo"
+              ></mat-icon>
+            </div>
+          }
 
           <ng-template #placeholderIcon>
             <div class="flex items-center justify-center">
@@ -67,15 +82,14 @@
             placeholder="Miracle's title"
             class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           />
-          <div
-            *ngIf="
-              form.get('title')?.hasError('onlyNumbers') &&
-              form.get('title')?.touched
-            "
-            class="text-red-600 text-sm mt-1"
-          >
-            Title cannot contain only numbers.
-          </div>
+          @if (
+            form.controls.title.hasError("onlyNumbers") &&
+            form.controls.title.touched
+          ) {
+            <div class="text-red-600 text-sm mt-1">
+              Title cannot contain only numbers.
+            </div>
+          }
         </label>
 
         <!-- Country -->
@@ -89,12 +103,14 @@
             placeholder="Miracle's country"
             class="w-full border rounded px-3 py-2 pr-10 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           />
-          <img
-            *ngIf="form.get('country')?.value | countryCode as flagCode"
-            [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-            [alt]="form.get('country')?.value + ' flag'"
-            class="absolute mt-4 right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 object-contain pointer-events-none"
-          />
+
+          @if (form.controls.country.value | countryCode; as flagCode) {
+            <img
+              [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
+              [alt]="form.controls.country.value + ' flag'"
+              class="absolute mt-4 right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 object-contain pointer-events-none"
+            />
+          }
         </label>
 
         <!-- Century -->
@@ -106,9 +122,11 @@
             formControlName="century"
             class="w-full border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           >
-            <mat-option *ngFor="let item of centuries" [value]="item">
-              {{ item | roman }}
-            </mat-option>
+            @for (item of centuries; track item) {
+              <mat-option [value]="item">
+                {{ item | roman }}
+              </mat-option>
+            }
           </mat-select>
         </label>
 
@@ -153,15 +171,17 @@
             }
 
             <mat-menu #tagsMenu="matMenu" class="w-48 dark:bg-gray-800">
-              <button
-                mat-menu-item
-                *ngFor="let tag of tagsList"
-                [disabled]="currentTags.includes(tag.name)"
-                (click)="addTag(tag.name)"
-                class="dark:text-gray-100 dark:hover:bg-gray-700"
-              >
-                {{ tag.name }}
-              </button>
+              @for (tag of tagsList; track tag.id) {
+                @if (!currentTags.includes(tag.name)) {
+                  <button
+                    mat-menu-item
+                    (click)="addTag(tag.name)"
+                    class="dark:text-gray-100 dark:hover:bg-gray-700"
+                  >
+                    {{ tag.name }}
+                  </button>
+                }
+              }
             </mat-menu>
           </div>
         </div>
@@ -286,12 +306,12 @@
       <button
         mat-flat-button
         type="submit"
-        [disabled]="form.invalid || imageLoading"
+        [disabled]="form.invalid || imageLoading || isSubmitting"
         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2 w-full sm:w-auto"
       >
-        <mat-icon class="text-white">{{
-          isEditMode ? "edit" : "add"
-        }}</mat-icon>
+        <mat-icon class="text-white">
+          {{ isEditMode ? "edit" : "add" }}
+        </mat-icon>
         {{ isEditMode ? "Update Miracle" : "Create Miracle" }}
       </button>
     </div>

@@ -40,6 +40,7 @@ import { ReligiousOrder } from '../../../../interfaces/religious-order';
 import { Tag } from '../../../../interfaces/tag';
 import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
 import { NewSaintDto } from '../../interfaces/new-saint-dto';
+import { CENTURIES } from '../../../../shared/constants/centuries';
 
 @Component({
   selector: 'app-saint-form-page',
@@ -87,7 +88,8 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
   isEditMode = false;
   saintId: string | null = null;
   imageLoading = false;
-  centuries = Array.from({ length: 20 }, (_, i) => i + 1);
+
+  readonly centuries = CENTURIES;
 
   ngOnInit(): void {
     this.loadTagsAndOrders();

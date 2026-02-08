@@ -95,8 +95,15 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         {
             if (!trackedSaint.Tags.Any(t => t.Id == tag.Id))
             {
-                var existingTag = await context.Tags.FindAsync(tag.Id) ?? tag;
-                trackedSaint.Tags.Add(existingTag);
+                var existingTag = await context.Tags.FindAsync(tag.Id);
+                if (existingTag is not null)
+                {
+                    trackedSaint.Tags.Add(existingTag);
+                }
+                else
+                {
+                    trackedSaint.Tags.Add(tag);
+                }
             }
         }
 

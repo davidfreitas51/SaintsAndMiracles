@@ -10,8 +10,6 @@ import {
 import {
   FormBuilder,
   FormControl,
-  FormGroup,
-  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -24,7 +22,6 @@ import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { TagsService } from '../../../../core/services/tags.service';
 import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
 import { environment } from '../../../../../environments/environment';
-import { CommonModule } from '@angular/common';
 import { CountryCodePipe } from '../../../../shared/pipes/country-code.pipe';
 import { MatDialog } from '@angular/material/dialog';
 import { CropDialogComponent } from '../../../../shared/components/crop-dialog/crop-dialog.component';
@@ -33,6 +30,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
 import { MarkdownComponent, provideMarkdown } from 'ngx-markdown';
 import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNumbersValidator';
+import { CENTURIES } from '../../../../shared/constants/centuries';
+import { NewMiracleDto } from '../../interfaces/new-miracle-dto';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-miracle-form-page',
@@ -44,17 +44,16 @@ import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNu
     ReactiveFormsModule,
     MatIconModule,
     MatButtonModule,
-    FormsModule,
     MatSelectModule,
     RouterModule,
     RomanPipe,
-    CommonModule,
     CountryCodePipe,
     MarkdownComponent,
   ],
   providers: [provideMarkdown()],
 })
 export class MiracleFormPageComponent implements OnInit, AfterViewInit {
+  private fb = inject(FormBuilder);
   private miraclesService = inject(MiraclesService);
   private snackBarService = inject(SnackbarService);
   private tagsService = inject(TagsService);
@@ -71,12 +70,34 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
 
   imageBaseUrl = environment.assetsUrl;
   croppedImage: string | null = null;
-  form!: FormGroup;
   isEditMode = false;
   miracleId: string | null = null;
   imageLoading = false;
+  isSubmitting = false;
 
-  centuries = Array.from({ length: 20 }, (_, i) => i + 1);
+  readonly centuries = CENTURIES;
+
+  form = this.fb.nonNullable.group({
+    title: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(150),
+        notOnlyNumbersValidator(),
+      ],
+    ],
+    country: ['', [Validators.required, Validators.maxLength(100)]],
+    century: [
+      0,
+      [Validators.required, Validators.min(-20), Validators.max(21)],
+    ],
+    image: ['', Validators.required],
+    description: ['', [Validators.required, Validators.maxLength(500)]],
+    markdownContent: ['', [Validators.required, Validators.maxLength(20000)]],
+    date: ['', Validators.maxLength(50)],
+    location: ['', Validators.maxLength(150)],
+  });
 
   ngOnInit(): void {
     const filter = new EntityFilters({ type: TagType.Miracle });
@@ -84,17 +105,6 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
     this.tagsService.getTags(filter).subscribe((res) => {
       this.tagsList = res.items;
       this.cdr.detectChanges();
-    });
-
-    this.form = new FormBuilder().group({
-      title: ['', [Validators.required, notOnlyNumbersValidator()]],
-      country: ['', Validators.required],
-      century: [null, Validators.required],
-      image: ['', Validators.required],
-      description: ['', Validators.required],
-      markdownContent: ['', Validators.required],
-      date: [''],
-      location: [''],
     });
 
     this.route.paramMap.subscribe((params) => {
@@ -134,52 +144,57 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit() {
-    if (this.imageLoading) return;
+    if (this.form.invalid || this.isSubmitting) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
+    this.isSubmitting = true;
+    const dto = this.buildMiracleDto();
+
+    const request =
+      this.isEditMode && this.miracleId
+        ? this.miraclesService.updateMiracle(this.miracleId, dto)
+        : this.miraclesService.createMiracle(dto);
+
+    request.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: () => {
+        this.snackBarService.success(
+          this.isEditMode
+            ? 'Miracle successfully updated'
+            : 'Miracle successfully created',
+        );
+        this.router.navigate(['admin/miracles']);
+      },
+      error: (err) => {
+        const errorMessage =
+          typeof err.error === 'string'
+            ? err.error
+            : (err.error?.message ?? 'Unexpected error.');
+        this.snackBarService.error(
+          `Error ${this.isEditMode ? 'updating' : 'creating'} miracle: ${errorMessage}`,
+        );
+      },
+    });
+  }
+
+  private buildMiracleDto(): NewMiracleDto {
     const tagIds: number[] = this.currentTags
       .map((tagName) => this.tagsList.find((t) => t.name === tagName))
       .filter((t): t is Tag => !!t)
       .map((t) => t.id);
 
-    const miracleData = {
-      title: this.form.value.title,
-      country: this.form.value.country,
-      century: +this.form.value.century,
-      image: this.form.value.image,
-      description: this.form.value.description,
-      markdownContent: this.form.value.markdownContent,
+    return {
+      title: this.form.controls.title.value.trim(),
+      country: this.form.controls.country.value.trim(),
+      century: this.form.controls.century.value,
+      image: this.form.controls.image.value,
+      description: this.form.controls.description.value.trim(),
+      markdownContent: this.form.controls.markdownContent.value,
       tagIds,
-      date: this.form.value.date,
-      locationDetails: this.form.value.location,
+      date: this.form.value.date || null,
+      locationDetails: this.form.value.location || null,
     };
-
-    if (this.isEditMode && this.miracleId) {
-      this.miraclesService
-        .updateMiracle(this.miracleId, miracleData)
-        .subscribe({
-          next: () => {
-            this.snackBarService.success('Miracle successfully updated');
-            this.router.navigate(['admin/miracles']);
-          },
-          error: () => {
-            this.snackBarService.error('Error updating miracle');
-          },
-        });
-    } else {
-      this.miraclesService.createMiracle(miracleData).subscribe({
-        next: () => {
-          this.snackBarService.success('Miracle successfully created');
-          this.router.navigate(['admin/miracles']);
-        },
-        error: (err) => {
-          const errorMessage =
-            typeof err.error === 'string'
-              ? err.error
-              : (err.error?.message ?? 'Unexpected error.');
-          this.snackBarService.error('Error creating miracle: ' + errorMessage);
-        },
-      });
-    }
   }
 
   onFileSelected(event: Event, input: HTMLInputElement): void {

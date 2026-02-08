@@ -87,8 +87,15 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         {
             if (!trackedMiracle.Tags.Any(t => t.Id == tag.Id))
             {
-                var existingTag = await context.Tags.FindAsync(tag.Id) ?? tag;
-                trackedMiracle.Tags.Add(existingTag);
+                var existingTag = await context.Tags.FindAsync(tag.Id);
+                if (existingTag is not null)
+                {
+                    trackedMiracle.Tags.Add(existingTag);
+                }
+                else
+                {
+                    trackedMiracle.Tags.Add(tag);
+                }
             }
         }
 

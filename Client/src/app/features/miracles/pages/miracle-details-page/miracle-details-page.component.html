@@ -38,14 +38,18 @@
                 <span
                   ><strong>Century:</strong> {{ miracle.century | roman }}</span
                 >
+                @let code = miracle.country | countryCode;
+
                 <span class="flex items-center">
                   <strong class="mr-1">Country:</strong> {{ miracle.country }}
-                  <img
-                    *ngIf="miracle.country | countryCode as code"
-                    [src]="'https://flagcdn.com/w20/' + code + '.webp'"
-                    [alt]="miracle.country + ' flag'"
-                    class="ml-1 w-4 h-4 object-contain"
-                  />
+
+                  @if (code) {
+                    <img
+                      [src]="'https://flagcdn.com/w20/' + code + '.webp'"
+                      [alt]="miracle.country + ' flag'"
+                      class="ml-1 w-4 h-4 object-contain"
+                    />
+                  }
                 </span>
               </div>
 
