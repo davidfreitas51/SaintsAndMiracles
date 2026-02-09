@@ -13,18 +13,14 @@
           for="imageInput"
           class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden dark:border-gray-700"
         >
-          <ng-container
-            *ngIf="form.get('image')?.value; else croppedOrPlaceholder"
-          >
+          @if (form.controls.image.value) {
             <img
               [src]="getImagePreview()"
               alt="Selected image"
               class="object-cover w-full h-full rounded"
             />
-          </ng-container>
-
-          <ng-template #croppedOrPlaceholder>
-            <ng-container *ngIf="croppedImage; else placeholderIcon">
+          } @else {
+            @if (croppedImage) {
               <div class="flex items-center justify-center">
                 <img
                   [src]="croppedImage"
@@ -32,17 +28,15 @@
                   class="object-cover w-full h-full rounded"
                 />
               </div>
-            </ng-container>
-          </ng-template>
-
-          <ng-template #placeholderIcon>
-            <div class="flex items-center justify-center">
-              <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
-                fontIcon="add_a_photo"
-              ></mat-icon>
-            </div>
-          </ng-template>
+            } @else {
+              <div class="flex items-center justify-center">
+                <mat-icon
+                  class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
+                  fontIcon="add_a_photo"
+                ></mat-icon>
+              </div>
+            }
+          }
         </label>
 
         <input
@@ -68,15 +62,14 @@
             placeholder="Prayer's title"
             class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
           />
-          <div
-            *ngIf="
-              form.get('title')?.hasError('onlyNumbers') &&
-              form.get('title')?.touched
-            "
-            class="text-red-600 text-sm mt-1"
-          >
-            Title cannot contain only numbers.
-          </div>
+          @if (
+            form.controls.title.hasError("onlyNumbers") &&
+            form.controls.title.touched
+          ) {
+            <div class="text-red-600 text-sm mt-1">
+              Title cannot contain only numbers.
+            </div>
+          }
         </label>
 
         <!-- Description -->
@@ -120,20 +113,18 @@
             }
 
             <!-- TAGS MENU -->
-            <mat-menu
-              #tagsMenu="matMenu"
-              class="w-48 dark:bg-gray-800"
-              [overlapTrigger]="false"
-            >
-              <button
-                mat-menu-item
-                *ngFor="let tag of tagsList"
-                [disabled]="currentTags.includes(tag.name)"
-                (click)="addTag(tag.name)"
-                class="dark:hover:bg-gray-700 dark:text-gray-100"
-              >
-                {{ tag.name }}
-              </button>
+            <mat-menu #tagsMenu="matMenu" class="w-48 dark:bg-gray-800">
+              @for (tag of tagsList; track tag.id) {
+                @if (!currentTags.includes(tag.name)) {
+                  <button
+                    mat-menu-item
+                    (click)="addTag(tag.name)"
+                    class="dark:text-gray-100 dark:hover:bg-gray-700"
+                  >
+                    {{ tag.name }}
+                  </button>
+                }
+              }
             </mat-menu>
           </div>
         </div>
@@ -233,7 +224,7 @@
       <button
         mat-flat-button
         type="submit"
-        [disabled]="form.invalid || imageLoading"
+        [disabled]="form.invalid || imageLoading || isSubmitting"
         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2 w-full sm:w-auto"
       >
         <mat-icon class="text-white">{{

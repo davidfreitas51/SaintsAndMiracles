@@ -8,29 +8,38 @@
 
 /* ----------------- Color Variables ----------------- */
 :root {
-  --color-primary: #5a2a0c;
-  --color-secondary: #e6d3b3;
-  --color-hover: #341705;
-  --color-accent: #b8894c;
-  --color-accent-light: #d9a86c;
-  --color-accent-dark: #8b5e30;
+  /* Base */
+  --color-primary: #5f3025;
+  --color-hover: #472219;
 
-  --color-bg-light: #ffffff;
-  --color-bg-dark: #1e2022;
+  /* Fundo claro quente */
+  --color-secondary: #f2e3dd;
 
+  /* Accent dourado rosado */
+  --color-accent: #cfa28a;
+  --color-accent-light: #e7cbbb;
+  --color-accent-dark: #9f6f58;
+
+  /* Backgrounds */
+  --color-bg-light: #faf4f1;
+  --color-bg-dark: #170d0b;
+
+  /* Cards */
   --color-card-light: #ffffff;
-  --color-card-dark: #1e2022;
+  --color-card-dark: #211312;
 
-  --color-text-light: #1f1f1f;
-  --color-text-dark: #e6d3b3;
+  /* Texto */
+  --color-text-light: #2b1f1c;
+  --color-text-dark: #f2e3dd;
 
-  --color-border-light: #e0e0e0;
-  --color-border-dark: #333;
+  /* Bordas */
+  --color-border-light: #e1c9bf;
+  --color-border-dark: #301d18;
 
-  /* Paginator */
+  /* Paginação */
   --color-paginator-bg: #ffffff;
-  --color-paginator-text: #1f2937; // gray-800
-  --color-paginator-border: #e5e7eb; // gray-200
+  --color-paginator-text: #5f3025;
+  --color-paginator-border: #dbc1b6;
 }
 
 .dark {
