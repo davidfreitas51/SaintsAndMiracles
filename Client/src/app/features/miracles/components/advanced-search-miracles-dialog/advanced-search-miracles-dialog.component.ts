@@ -43,13 +43,12 @@ export class AdvancedSearchMiraclesDialogComponent implements OnInit {
   centuries: number[] = Array.from({ length: 21 }, (_, i) => i + 1);
 
   form = this.fb.nonNullable.group({
-    century: ['' as number | ''],
     country: [''],
+    century: ['' as number | ''],
     tags: [[] as Tag[]],
   });
 
   ngOnInit(): void {
-    // preload values from dialog data
     this.form.patchValue({
       century: this.data.century ? Number(this.data.century) : '',
       country: this.data.country || '',
