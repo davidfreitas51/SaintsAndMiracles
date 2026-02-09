@@ -21,6 +21,7 @@ import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-miracles-page',
@@ -41,6 +42,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
     HeaderComponent,
     RouterLink,
     FooterComponent,
+    EmptyStateComponent,
   ],
 })
 export class MiraclesPageComponent implements OnInit {

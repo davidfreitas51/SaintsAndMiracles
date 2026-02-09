@@ -1,4 +1,4 @@
-name: SaintsArchive CI
+name: SaintsAndMiracles CI
 
 on:
   push:

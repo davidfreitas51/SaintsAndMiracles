@@ -73,63 +73,75 @@
       </div>
     </div>
 
-    <!-- Miracle Grid -->
-    <div
-      class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
-    >
-      @for (miracle of miracles; track miracle.id) {
-        <mat-card
-          (click)="redirectToMiracleDetails(miracle.slug)"
-          class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
-        >
-          <div class="flex justify-center mb-2">
-            @if (miracle.image) {
-              <img
-                [src]="imageBaseUrl + miracle.image"
-                [alt]="miracle.title"
-                class="w-16 h-16 object-cover rounded-full"
-              />
-            } @else {
-              <mat-icon class="text-gray-400 w-16 h-16 text-6xl"
-                >image</mat-icon
-              >
-            }
-          </div>
-
-          <div class="flex flex-col flex-1 text-center">
-            <h3 class="text-sm font-semibold mb-1 line-clamp-1">
-              {{ miracle.title }}
-            </h3>
-
-            <div
-              class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1 line-clamp-1"
-            >
-              @if (miracle.country | countryCode; as flagCode) {
+    @if (miracles.length > 0) {
+      <div
+        class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
+      >
+        @for (miracle of miracles; track miracle.id) {
+          <mat-card
+            (click)="redirectToMiracleDetails(miracle.slug)"
+            class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
+          >
+            <div class="flex justify-center mb-2">
+              @if (miracle.image) {
                 <img
-                  [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-                  [alt]="miracle.country + ' flag'"
-                  class="w-4 h-4 object-contain"
+                  [src]="imageBaseUrl + miracle.image"
+                  [alt]="miracle.title"
+                  class="w-16 h-16 object-cover rounded-full"
                 />
+              } @else {
+                <mat-icon class="text-gray-400 w-16 h-16 text-6xl"
+                  >image</mat-icon
+                >
               }
-              <span>{{ miracle.country }} – {{ miracle.century | roman }}</span>
             </div>
 
-            <p
-              class="text-xs text-gray-600 line-clamp-3 flex-1 dark:text-gray-300"
-            >
-              {{ miracle.description }}
-            </p>
+            <div class="flex flex-col flex-1 text-center">
+              <h3 class="text-sm font-semibold mb-1 line-clamp-1">
+                {{ miracle.title }}
+              </h3>
 
-            <a
-              [routerLink]="['/miracles', miracle.slug]"
-              class="text-primary-app font-semibold pt-2 text-xs hover:underline mt-auto inline-block self-center"
-            >
-              Read More
-            </a>
-          </div>
-        </mat-card>
-      }
-    </div>
+              <div
+                class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1 line-clamp-1"
+              >
+                @if (miracle.country | countryCode; as flagCode) {
+                  <img
+                    [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
+                    [alt]="miracle.country + ' flag'"
+                    class="w-4 h-4 object-contain"
+                  />
+                }
+                <span
+                  >{{ miracle.country }} – {{ miracle.century | roman }}</span
+                >
+              </div>
+
+              <p
+                class="text-xs text-gray-600 line-clamp-3 flex-1 dark:text-gray-300"
+              >
+                {{ miracle.description }}
+              </p>
+
+              <a
+                [routerLink]="['/miracles', miracle.slug]"
+                class="text-primary-app font-semibold pt-2 text-xs hover:underline mt-auto inline-block self-center"
+              >
+                Read More
+              </a>
+            </div>
+          </mat-card>
+        }
+      </div>
+    } @else {
+      <!-- Empty State -->
+      <app-empty-state
+        title="No miracles found"
+        description="There are no items related to your filters."
+        actionLabel="Clear filters"
+        (action)="clearFilters()"
+      />
+    }
+    <!-- Miracle Grid -->
 
     <!-- Paginator -->
     <div class="py-6 flex justify-center">
