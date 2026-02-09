@@ -30,6 +30,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
 import { MarkdownComponent, provideMarkdown } from 'ngx-markdown';
 import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNumbersValidator';
+import { MatInputModule } from '@angular/material/input';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
 
 @Component({
   selector: 'app-prayer-form-page',
@@ -44,6 +46,7 @@ import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNu
     MatSelectModule,
     RouterModule,
     MarkdownComponent,
+    MatInputModule,
   ],
   providers: [provideMarkdown()],
 })
@@ -75,13 +78,15 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
       '',
       [
         Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(150),
+        minMaxLengthValidator(3, 150),
         notOnlyNumbersValidator(),
       ],
     ],
-    description: ['', [Validators.required, Validators.maxLength(500)]],
-    markdownContent: ['', [Validators.required, Validators.maxLength(20000)]],
+    description: ['', [Validators.required, minMaxLengthValidator(1, 200)]],
+    markdownContent: [
+      '',
+      [Validators.required, minMaxLengthValidator(1, 20000)],
+    ],
     image: ['', Validators.required],
   });
 
