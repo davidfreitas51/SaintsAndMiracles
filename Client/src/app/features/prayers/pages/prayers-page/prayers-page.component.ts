@@ -1,6 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule, MatSelectChange } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +21,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { PrayerOrderBy } from '../../enums/prayerOrderBy';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
 
 @Component({
   selector: 'app-prayers-page',
@@ -27,16 +33,17 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
     RouterLink,
     MatSelectModule,
     MatInputModule,
-    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
     EmptyStateComponent,
+    ReactiveFormsModule,
   ],
   templateUrl: './prayers-page.component.html',
   styleUrl: './prayers-page.component.scss',
 })
 export class PrayersPageComponent implements OnInit {
+  private fb = inject(FormBuilder);
   private router = inject(Router);
   private prayersService = inject(PrayersService);
   private route = inject(ActivatedRoute);
@@ -45,6 +52,10 @@ export class PrayersPageComponent implements OnInit {
   PrayerOrderBy = PrayerOrderBy;
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
+
+  searchForm: FormGroup = this.fb.group({
+    search: ['', minMaxLengthValidator(1, 100)],
+  });
 
   prayerFilters: PrayerFilters = new PrayerFilters();
   prayerOrderOptions = [
@@ -68,6 +79,9 @@ export class PrayersPageComponent implements OnInit {
           .filter((id) => !isNaN(id));
         this.prayerFilters.tagIds = tagIds;
       }
+
+      const searchValue = params['search'] ?? '';
+      this.searchForm.controls['search'].setValue(searchValue);
 
       this.updateData();
     });
