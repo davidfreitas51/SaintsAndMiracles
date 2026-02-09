@@ -144,12 +144,13 @@
 
           <!-- Bandeira à direita do input -->
           @if (country.value | countryCode; as flagCode) {
-            <img
-              matSuffix
-              [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-              [alt]="country.value + ' flag'"
-              class="w-5 h-5 mr-5 object-contain pointer-events-none"
-            />
+            <ng-container matSuffix>
+              <img
+                [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
+                [alt]="country.value + ' flag'"
+                class="w-5 h-5 mr-5 object-contain pointer-events-none"
+              />
+            </ng-container>
           }
         </mat-form-field>
 

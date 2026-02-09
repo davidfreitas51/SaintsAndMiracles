@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule, MatSelectChange } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +15,7 @@ import { environment } from '../../../../../environments/environment';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { PrayerOrderBy } from '../../enums/prayerOrderBy';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-prayers-page',
@@ -30,8 +30,8 @@ import { PrayerOrderBy } from '../../enums/prayerOrderBy';
     FormsModule,
     MatButtonModule,
     MatIconModule,
-    CommonModule,
     MatPaginatorModule,
+    EmptyStateComponent,
   ],
   templateUrl: './prayers-page.component.html',
   styleUrl: './prayers-page.component.scss',
@@ -41,7 +41,7 @@ export class PrayersPageComponent implements OnInit {
   private prayersService = inject(PrayersService);
   private route = inject(ActivatedRoute);
 
-  public prayers: Prayer[] | null = null;
+  public prayers: Prayer[] = [];
   PrayerOrderBy = PrayerOrderBy;
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;

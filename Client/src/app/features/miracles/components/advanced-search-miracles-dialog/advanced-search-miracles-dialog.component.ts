@@ -9,7 +9,6 @@ import {
 import { MatSelectModule } from '@angular/material/select';
 import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
 import { TagsService } from '../../../../core/services/tags.service';
-import { SaintsService } from '../../../../core/services/saints.service';
 import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
 import { Tag } from '../../../../interfaces/tag';
 import { MiracleFilters } from '../../interfaces/miracle-filter';
