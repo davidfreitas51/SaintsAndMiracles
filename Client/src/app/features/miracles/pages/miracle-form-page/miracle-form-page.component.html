@@ -1,5 +1,5 @@
 <div
-  class="flex flex-col gap-6 p-6 shadow rounded-lg bg-white dark:bg-gray-900 dark:text-gray-100 max-w-4xl mx-auto"
+  class="flex flex-col gap-6 p-6 shadow-lg rounded-lg bg-[var(--color-bg-light)] dark:bg-[var(--color-card-dark)] dark:text-[var(--color-text-dark)] max-w-4xl mx-auto border border-[var(--color-border-light)] dark:border-[var(--color-border-dark)]"
 >
   <form [formGroup]="form" class="flex flex-col gap-6" (ngSubmit)="onSubmit()">
     <div class="flex flex-col sm:flex-row gap-6">
@@ -11,7 +11,7 @@
 
         <label
           for="imageInput"
-          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden dark:border-gray-700"
+          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-[var(--color-border-light)] dark:text-[var(--color-border-dark)] cursor-pointer hover:border-[var(--color-accent-dark)] hover:text-[var(--color-accent-dark)] transition overflow-hidden"
         >
           @if (form.controls.image.value) {
             <img
@@ -43,7 +43,7 @@
           } @else {
             <div class="flex items-center justify-center">
               <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-[var(--color-accent-dark)] dark:text-[var(--color-accent)]"
                 fontIcon="add_a_photo"
               ></mat-icon>
             </div>
@@ -52,7 +52,7 @@
           <ng-template #placeholderIcon>
             <div class="flex items-center justify-center">
               <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-[var(--color-accent-dark)] dark:text-[var(--color-accent)]"
                 fontIcon="add_a_photo"
               ></mat-icon>
             </div>
@@ -73,7 +73,11 @@
       <div class="flex-1 mt-8 flex flex-col gap-2 w-full">
         <!-- Title -->
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Title</mat-label>
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Title
+          </mat-label>
 
           <input matInput type="text" formControlName="title" />
 
@@ -108,8 +112,11 @@
 
         <!-- Country -->
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Country</mat-label>
-
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Country
+          </mat-label>
           <input matInput type="text" formControlName="country" />
 
           @let country = form.controls.country;
@@ -148,8 +155,11 @@
 
         <!-- Century -->
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Century</mat-label>
-
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Century
+          </mat-label>
           <mat-select formControlName="century">
             @for (item of centuries; track item) {
               <mat-option [value]="item">
@@ -173,8 +183,11 @@
 
         <!-- Description -->
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Description</mat-label>
-
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Description
+          </mat-label>
           <textarea
             matInput
             #descriptionTextarea
@@ -211,36 +224,48 @@
 
         <!-- Tags -->
         <div class="block">
-          <p class="block font-semibold">Tags (max 5)</p>
-          <div class="flex flex-wrap items-center">
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Tags
+          </mat-label>
+
+          <div class="flex flex-wrap items-center mt-2">
+            <!-- Tags existentes -->
             @for (tag of currentTags; track $index) {
               <button
                 type="button"
                 (click)="removeTag(tag)"
-                class="text-xs font-medium rounded-full bg-green-600 text-white shadow-sm px-3 py-1 cursor-pointer transition hover:bg-red-600 hover:text-white focus:outline-none mr-2 mb-2"
+                class="text-xs font-medium rounded-full bg-[var(--color-accent-dark)] text-white shadow-sm px-3 py-1 cursor-pointer transition hover:bg-[var(--color-primary)] focus:outline-none mr-2 mb-2"
                 aria-label="Remove tag"
               >
                 {{ tag }}
               </button>
             }
+
+            <!-- Botão para abrir menu -->
             @if (currentTags.length < 5) {
               <button
                 [matMenuTriggerFor]="tagsMenu"
                 type="button"
-                class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-400 dark:hover:bg-gray-600 transition mr-2 mb-2"
+                class="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--color-border-dark)] text-[var(--color-text-dark)] hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] transition mr-2 mb-2"
                 aria-label="Add tag"
               >
                 +
               </button>
             }
 
-            <mat-menu #tagsMenu="matMenu" class="w-48 dark:bg-gray-800">
+            <!-- Menu com tags disponíveis -->
+            <mat-menu
+              #tagsMenu="matMenu"
+              class="w-48 bg-[var(--color-card-light)] dark:bg-[var(--color-card-dark)]"
+            >
               @for (tag of tagsList; track tag.id) {
                 @if (!currentTags.includes(tag.name)) {
                   <button
                     mat-menu-item
                     (click)="addTag(tag.name)"
-                    class="dark:text-gray-100 dark:hover:bg-gray-700"
+                    class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)] hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)]"
                   >
                     {{ tag.name }}
                   </button>
@@ -260,50 +285,50 @@
         </span>
 
         <div
-          class="flex flex-col border rounded overflow-hidden h-[300px] dark:border-gray-700"
+          class="flex flex-col border rounded overflow-hidden h-[300px] dark:border-[var(--color-border-dark)] dark:bg-[var(--color-card-dark)]"
         >
           <!-- Toolbar -->
           <div
-            class="flex gap-1 p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-wrap"
+            class="flex gap-1 p-2 bg-gray-100 dark:bg-[var(--color-card-dark)] border-b dark:border-[var(--color-border-dark)] flex-wrap"
           >
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 font-bold"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)] font-bold"
               (click)="insertMarkdown('**', '**')"
             >
               Bold
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 italic"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)] italic"
               (click)="insertMarkdown('*', '*')"
             >
               Italic
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('## ', '')"
             >
               H2
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('- ', '')"
             >
               List
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('1. ', '')"
             >
               Ordered
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('---\n', '')"
             >
               Divider
@@ -314,12 +339,12 @@
           <div class="flex flex-col sm:flex-row flex-1 overflow-hidden">
             <textarea
               formControlName="markdownContent"
-              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300 dark:bg-[var(--color-bg-dark)] dark:border-[var(--color-border-dark)] dark:text-[var(--color-text-dark)]"
               placeholder="Digite seu Markdown aqui..."
             ></textarea>
 
             <div
-              class="w-full sm:w-1/2 p-2 bg-white dark:bg-gray-800 overflow-auto markdown-body"
+              class="w-full sm:w-1/2 p-2 bg-white dark:bg-[var(--color-card-dark)] overflow-auto markdown-body"
             >
               <markdown
                 [data]="form.get('markdownContent')?.value"
@@ -334,8 +359,11 @@
     <!-- Optional Fields -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
       <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Date (optional)</mat-label>
-
+        <mat-label
+          class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+        >
+          Date (optional)
+        </mat-label>
         <input matInput type="text" formControlName="date" />
 
         @let date = form.controls.date;
@@ -357,7 +385,11 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Location Details (optional)</mat-label>
+        <mat-label
+          class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+        >
+          Location Details (Optional)
+        </mat-label>
 
         <input matInput type="text" formControlName="location" />
 
@@ -405,8 +437,5 @@
         {{ isEditMode ? "Update Miracle" : "Create Miracle" }}
       </button>
     </div>
-    <p class="text-sm text-gray-500 dark:text-gray-400 text-end pt-2">
-      Fields marked with <span class="text-red-600">*</span> are required.
-    </p>
   </form>
 </div>
