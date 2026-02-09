@@ -22,6 +22,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
 
 @Component({
   selector: 'app-miracles-page',
@@ -57,7 +58,7 @@ export class MiraclesPageComponent implements OnInit {
   imageBaseUrl = environment.assetsUrl;
 
   searchForm: FormGroup = this.fb.group({
-    search: [''],
+    search: ['', [minMaxLengthValidator(1, 100)]],
   });
 
   miracleFilters = new MiracleFilters();

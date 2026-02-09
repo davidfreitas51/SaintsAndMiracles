@@ -27,14 +27,13 @@
           </button>
         </div>
 
-        <!-- Search & Order -->
         <div
           class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto flex-1 md:flex-none"
         >
-          <!-- Search Input -->
           <form [formGroup]="searchForm" class="flex-1 min-w-0">
             <mat-form-field appearance="fill" class="w-full rounded-full">
               <mat-label>Search</mat-label>
+
               <input
                 matInput
                 type="text"
@@ -53,6 +52,25 @@
               >
                 <mat-icon>search</mat-icon>
               </button>
+
+              @let search = searchForm.controls["search"];
+
+              @if ((search?.touched || search?.dirty) && search?.invalid) {
+                <mat-error>
+                  @switch (true) {
+                    @case (search.errors?.["minMaxLength"]?.reason === "min") {
+                      Minimum
+                      {{ search.errors?.["minMaxLength"]?.requiredLength }}
+                      characters
+                    }
+                    @case (search.errors?.["minMaxLength"]?.reason === "max") {
+                      Maximum
+                      {{ search.errors?.["minMaxLength"]?.requiredLength }}
+                      characters
+                    }
+                  }
+                </mat-error>
+              }
             </mat-form-field>
           </form>
 
