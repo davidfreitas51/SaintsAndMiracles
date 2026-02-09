@@ -33,7 +33,10 @@
                     firstName.errors?.["personName"]?.reason === "length"
                   ) {
                     Minimum
-                    {{ lastName?.errors?.["personName"]?.minLength }} characters
+                    {{
+                      firstName?.errors?.["personName"]?.minLength
+                    }}
+                    characters
                   }
                   @case (
                     firstName?.errors?.["personName"]?.reason ===

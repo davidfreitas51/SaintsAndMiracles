@@ -33,6 +33,8 @@ import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNu
 import { CENTURIES } from '../../../../shared/constants/centuries';
 import { NewMiracleDto } from '../../interfaces/new-miracle-dto';
 import { finalize } from 'rxjs';
+import { MatInputModule } from '@angular/material/input';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
 
 @Component({
   selector: 'app-miracle-form-page',
@@ -49,6 +51,7 @@ import { finalize } from 'rxjs';
     RomanPipe,
     CountryCodePipe,
     MarkdownComponent,
+    MatInputModule,
   ],
   providers: [provideMarkdown()],
 })
@@ -82,21 +85,30 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
       '',
       [
         Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(150),
+        minMaxLengthValidator(3, 150),
         notOnlyNumbersValidator(),
       ],
     ],
-    country: ['', [Validators.required, Validators.maxLength(100)]],
+    country: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(100),
+        minMaxLengthValidator(3, 150),
+      ],
+    ],
     century: [
       0,
       [Validators.required, Validators.min(-20), Validators.max(21)],
     ],
     image: ['', Validators.required],
-    description: ['', [Validators.required, Validators.maxLength(500)]],
-    markdownContent: ['', [Validators.required, Validators.maxLength(20000)]],
-    date: ['', Validators.maxLength(50)],
-    location: ['', Validators.maxLength(150)],
+    description: ['', [Validators.required, minMaxLengthValidator(1, 200)]],
+    markdownContent: [
+      '',
+      [Validators.required, minMaxLengthValidator(1, 20000)],
+    ],
+    date: ['', [minMaxLengthValidator(1, 50)]],
+    location: ['', [minMaxLengthValidator(1, 150)]],
   });
 
   ngOnInit(): void {

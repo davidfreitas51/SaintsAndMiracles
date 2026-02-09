@@ -7,6 +7,7 @@ public class NewPrayerDto
 {
     [Required]
     [SafeText]
+    [NotOnlyNumbers]
     public required string Title { get; set; }
 
     [Required]

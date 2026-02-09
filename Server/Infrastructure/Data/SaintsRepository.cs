@@ -77,33 +77,29 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
             return false;
 
         trackedSaint.Name = saint.Name;
+        trackedSaint.Title = saint.Title;
         trackedSaint.Description = saint.Description;
         trackedSaint.Country = saint.Country;
         trackedSaint.Century = saint.Century;
         trackedSaint.FeastDay = saint.FeastDay;
         trackedSaint.ReligiousOrderId = saint.ReligiousOrderId;
-        trackedSaint.UpdatedAt = DateTime.UtcNow;
         trackedSaint.Slug = saint.Slug;
         trackedSaint.MarkdownPath = saint.MarkdownPath;
         trackedSaint.Image = saint.Image;
-        trackedSaint.Title = saint.Title;
         trackedSaint.PatronOf = saint.PatronOf;
+        trackedSaint.UpdatedAt = DateTime.UtcNow;
 
-        trackedSaint.Tags.RemoveAll(t => !saint.Tags.Any(st => st.Id == t.Id));
+        trackedSaint.Tags.RemoveAll(t =>
+            !saint.Tags.Any(st => st.Id == t.Id));
 
         foreach (var tag in saint.Tags)
         {
             if (!trackedSaint.Tags.Any(t => t.Id == tag.Id))
             {
                 var existingTag = await context.Tags.FindAsync(tag.Id);
-                if (existingTag is not null)
-                {
+
+                if (existingTag != null)
                     trackedSaint.Tags.Add(existingTag);
-                }
-                else
-                {
-                    trackedSaint.Tags.Add(tag);
-                }
             }
         }
 

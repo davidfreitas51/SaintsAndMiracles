@@ -5,6 +5,7 @@ public class NewSaintDto
 {
     [Required]
     [PersonName]
+    [NotOnlyNumbers]
     public required string Name { get; set; }
 
     [Required]

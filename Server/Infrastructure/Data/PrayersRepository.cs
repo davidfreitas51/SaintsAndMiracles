@@ -74,24 +74,19 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         trackedPrayer.Slug = prayer.Slug;
         trackedPrayer.MarkdownPath = prayer.MarkdownPath;
         trackedPrayer.Image = prayer.Image;
-        trackedPrayer.Tags = prayer.Tags;
         trackedPrayer.UpdatedAt = DateTime.UtcNow;
 
-        trackedPrayer.Tags.RemoveAll(t => !prayer.Tags.Any(pt => pt.Id == t.Id));
+        trackedPrayer.Tags.RemoveAll(t =>
+            !prayer.Tags.Any(pt => pt.Id == t.Id));
 
         foreach (var tag in prayer.Tags)
         {
             if (!trackedPrayer.Tags.Any(t => t.Id == tag.Id))
             {
                 var existingTag = await context.Tags.FindAsync(tag.Id);
+
                 if (existingTag != null)
-                {
                     trackedPrayer.Tags.Add(existingTag);
-                }
-                else
-                {
-                    trackedPrayer.Tags.Add(tag);
-                }
             }
         }
 

@@ -78,24 +78,20 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         trackedMiracle.Slug = miracle.Slug;
         trackedMiracle.MarkdownPath = miracle.MarkdownPath;
         trackedMiracle.Image = miracle.Image;
-        trackedMiracle.Tags = miracle.Tags;
         trackedMiracle.UpdatedAt = DateTime.UtcNow;
 
-        trackedMiracle.Tags.RemoveAll(t => !miracle.Tags.Any(mt => mt.Id == t.Id));
+
+        trackedMiracle.Tags.RemoveAll(t =>
+            !miracle.Tags.Any(mt => mt.Id == t.Id));
 
         foreach (var tag in miracle.Tags)
         {
             if (!trackedMiracle.Tags.Any(t => t.Id == tag.Id))
             {
                 var existingTag = await context.Tags.FindAsync(tag.Id);
-                if (existingTag is not null)
-                {
+
+                if (existingTag != null)
                     trackedMiracle.Tags.Add(existingTag);
-                }
-                else
-                {
-                    trackedMiracle.Tags.Add(tag);
-                }
             }
         }
 

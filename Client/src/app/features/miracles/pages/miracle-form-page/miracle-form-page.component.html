@@ -70,80 +70,144 @@
       </div>
 
       <!-- Miracle Details -->
-      <div class="flex-1 flex flex-col gap-4 w-full">
+      <div class="flex-1 mt-8 flex flex-col gap-2 w-full">
         <!-- Title -->
-        <label class="block">
-          <span class="block pb-2 font-semibold">
-            Title <span class="text-red-600">*</span>
-          </span>
-          <input
-            type="text"
-            formControlName="title"
-            placeholder="Miracle's title"
-            class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-          />
-          @if (
-            form.controls.title.hasError("onlyNumbers") &&
-            form.controls.title.touched
-          ) {
-            <div class="text-red-600 text-sm mt-1">
-              Title cannot contain only numbers.
-            </div>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Title</mat-label>
+
+          <input matInput type="text" formControlName="title" />
+
+          @let title = form.controls.title;
+
+          @if ((title?.touched || title?.dirty) && title?.invalid) {
+            <mat-error>
+              @switch (true) {
+                @case (title.errors?.["required"]) {
+                  Title is required
+                }
+
+                @case (title.errors?.["minMaxLength"]?.reason === "min") {
+                  Minimum
+                  {{ title.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+
+                @case (title.errors?.["minMaxLength"]?.reason === "max") {
+                  Maximum
+                  {{ title.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+
+                @case (title.errors?.["onlyNumbers"]) {
+                  Cannot be only numbers
+                }
+              }
+            </mat-error>
           }
-        </label>
+        </mat-form-field>
 
         <!-- Country -->
-        <label class="block relative">
-          <span class="block pb-2 font-semibold">
-            Country <span class="text-red-600">*</span>
-          </span>
-          <input
-            type="text"
-            formControlName="country"
-            placeholder="Miracle's country"
-            class="w-full border rounded px-3 py-2 pr-10 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-          />
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Country</mat-label>
 
-          @if (form.controls.country.value | countryCode; as flagCode) {
+          <input matInput type="text" formControlName="country" />
+
+          @let country = form.controls.country;
+
+          <!-- Exibir erro caso necessário -->
+          @if ((country?.touched || country?.dirty) && country?.invalid) {
+            <mat-error>
+              @switch (true) {
+                @case (country.errors?.["required"]) {
+                  Country is required
+                }
+                @case (country.errors?.["minMaxLength"]?.reason === "min") {
+                  Minimum
+                  {{ country.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+                @case (country.errors?.["minMaxLength"]?.reason === "max") {
+                  Maximum
+                  {{ country.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+              }
+            </mat-error>
+          }
+
+          <!-- Bandeira à direita do input -->
+          @if (country.value | countryCode; as flagCode) {
             <img
+              matSuffix
               [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-              [alt]="form.controls.country.value + ' flag'"
-              class="absolute mt-4 right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 object-contain pointer-events-none"
+              [alt]="country.value + ' flag'"
+              class="w-5 h-5 mr-5 object-contain pointer-events-none"
             />
           }
-        </label>
+        </mat-form-field>
 
         <!-- Century -->
-        <label class="block">
-          <span class="block pb-2 font-semibold">
-            Century <span class="text-red-600">*</span>
-          </span>
-          <mat-select
-            formControlName="century"
-            class="w-full border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-          >
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Century</mat-label>
+
+          <mat-select formControlName="century">
             @for (item of centuries; track item) {
               <mat-option [value]="item">
                 {{ item | roman }}
               </mat-option>
             }
           </mat-select>
-        </label>
+
+          @let century = form.controls.century;
+
+          @if ((century?.touched || century?.dirty) && century?.invalid) {
+            <mat-error>
+              @switch (true) {
+                @case (century.errors?.["required"]) {
+                  Century is required
+                }
+              }
+            </mat-error>
+          }
+        </mat-form-field>
 
         <!-- Description -->
-        <label class="block">
-          <span class="block pb-2 font-semibold">
-            Description <span class="text-red-600">*</span>
-          </span>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Description</mat-label>
+
           <textarea
+            matInput
             #descriptionTextarea
             formControlName="description"
             rows="1"
-            placeholder="Brief description"
-            class="w-full border rounded px-3 py-2 resize-none overflow-hidden min-h-[40px] dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+            class="resize-none overflow-hidden min-h-[40px]"
             (input)="autoResize($event)"
           ></textarea>
-        </label>
+
+          @let description = form.controls.description;
+
+          @if (
+            (description?.touched || description?.dirty) && description?.invalid
+          ) {
+            <mat-error>
+              @switch (true) {
+                @case (description.errors?.["required"]) {
+                  Description is required
+                }
+                @case (description.errors?.["minMaxLength"]?.reason === "min") {
+                  Minimum
+                  {{ description.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+                @case (description.errors?.["minMaxLength"]?.reason === "max") {
+                  Maximum
+                  {{ description.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+              }
+            </mat-error>
+          }
+        </mat-form-field>
 
         <!-- Tags -->
         <div class="block">
@@ -269,27 +333,53 @@
 
     <!-- Optional Fields -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-      <label class="block">
-        <span class="block pb-2 font-semibold">Date (optional)</span>
-        <input
-          type="text"
-          formControlName="date"
-          placeholder="Date of the miracle"
-          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-        />
-      </label>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Date (optional)</mat-label>
 
-      <label class="block">
-        <span class="block pb-2 font-semibold"
-          >Location Details (optional)</span
-        >
-        <input
-          type="text"
-          formControlName="location"
-          placeholder="Location details"
-          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-        />
-      </label>
+        <input matInput type="text" formControlName="date" />
+
+        @let date = form.controls.date;
+
+        @if ((date?.touched || date?.dirty) && date?.invalid) {
+          <mat-error>
+            @switch (true) {
+              @case (date.errors?.["minMaxLength"]?.reason === "min") {
+                Minimum
+                {{ date.errors?.["minMaxLength"]?.requiredLength }} characters
+              }
+              @case (date.errors?.["minMaxLength"]?.reason === "max") {
+                Maximum
+                {{ date.errors?.["minMaxLength"]?.requiredLength }} characters
+              }
+            }
+          </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Location Details (optional)</mat-label>
+
+        <input matInput type="text" formControlName="location" />
+
+        @let location = form.controls.location;
+
+        @if ((location?.touched || location?.dirty) && location?.invalid) {
+          <mat-error>
+            @switch (true) {
+              @case (location.errors?.["minMaxLength"]?.reason === "min") {
+                Minimum
+                {{ location.errors?.["minMaxLength"]?.requiredLength }}
+                characters
+              }
+              @case (location.errors?.["minMaxLength"]?.reason === "max") {
+                Maximum
+                {{ location.errors?.["minMaxLength"]?.requiredLength }}
+                characters
+              }
+            }
+          </mat-error>
+        }
+      </mat-form-field>
     </div>
 
     <!-- Actions -->

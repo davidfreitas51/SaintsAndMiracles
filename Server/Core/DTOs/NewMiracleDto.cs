@@ -7,6 +7,7 @@ public class NewMiracleDto
 {
     [Required]
     [SafeText]
+    [NotOnlyNumbers]
     [StringLength(150, MinimumLength = 3)]
     public required string Title { get; set; }
 
