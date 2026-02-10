@@ -44,14 +44,18 @@
                 <span
                   ><strong>Century:</strong> {{ saint.century | roman }}</span
                 >
+
+                @let code = saint.country | countryCode;
                 <span class="flex items-center">
                   <strong class="mr-1">Country:</strong> {{ saint.country }}
-                  <img
-                    *ngIf="saint.country | countryCode as code"
-                    [src]="'https://flagcdn.com/w20/' + code + '.webp'"
-                    [alt]="saint.country + ' flag'"
-                    class="ml-1 w-4 h-4 object-contain"
-                  />
+
+                  @if (code) {
+                    <img
+                      [src]="'https://flagcdn.com/w20/' + code + '.webp'"
+                      [alt]="saint.country + ' flag'"
+                      class="ml-1 w-4 h-4 object-contain"
+                    />
+                  }
                 </span>
               </div>
               @if (saint.title) {
