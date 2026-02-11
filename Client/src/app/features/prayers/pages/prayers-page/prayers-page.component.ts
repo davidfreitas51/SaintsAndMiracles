@@ -1,11 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule, MatSelectChange } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
@@ -22,6 +17,7 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 import { PrayerOrderBy } from '../../enums/prayerOrderBy';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-prayers-page',
@@ -63,6 +59,8 @@ export class PrayersPageComponent implements OnInit {
     { value: PrayerOrderBy.TitleDesc, viewValue: 'Title (Z-A)' },
   ];
 
+  isLoading = false;
+
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       this.prayerFilters = new PrayerFilters();
@@ -102,7 +100,7 @@ export class PrayersPageComponent implements OnInit {
       queryParams.pageNumber = this.prayerFilters.pageNumber;
     if (this.prayerFilters.pageSize)
       queryParams.pageSize = this.prayerFilters.pageSize;
-    if (this.prayerFilters.tagIds && this.prayerFilters.tagIds.length > 0) {
+    if (this.prayerFilters.tagIds?.length) {
       queryParams.tagIds = this.prayerFilters.tagIds.join(',');
     }
 
@@ -111,13 +109,23 @@ export class PrayersPageComponent implements OnInit {
       replaceUrl: true,
     });
 
-    this.prayersService.getPrayers(this.prayerFilters).subscribe({
-      next: (res) => {
-        this.prayers = res.items;
-        this.totalCount = res.totalCount;
-      },
-      error: (err) => console.error(err),
-    });
+    this.prayers = [];
+    this.isLoading = true;
+
+    this.prayersService
+      .getPrayers(this.prayerFilters)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.prayers = res.items;
+          this.totalCount = res.totalCount;
+        },
+        error: (err) => console.error(err),
+      });
   }
 
   handleFilterChange(value: PrayerOrderBy) {

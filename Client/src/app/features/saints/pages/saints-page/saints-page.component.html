@@ -1,7 +1,7 @@
 <div class="min-h-screen flex flex-col">
   <app-header></app-header>
 
-  <main class="flex-grow relative">
+  <main class="flex-grow">
     <div class="p-4 pt-10 w-full max-w-screen-xl mx-auto">
       <!-- Filters & Search -->
       <div
@@ -32,52 +32,72 @@
           class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto flex-1 md:flex-none"
         >
           <!-- Search Input -->
-          <mat-form-field appearance="fill" class="flex-1 min-w-0 rounded-full">
-            <mat-label>Search</mat-label>
-            <input
-              matInput
-              #searchInput
-              type="text"
-              placeholder="Search saints..."
-              [(ngModel)]="saintFilters.search"
-              (keyup.enter)="handleSearch(searchInput.value)"
-            />
-            <button
-              mat-icon-button
-              matSuffix
-              class="hover:text-blue-800 transition-colors duration-150"
-              (click)="handleSearch(searchInput.value)"
-            >
-              <mat-icon>search</mat-icon>
-            </button>
-          </mat-form-field>
+          <form [formGroup]="searchForm" class="flex-1 min-w-0">
+            <mat-form-field appearance="fill" class="w-full rounded-full">
+              <mat-label>Search</mat-label>
+
+              <input
+                matInput
+                type="text"
+                placeholder="Search saints..."
+                formControlName="search"
+                (keyup.enter)="
+                  handleSearch(searchForm.controls['search'].value!)
+                "
+              />
+
+              <button
+                mat-icon-button
+                matSuffix
+                class="hover:text-blue-800 transition-colors duration-150"
+                (click)="handleSearch(searchForm.controls['search'].value!)"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+
+              @let search = searchForm.controls["search"];
+
+              @if ((search?.touched || search?.dirty) && search?.invalid) {
+                <mat-error>
+                  @switch (true) {
+                    @case (search.errors?.["minMaxLength"]?.reason === "min") {
+                      Minimum
+                      {{ search.errors?.["minMaxLength"]?.requiredLength }}
+                      characters
+                    }
+                    @case (search.errors?.["minMaxLength"]?.reason === "max") {
+                      Maximum
+                      {{ search.errors?.["minMaxLength"]?.requiredLength }}
+                      characters
+                    }
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+          </form>
 
           <!-- Order By -->
-          <mat-form-field
-            appearance="fill"
-            class="min-w-[150px] w-full sm:w-[180px] rounded-full"
-          >
+          <mat-form-field>
             <mat-label>Order By</mat-label>
             <mat-select
               [(value)]="saintFilters.orderBy"
               (selectionChange)="handleFilterChange($event.value)"
             >
-              <mat-option
-                *ngFor="let option of saintOrderOptions"
-                [value]="option.value"
-              >
-                {{ option.viewValue }}
-              </mat-option>
+              @for (option of saintOrderOptions; track option.value) {
+                <mat-option [value]="option.value">
+                  {{ option.viewValue }}
+                </mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
       </div>
     </div>
 
-    <div
-      class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
-    >
-      @if (saints && saints.length > 0) {
+    @if (saints && saints.length > 0 && !isLoading) {
+      <div
+        class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
+      >
         @for (saint of saints; track saint.id) {
           <ng-container>
             <mat-card
@@ -85,11 +105,17 @@
               class="flex flex-col p-3 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer"
             >
               <div class="flex justify-center mb-2">
-                <img
-                  [src]="imageBaseUrl + saint.image"
-                  [alt]="saint.name"
-                  class="w-16 h-16 object-cover rounded-full"
-                />
+                @if (saint.image) {
+                  <img
+                    [src]="imageBaseUrl + saint.image"
+                    [alt]="saint.title"
+                    class="w-16 h-16 object-cover rounded-full"
+                  />
+                } @else {
+                  <mat-icon class="text-gray-400 w-16 h-16 text-6xl"
+                    >image</mat-icon
+                  >
+                }
               </div>
 
               <div class="flex flex-col flex-1 text-center">
@@ -98,12 +124,13 @@
                 <div
                   class="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1"
                 >
-                  <img
-                    *ngIf="saint.country | countryCode as flagCode"
-                    [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-                    [alt]="saint.country + ' flag'"
-                    class="w-4 h-4 object-contain"
-                  />
+                  @if (saint.country | countryCode; as flagCode) {
+                    <img
+                      [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
+                      [alt]="saint.country + ' flag'"
+                      class="w-4 h-4 object-contain"
+                    />
+                  }
                   <span>{{ saint.country }} – {{ saint.century | roman }}</span>
                 </div>
 
@@ -124,27 +151,28 @@
             </mat-card>
           </ng-container>
         }
-      } @else {
-        <div class="col-span-full text-center text-gray-500 text-sm mt-6">
-          No saints found matching your filters.
-        </div>
-      }
-    </div>
-
-    @if (saints && saints.length > 0) {
-      <div class="py-6 flex justify-center">
-        <div class="rounded-xl overflow-hidden shadow-sm">
-          <mat-paginator
-            [length]="totalCount"
-            [pageIndex]="saintFilters.pageNumber - 1"
-            [pageSize]="saintFilters.pageSize"
-            [pageSizeOptions]="[25, 50, 100, 200]"
-            showFirstLastButtons
-            (page)="handlePageChange($event)"
-          ></mat-paginator>
-        </div>
       </div>
+    } @else {
+      <app-empty-state
+        title="No saints found"
+        description="There are no items related to your filters."
+        actionLabel="Clear filters"
+        (action)="clearFilters()"
+      />
     }
+
+    <div class="py-6 flex justify-center">
+      <div class="rounded-xl overflow-hidden shadow-sm">
+        <mat-paginator
+          [length]="totalCount"
+          [pageIndex]="saintFilters.pageNumber - 1"
+          [pageSize]="saintFilters.pageSize"
+          [pageSizeOptions]="[25, 50, 100, 200]"
+          showFirstLastButtons
+          (page)="handlePageChange($event)"
+        ></mat-paginator>
+      </div>
+    </div>
   </main>
 
   <app-footer></app-footer>

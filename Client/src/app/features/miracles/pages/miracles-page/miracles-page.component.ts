@@ -23,6 +23,7 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-miracles-page',
@@ -93,17 +94,22 @@ export class MiraclesPageComponent implements OnInit {
       replaceUrl: true,
     });
 
-    this.miraclesService.getMiracles(this.miracleFilters).subscribe({
-      next: (res) => {
-        this.miracles = res.items;
-        this.totalCount = res.totalCount;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching miracles:', err);
-        this.isLoading = false;
-      },
-    });
+    this.miraclesService
+      .getMiracles(this.miracleFilters)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.miracles = res.items;
+          this.totalCount = res.totalCount;
+        },
+        error: (err) => {
+          console.error('Error fetching miracles:', err);
+        },
+      });
   }
 
   private loadFiltersFromQueryParams(params: any) {

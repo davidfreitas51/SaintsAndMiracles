@@ -3,7 +3,12 @@ import { SaintsService } from '../../../../core/services/saints.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Saint } from '../../interfaces/saint';
 import { environment } from '../../../../../environments/environment';
@@ -22,6 +27,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { AdvancedSearchSaintsDialogComponent } from '../../components/advanced-search-saints-dialog/advanced-search-saints-dialog.component';
 import { Tag } from '../../../../interfaces/tag';
 import { SaintOrderBy } from '../../enums/saintOrderBy';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { finalize } from 'rxjs';
 countries.registerLocale(enLocale);
 
 @Component({
@@ -35,17 +43,19 @@ countries.registerLocale(enLocale);
     RomanPipe,
     MatSelectModule,
     MatInputModule,
-    FormsModule,
     MatButtonModule,
     MatIconModule,
     CommonModule,
     CountryCodePipe,
     MatPaginator,
+    ReactiveFormsModule,
+    EmptyStateComponent,
   ],
   templateUrl: './saints-page.component.html',
   styleUrl: './saints-page.component.scss',
 })
 export class SaintsPageComponent implements OnInit {
+  private fb = inject(FormBuilder);
   private router = inject(Router);
   private saintsService = inject(SaintsService);
   private route = inject(ActivatedRoute);
@@ -59,6 +69,10 @@ export class SaintsPageComponent implements OnInit {
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
 
+  searchForm = this.fb.group({
+    search: ['', [minMaxLengthValidator(1, 100)]],
+  });
+
   saintFilters: SaintFilters = new SaintFilters();
   saintOrderOptions = [
     { value: SaintOrderBy.Name, viewValue: 'Name (A-Z)' },
@@ -69,29 +83,34 @@ export class SaintsPageComponent implements OnInit {
     { value: SaintOrderBy.FeastDayDesc, viewValue: 'Feast Day (Desc)' },
   ];
 
+  isLoading = false;
+
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       this.saintFilters = new SaintFilters();
 
       if (params['country']) this.saintFilters.country = params['country'];
-      if (params['century']) this.saintFilters.century = params['century'];
+      if (params['century']) this.saintFilters.century = +params['century'];
       if (params['search']) this.saintFilters.search = params['search'];
       if (params['feastMonth'])
         this.saintFilters.feastMonth = params['feastMonth'];
       if (params['religiousOrderId'])
-        this.saintFilters.religiousOrderId = params['religiousOrderId'];
+        this.saintFilters.religiousOrderId = +params['religiousOrderId'];
       if (params['orderBy']) this.saintFilters.orderBy = params['orderBy'];
       if (params['pageNumber'])
         this.saintFilters.pageNumber = +params['pageNumber'];
       if (params['pageSize']) this.saintFilters.pageSize = +params['pageSize'];
 
       if (params['tagIds']) {
-        const tagIds = (params['tagIds'] as string)
+        this.saintFilters.tagIds = (params['tagIds'] as string)
           .split(',')
-          .map((id) => Number(id))
+          .map(Number)
           .filter((id) => !isNaN(id));
-        this.saintFilters.tagIds = tagIds;
       }
+
+      this.searchForm.patchValue({
+        search: this.saintFilters.search ?? '',
+      });
 
       this.updateData();
     });
@@ -123,18 +142,29 @@ export class SaintsPageComponent implements OnInit {
       queryParams.tagIds = this.saintFilters.tagIds.join(',');
     }
 
+    this.isLoading = true;
+
     this.router.navigate([], {
       queryParams,
       replaceUrl: true,
     });
 
-    this.saintsService.getSaints(this.saintFilters).subscribe({
-      next: (res) => {
-        this.saints = res.items;
-        this.totalCount = res.totalCount;
-      },
-      error: (err) => console.error(err),
-    });
+    this.saintsService
+      .getSaints(this.saintFilters)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.saints = res.items;
+          this.totalCount = res.totalCount;
+        },
+        error: (err) => {
+          console.error('Error fetching miracles:', err);
+        },
+      });
   }
 
   handleFilterChange(value: SaintOrderBy) {

@@ -90,7 +90,7 @@
       </div>
     </div>
 
-    @if (prayers.length > 0) {
+    @if (prayers.length > 0 && !isLoading) {
       <div
         class="grid gap-4 p-4 w-full max-w-screen-xl mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6"
       >
