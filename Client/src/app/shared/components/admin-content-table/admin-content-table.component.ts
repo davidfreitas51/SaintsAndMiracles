@@ -18,7 +18,7 @@ import { FeastDayFormatPipe } from '../../pipes/feast-day-format.pipe';
 import { RomanPipe } from '../../pipes/roman.pipe';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-admin-content-table',
@@ -33,7 +33,6 @@ import { CommonModule, DatePipe } from '@angular/common';
     MatCardModule,
     MatSortModule,
     MatTableModule,
-    CommonModule,
   ],
   providers: [DatePipe],
 })

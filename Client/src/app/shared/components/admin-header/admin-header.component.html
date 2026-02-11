@@ -5,10 +5,7 @@
     class="relative max-w-screen-2xl mx-auto w-full flex items-center justify-between"
   >
     <!-- Left: Logo -->
-    <a
-      routerLink="/"
-      class="flex items-center text-secondary-app dark:text-gray-200"
-    >
+    <a routerLink="/" class="flex items-center text-secondary-app">
       <img
         src="assets/SaintsAndMiracles-logo.webp"
         alt="Saints And Miracles Logo"
@@ -17,62 +14,66 @@
       <span class="sr-only">Home</span>
     </a>
 
-    <!-- Middle: Admin Dashboard -->
+    <!-- Middle -->
     <a
       routerLink="/admin/dashboard"
-      class="hidden md:block absolute left-1/2 transform -translate-x-1/2 items-center uppercase font-semibold px-4 py-2 rounded text-secondary-app dark:text-gray-200 hover:bg-hover hover:text-primary-app transition-colors"
+      routerLinkActive="bg-[var(--color-selected)]"
+      class="hidden md:block absolute left-1/2 -translate-x-1/2 uppercase font-semibold px-4 py-2 rounded text-secondary-app hover:bg-hover hover:text-primary-app transition"
     >
       Admin Dashboard
     </a>
 
-    <!-- Right: Dark Mode + User Menu -->
+    <!-- Right -->
     <div class="flex items-center gap-4">
-      <!-- Dark Mode Toggle -->
+      <!-- Dark Mode -->
       <button
         (click)="toggleDarkMode()"
-        class="flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10 transition text-secondary-app dark:text-gray-200"
-        aria-label="Toggle dark mode"
+        class="flex items-center gap-1 p-2 rounded hover:bg-white/10 text-secondary-app"
       >
         <mat-icon>{{ isDarkMode ? "light_mode" : "dark_mode" }}</mat-icon>
-        <span class="hidden md:inline text-sm font-semibold"
-          >Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}</span
-        >
+
+        <span class="hidden md:inline text-sm font-semibold">
+          Toggle {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
+        </span>
       </button>
 
-      <!-- Desktop User Dropdown -->
+      <!-- Desktop User -->
       <div class="hidden md:block relative" (mouseleave)="closeMenu()">
         <button
           (click)="toggleMenu()"
-          class="flex items-center gap-2 py-2 px-4 rounded min-h-[44px] bg-primary-app text-secondary-app dark:text-gray-200 hover:bg-hover hover:text-primary-app transition-colors"
+          class="flex items-center gap-2 py-2 px-4 rounded bg-primary-app text-secondary-app hover:bg-hover hover:text-primary-app transition"
         >
           <span class="uppercase text-sm font-semibold">{{ userName }}</span>
           <mat-icon>account_circle</mat-icon>
         </button>
 
-        <!-- Dropdown -->
-        <div
-          *ngIf="menuOpen"
-          class="absolute right-0 top-full w-48 bg-white dark:bg-gray-800 shadow-lg rounded z-50"
-        >
-          <a
-            routerLink="/account/settings"
-            class="block px-4 py-2 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            (click)="closeMenu()"
-            >Account Settings</a
+        @if (menuOpen) {
+          <div
+            class="absolute right-0 top-full w-48 bg-white shadow-lg rounded z-50"
           >
-          <button
-            (click)="handleLogout()"
-            class="w-full text-left px-4 py-2 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
+            <a
+              routerLink="/account/settings"
+              routerLinkActive="bg-[var(--color-selected)]"
+              class="block px-4 py-2 hover:bg-gray-200"
+              (click)="closeMenu()"
+            >
+              Account Settings
+            </a>
+
+            <button
+              (click)="handleLogout()"
+              class="w-full text-left px-4 py-2 hover:bg-gray-200"
+            >
+              Logout
+            </button>
+          </div>
+        }
       </div>
 
       <!-- Mobile Hamburger -->
       <button
         (click)="mobileMenuOpen = !mobileMenuOpen"
-        class="md:hidden flex items-center px-3 py-2 text-secondary-app dark:text-gray-200 hover:text-primary-app dark:hover:text-primary-400 transition-colors"
+        class="md:hidden flex items-center px-3 py-2 text-secondary-app hover:text-primary-app"
       >
         <mat-icon>menu</mat-icon>
       </button>
@@ -80,34 +81,40 @@
   </div>
 
   <!-- Mobile Menu -->
-  <div
-    *ngIf="mobileMenuOpen"
-    class="absolute top-full right-0 w-full md:hidden bg-white dark:bg-gray-800 shadow-lg rounded z-40"
-  >
-    <a
-      routerLink="/admin/dashboard"
-      class="block px-4 pt-4 py-2 font-semibold uppercase text-primary-app dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-      (click)="mobileMenuOpen = false"
-      >Admin Dashboard</a
-    >
-    <a
-      routerLink="/account/settings"
-      class="block px-4 py-2 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-      (click)="mobileMenuOpen = false"
-      >Account Settings</a
-    >
-    <button
-      (click)="handleLogout(); mobileMenuOpen = false"
-      class="w-full text-left px-4 py-2 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-    >
-      Logout
-    </button>
-  </div>
+  @if (mobileMenuOpen) {
+    <div class="absolute top-full right-0 w-full md:hidden bg-white shadow-lg">
+      <a
+        routerLink="/admin/dashboard"
+        routerLinkActive="bg-[var(--color-selected)]"
+        class="block px-4 pt-4 py-2 font-semibold uppercase hover:bg-gray-200"
+        (click)="mobileMenuOpen = false"
+      >
+        Admin Dashboard
+      </a>
 
-  <!-- Progress bar -->
-  <mat-progress-bar
-    *ngIf="loading$ | async"
-    mode="indeterminate"
-    class="absolute bottom-0 left-0 w-full"
-  ></mat-progress-bar>
+      <a
+        routerLink="/account/settings"
+        routerLinkActive="bg-[var(--color-selected)]"
+        class="block px-4 py-2 hover:bg-gray-200"
+        (click)="mobileMenuOpen = false"
+      >
+        Account Settings
+      </a>
+
+      <button
+        (click)="handleLogout(); mobileMenuOpen = false"
+        class="w-full text-left px-4 py-2 hover:bg-gray-200"
+      >
+        Logout
+      </button>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading$ | async) {
+    <mat-progress-bar
+      mode="indeterminate"
+      class="absolute bottom-0 left-0 w-full"
+    ></mat-progress-bar>
+  }
 </header>

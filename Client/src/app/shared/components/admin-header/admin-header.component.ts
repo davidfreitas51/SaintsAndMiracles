@@ -7,7 +7,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { SnackbarService } from '../../../core/services/snackbar.service';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { AuthenticationService } from '../../../core/services/authentication.service';
 import { UserSessionService } from '../../../core/services/user-session.service';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -15,13 +15,7 @@ import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-admin-header',
-  imports: [
-    RouterLink,
-    MatIconModule,
-    CommonModule,
-    MatProgressBarModule,
-    AsyncPipe,
-  ],
+  imports: [RouterLink, MatIconModule, MatProgressBarModule, AsyncPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-header.component.html',
   styleUrl: './admin-header.component.scss',
