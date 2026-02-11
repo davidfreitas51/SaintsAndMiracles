@@ -1,25 +1,38 @@
-<!-- create-entity-dialog.component.html -->
 <div class="p-6 w-full max-w-sm">
   <h2 class="text-xl font-semibold mb-4 text-primary-app dark:text-blue-400">
     Create {{ entityName }}
   </h2>
 
-  <form class="flex flex-col gap-4" (ngSubmit)="create()" #form="ngForm">
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="create()">
     <mat-form-field appearance="fill" class="w-full">
       <mat-label>Enter {{ entityName | lowercase }} name</mat-label>
-      <input
-        matInput
-        [(ngModel)]="name"
-        name="name"
-        required
-        autocomplete="off"
-        #nameInput="ngModel"
-        #inputEl
-      />
 
-      <mat-error *ngIf="nameInput.invalid && nameInput.touched">
-        Name is required
-      </mat-error>
+      <input matInput formControlName="name" autocomplete="off" #inputEl />
+
+      @let name = form.controls.name;
+
+      @if ((name.touched || name.dirty) && name.invalid) {
+        <mat-error>
+          @switch (true) {
+            @case (name.errors?.["required"]) {
+              Name is required
+            }
+
+            @case (name.errors?.["minMaxLength"]?.reason === "min") {
+              Minimum
+              {{ name.errors?.["minMaxLength"]?.requiredLength }}
+              characters (currently
+              {{ name.errors?.["minMaxLength"]?.actualLength }})
+            }
+
+            @case (name.errors?.["minMaxLength"]?.reason === "max") {
+              Maximum
+              {{ name.errors?.["minMaxLength"]?.requiredLength }}
+              characters
+            }
+          }
+        </mat-error>
+      }
     </mat-form-field>
 
     <div class="flex justify-end gap-3 pt-2">
@@ -37,14 +50,13 @@
         color="primary"
         type="submit"
         [disabled]="form.invalid || loading"
-        class="min-w-[100px]"
+        class="min-w-[100px] flex items-center justify-center gap-2"
       >
-        <mat-spinner
-          *ngIf="loading"
-          diameter="20"
-          class="inline-block align-middle"
-        ></mat-spinner>
-        <span *ngIf="!loading">Create</span>
+        @if (loading) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <span>Create</span>
+        }
       </button>
     </div>
   </form>
