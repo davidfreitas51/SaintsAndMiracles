@@ -85,7 +85,7 @@ public class TagsRepository(DataContext context, ICacheService cacheService) : I
         var created = await context.SaveChangesAsync() > 0;
 
         if (created)
-            InvalidateCaches();
+            InvalidateCaches(tag);
 
         return created;
     }
@@ -96,7 +96,7 @@ public class TagsRepository(DataContext context, ICacheService cacheService) : I
         var updated = await context.SaveChangesAsync() > 0;
 
         if (updated)
-            InvalidateCaches();
+            InvalidateCaches(tag);
 
         return updated;
     }
@@ -109,11 +109,24 @@ public class TagsRepository(DataContext context, ICacheService cacheService) : I
         context.Tags.Remove(tag);
         await context.SaveChangesAsync();
 
-        InvalidateCaches();
+        InvalidateCaches(tag);
     }
 
-    private void InvalidateCaches()
+    private void InvalidateCaches(Tag tag)
     {
+        switch (tag.TagType)
+        {
+            case TagType.Prayer:
+                cacheService.GetNextVersion("prayer");
+                break;
+            case TagType.Saint:
+                cacheService.GetNextVersion("saint");
+                break;
+            case TagType.Miracle:
+                cacheService.GetNextVersion("miracle");
+                break;
+        }
+
         cacheService.GetNextVersion("tag");
     }
 }
