@@ -49,7 +49,9 @@
         mat-flat-button
         color="primary"
         type="submit"
-        [disabled]="form.invalid || loading"
+        [attr.disabled]="form.invalid || loading ? true : null"
+        [class.opacity-50]="form.invalid || loading"
+        [class.pointer-events-none]="form.invalid || loading"
         class="min-w-[100px] flex items-center justify-center gap-2"
       >
         @if (loading) {

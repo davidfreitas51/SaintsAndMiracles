@@ -15,16 +15,45 @@
         >
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Search {{ entityName | lowercase }}</mat-label>
+
             <input
               matInput
               type="text"
               placeholder="Type to search..."
-              [(ngModel)]="filters.search"
+              [formControl]="form.controls.search"
               (keyup.enter)="loadEntities()"
             />
-            <button mat-icon-button matSuffix (click)="loadEntities()">
+
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="loadEntities()"
+            >
               <mat-icon>search</mat-icon>
             </button>
+
+            @let search = form.controls.search;
+
+            @if ((search.dirty || search.touched) && search.invalid) {
+              <mat-error>
+                @switch (true) {
+                  @case (search.errors?.["minMaxLength"]?.reason === "min") {
+                    Minimum
+                    {{ search.errors?.["minMaxLength"]?.min }} characters
+                  }
+
+                  @case (search.errors?.["minMaxLength"]?.reason === "max") {
+                    Maximum
+                    {{ search.errors?.["minMaxLength"]?.max }} characters
+                  }
+
+                  @default {
+                    Invalid search
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -68,17 +97,14 @@
             *matCellDef="let element"
             class="px-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-800 dark:text-gray-100"
           >
-            <ng-container
-              *ngIf="editingElement?.id === element.id; else viewMode"
-            >
+            @if (editingElement?.id === element.id) {
               <input
                 class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-primary-app text-gray-800 dark:text-gray-100"
-                [(ngModel)]="editingElement!.name"
+                [formControl]="form.controls.editName"
               />
-            </ng-container>
-            <ng-template #viewMode>
+            } @else {
               {{ element.name }}
-            </ng-template>
+            }
           </td>
         </ng-container>
 

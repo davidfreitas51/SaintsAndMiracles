@@ -14,7 +14,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { finalize } from 'rxjs/operators';
 import { MatFormField, MatLabel } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   MatPaginator,
   MatPaginatorModule,
@@ -31,6 +31,7 @@ import { Entity } from '../../../interfaces/entity';
 import { EntityDialogData } from '../../../interfaces/entity-dialog-data';
 import { Router } from '@angular/router';
 import { TagType } from '../../../interfaces/entity-filters';
+import { minMaxLengthValidator } from '../../validators/min-max-length.validator';
 
 @Component({
   selector: 'app-entity-manager-dialog',
@@ -41,9 +42,9 @@ import { TagType } from '../../../interfaces/entity-filters';
     MatFormField,
     MatLabel,
     MatButtonModule,
+    ReactiveFormsModule,
     MatIconModule,
     MatInputModule,
-    FormsModule,
     MatTableModule,
     MatPaginatorModule,
     CommonModule,
@@ -55,6 +56,7 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   private router = inject(Router);
+  private fb = inject(FormBuilder);
   readonly dialog = inject(MatDialog);
   readonly dialogRef = inject(MatDialogRef<EntityManagerDialogComponent>);
   readonly snackbar = inject(SnackbarService);
@@ -67,6 +69,11 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
     pageSize: 10,
     type: undefined,
   };
+
+  form = this.fb.nonNullable.group({
+    search: ['', [minMaxLengthValidator(1, 100)]],
+    editName: ['', [Validators.required, minMaxLengthValidator(3, 100)]],
+  });
 
   entityName = '';
   dataSource = new MatTableDataSource<Entity>([]);
@@ -177,15 +184,19 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
       });
   }
 
-  startEdit(element: Entity): void {
-    this.originalElement = element;
-    this.editingElement = { ...element };
+  startEdit(entity: Entity) {
+    this.originalElement = entity;
+    this.editingElement = structuredClone(entity);
+    this.form.controls.editName.setValue(entity.name);
   }
 
   saveEdit(): void {
-    if (!this.originalElement || !this.editingElement) return;
+    if (!this.originalElement) return;
 
-    Object.assign(this.originalElement, this.editingElement);
+    const newName = this.form.controls.editName.value;
+
+    this.originalElement.name = newName;
+
     this.updateEntity(this.originalElement);
 
     this.editingElement = null;
