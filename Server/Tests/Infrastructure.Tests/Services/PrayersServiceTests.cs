@@ -38,7 +38,7 @@ public class PrayersServiceTests
     public async Task CreatePrayerAsync_ShouldReturnId_WhenSlugIsUnique()
     {
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
-        var newPrayer = new NewPrayerDto { Title = "My Prayer", Description = "Desc", MarkdownContent = "Content" };
+        var newPrayer = new NewPrayerDto { Title = "My Prayer", Description = "Desc", Image="image.webp", MarkdownContent = "Content" };
 
         prayersRepo.Setup(r => r.SlugExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
         prayersRepo.Setup(r => r.CreateAsync(It.IsAny<Prayer>())).ReturnsAsync(true);
@@ -55,7 +55,7 @@ public class PrayersServiceTests
     public async Task CreatePrayerAsync_ShouldReturnNull_WhenSlugExists()
     {
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
-        var newPrayer = new NewPrayerDto { Title = "Existing", Description = "", MarkdownContent = "" };
+        var newPrayer = new NewPrayerDto { Title = "Existing", Description = "", Image="image.webp", MarkdownContent = "" };
 
         prayersRepo.Setup(r => r.SlugExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
 
@@ -71,7 +71,7 @@ public class PrayersServiceTests
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
         prayersRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Prayer?)null);
 
-        var updated = new NewPrayerDto { Title = "Updated", Description = "Desc", MarkdownContent = "Content" };
+        var updated = new NewPrayerDto { Title = "Updated", Description = "Desc", Image="image.webp", MarkdownContent = "Content" };
         var result = await service.UpdatePrayerAsync(1, updated, "user1");
 
         Assert.False(result);
@@ -97,7 +97,7 @@ public class PrayersServiceTests
         tagsRepo.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync(new List<Tag> { new Tag { Name = "Tag1", TagType = TagType.Prayer } });
 
-        var updated = new NewPrayerDto { Title = "New", Description = "Desc", MarkdownContent = "Content", TagIds = new List<int> { 1 } };
+        var updated = new NewPrayerDto { Title = "New", Description = "Desc", MarkdownContent = "Content", Image = "image.webp", TagIds = new List<int> { 1 } };
         var result = await service.UpdatePrayerAsync(1, updated, "user1");
 
         Assert.True(result);

@@ -46,7 +46,8 @@ public class PrayersControllerTests
         {
             Title = title ?? "Prayer title",
             Description = description ?? "Prayer description",
-            MarkdownContent = markdownContent ?? "prayer.md"
+            MarkdownContent = markdownContent ?? "prayer.md",
+            Image = "image.webp"
         };
     }
 
