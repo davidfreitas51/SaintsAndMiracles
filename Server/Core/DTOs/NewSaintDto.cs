@@ -6,13 +6,16 @@ public class NewSaintDto
     [Required]
     [PersonName]
     [NotOnlyNumbers]
+    [StringLength(150, MinimumLength = 1)]
     public required string Name { get; set; }
 
     [Required]
     [SafeText]
+    [StringLength(150, MinimumLength = 3)]
     public required string Country { get; set; }
 
-    [Range(-50, 21)]
+    [Required]
+    [Range(-20, 21)]
     public int Century { get; set; }
 
     [Required]
@@ -21,18 +24,22 @@ public class NewSaintDto
 
     [Required]
     [SafeText]
+    [StringLength(200, MinimumLength = 1)]
     public required string Description { get; set; }
 
     [Required]
     [SafeText]
+    [StringLength(20000, MinimumLength = 1)]
     public required string MarkdownContent { get; set; }
 
     [SafeText]
+    [StringLength(100, MinimumLength = 1)]
     public string? Title { get; set; }
 
     public DateOnly? FeastDay { get; set; }
 
     [SafeText]
+    [StringLength(100, MinimumLength = 1)]
     public string? PatronOf { get; set; }
 
     public int? ReligiousOrderId { get; set; }

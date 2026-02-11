@@ -89,19 +89,12 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
         notOnlyNumbersValidator(),
       ],
     ],
-    country: [
-      '',
-      [
-        Validators.required,
-        Validators.maxLength(100),
-        minMaxLengthValidator(3, 150),
-      ],
-    ],
-    century: [
-      0,
-      [Validators.required, Validators.min(-20), Validators.max(21)],
-    ],
-    image: ['', Validators.required],
+    country: ['', [Validators.required, minMaxLengthValidator(3, 150)]],
+    century: this.fb.control<number | null>(null, [
+      Validators.required,
+      minMaxLengthValidator(-20, 21),
+    ]),
+    image: ['', [Validators.required]],
     description: ['', [Validators.required, minMaxLengthValidator(1, 200)]],
     markdownContent: [
       '',
@@ -112,8 +105,7 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
   });
 
   ngOnInit(): void {
-    const filter = new EntityFilters({ type: TagType.Miracle });
-    filter.pageSize = 100;
+    const filter = new EntityFilters({ type: TagType.Miracle, pageSize: 100 });
     this.tagsService.getTags(filter).subscribe((res) => {
       this.tagsList = res.items;
       this.cdr.detectChanges();
@@ -199,7 +191,7 @@ export class MiracleFormPageComponent implements OnInit, AfterViewInit {
     return {
       title: this.form.controls.title.value.trim(),
       country: this.form.controls.country.value.trim(),
-      century: this.form.controls.century.value,
+      century: this.form.controls.century.value!,
       image: this.form.controls.image.value,
       description: this.form.controls.description.value.trim(),
       markdownContent: this.form.controls.markdownContent.value,

@@ -41,6 +41,11 @@ import { Tag } from '../../../../interfaces/tag';
 import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
 import { NewSaintDto } from '../../interfaces/new-saint-dto';
 import { CENTURIES } from '../../../../shared/constants/centuries';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
+import { finalize } from 'rxjs';
+import { MatInputModule } from '@angular/material/input';
+import { personNameValidator } from '../../../../shared/validators/person-name.validator';
+import { feastDayValidator } from '../../../../shared/validators/feast-day.validator';
 
 @Component({
   selector: 'app-saint-form-page',
@@ -60,6 +65,8 @@ import { CENTURIES } from '../../../../shared/constants/centuries';
     MarkdownComponent,
     RomanPipe,
     CountryCodePipe,
+    ReactiveFormsModule,
+    MatInputModule,
   ],
   providers: [provideMarkdown()],
 })
@@ -84,100 +91,148 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
   currentTags: string[] = [];
 
   croppedImage: string | null = null;
-  form!: FormGroup;
   isEditMode = false;
   saintId: string | null = null;
   imageLoading = false;
+  isSubmitting = false;
 
+  form = this.fb.group({
+    name: [
+      '',
+      [Validators.required, notOnlyNumbersValidator(), personNameValidator],
+    ],
+    country: ['', [Validators.required, minMaxLengthValidator(3, 150)]],
+    century: this.fb.control<number | null>(null, [
+      Validators.required,
+      minMaxLengthValidator(-20, 21),
+    ]),
+    image: ['', Validators.required],
+    description: ['', [Validators.required, minMaxLengthValidator(1, 200)]],
+    markdownContent: [
+      '',
+      [Validators.required, minMaxLengthValidator(1, 20000)],
+    ],
+    title: ['', [minMaxLengthValidator(1, 100)]],
+    feastDay: ['', [feastDayValidator()]],
+    patronOf: ['', minMaxLengthValidator(1, 100)],
+    religiousOrder: [''],
+  });
   readonly centuries = CENTURIES;
 
   ngOnInit(): void {
-    this.loadTagsAndOrders();
-    this.initForm();
-    this.listenDescriptionChanges();
-    this.checkEditMode();
+    const filter = new EntityFilters({ type: TagType.Saint, pageSize: 100 });
+
+    this.tagsService.getTags(filter).subscribe((res) => {
+      this.tagsList = res.items;
+      this.cdr.detectChanges();
+    });
+
+    this.religiousOrdersService.getOrders(filter).subscribe((res) => {
+      this.religiousOrders = res.items;
+      this.cdr.detectChanges();
+    });
+
+    this.route.paramMap.subscribe((params) => {
+      this.saintId = params.get('id');
+      this.isEditMode = !!this.saintId;
+
+      if (this.isEditMode && this.saintId) {
+        this.saintsService.getSaintWithMarkdown(this.saintId).subscribe({
+          next: ({ saint, markdown }) => {
+            this.currentTags = saint.tags.map((tag) => tag.name);
+
+            this.form.patchValue({
+              name: saint.name,
+              country: saint.country,
+              century: saint.century ?? 0,
+              image: saint.image,
+              description: saint.description,
+              markdownContent: markdown,
+              title: saint.title ?? '',
+              patronOf: saint.patronOf ?? '',
+              feastDay: this.saintsService.formatFeastDayFromIso(
+                saint.feastDay ?? '',
+              ),
+              religiousOrder: saint.religiousOrder?.id ?? '',
+            });
+
+            setTimeout(() => this.autoResizeOnLoad());
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.snackBarService.error('Error loading saint for update');
+            this.router.navigate(['admin/saints']);
+          },
+        });
+      } else {
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   ngAfterViewInit() {
     this.autoResizeOnLoad();
   }
 
-  private loadTagsAndOrders(): void {
-    const filter = new EntityFilters({ type: TagType.Saint, pageSize: 100 });
-
-    this.tagsService
-      .getTags(filter)
-      .subscribe((res) => (this.tagsList = res.items));
-    this.religiousOrdersService
-      .getOrders(filter)
-      .subscribe((res) => (this.religiousOrders = res.items));
-  }
-
-  private initForm(): void {
-    this.form = this.fb.group({
-      name: ['', [Validators.required, notOnlyNumbersValidator()]],
-      country: ['', Validators.required],
-      century: [null, Validators.required],
-      image: ['', Validators.required],
-      description: ['', Validators.required],
-      markdownContent: ['', Validators.required],
-      title: [''],
-      feastDay: [''], // sempre no formato dd/MM
-      patronOf: [''],
-      religiousOrder: [''],
-    });
-  }
-
-  private listenDescriptionChanges(): void {
-    this.form
-      .get('description')
-      ?.valueChanges.subscribe(() =>
-        setTimeout(() => this.autoResizeOnLoad(), 0),
-      );
-  }
-
-  private checkEditMode(): void {
-    this.route.paramMap.subscribe((params) => {
-      this.saintId = params.get('id');
-      this.isEditMode = !!this.saintId;
-
-      if (!this.isEditMode || !this.saintId) {
-        this.cdr.detectChanges();
-        return;
-      }
-
-      this.saintsService.getSaintWithMarkdown(this.saintId).subscribe({
-        next: ({ saint, markdown }) => {
-          this.currentTags = saint.tags.map((tag) => tag.name);
-          this.form.patchValue({
-            name: saint.name,
-            country: saint.country,
-            century: saint.century,
-            image: saint.image,
-            description: saint.description,
-            markdownContent: markdown,
-            title: saint.title,
-            patronOf: saint.patronOf,
-            feastDay: this.saintsService.formatFeastDayFromIso(
-              saint.feastDay || '',
-            ),
-            religiousOrder: saint.religiousOrder?.id,
-          });
-          this.cdr.detectChanges();
-          setTimeout(() => this.autoResizeOnLoad(), 100);
-        },
-        error: () => {
-          this.snackBarService.error('Error loading saint for update');
-          this.router.navigate(['admin/saints']);
-        },
-      });
-    });
-  }
-
   onSubmit(): void {
-    if (this.imageLoading) return;
+    if (this.form.invalid || this.isSubmitting || this.imageLoading) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
-    const tagIds = this.currentTags
+    this.isSubmitting = true;
+    const dto = this.buildSaintDto();
+
+    const request =
+      this.isEditMode && this.saintId
+        ? this.saintsService.updateSaint(this.saintId, dto)
+        : this.saintsService.createSaint(dto);
+
+    request.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: () => {
+        this.snackBarService.success(
+          this.isEditMode
+            ? 'Saint successfully updated'
+            : 'Saint successfully created',
+        );
+        this.router.navigate(['admin/saints']);
+      },
+      error: (err) => {
+        const errorMessage =
+          typeof err.error === 'string'
+            ? err.error
+            : (err.error?.message ?? 'Unexpected error.');
+        this.snackBarService.error(
+          `Error ${this.isEditMode ? 'updating' : 'creating'} saint: ${errorMessage}`,
+        );
+      },
+    });
+  }
+
+  private buildSaintDto(): NewSaintDto {
+    const value = this.form.value;
+
+    return {
+      name: value.name!,
+      country: value.country!,
+      century: Number(value.century),
+      image: value.image!,
+      description: value.description!,
+      markdownContent: value.markdownContent!,
+      title: value.title || null,
+      patronOf: value.patronOf || null,
+      feastDay: value.feastDay
+        ? this.saintsService.formatFeastDayToIso(value.feastDay!)
+        : undefined,
+      religiousOrderId: value.religiousOrder
+        ? Number(value.religiousOrder)
+        : null,
+      tagIds: this.getSelectedTagIds(),
+    };
+  }
+
+  private getSelectedTagIds(): number[] {
+    return this.currentTags
       .map((tagName) =>
         this.tagsList.find(
           (t) => t.name.toLowerCase() === tagName.trim().toLowerCase(),
@@ -185,39 +240,6 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
       )
       .filter((t): t is Tag => !!t)
       .map((t) => t.id);
-
-    const saintData: NewSaintDto & { feastDay?: string } = {
-      ...this.form.value,
-      century: +this.form.value.century,
-      title: this.form.value.title || undefined,
-      patronOf: this.form.value.patronOf || undefined,
-      religiousOrderId: this.form.value.religiousOrder || undefined,
-      tagIds,
-    };
-
-    const request$ =
-      this.isEditMode && this.saintId
-        ? this.saintsService.updateSaint(this.saintId, saintData)
-        : this.saintsService.createSaint(saintData);
-
-    request$.subscribe({
-      next: () => {
-        this.snackBarService.success(
-          `Saint successfully ${this.isEditMode ? 'updated' : 'created'}`,
-        );
-        this.router.navigate(['admin/saints']);
-      },
-      error: (err) => {
-        console.error(err);
-        const msg =
-          typeof err.error === 'string'
-            ? err.error
-            : (err.error?.message ?? 'Unexpected error.');
-        this.snackBarService.error(
-          `Error ${this.isEditMode ? 'updating' : 'creating'} saint: ${msg}`,
-        );
-      },
-    });
   }
 
   onFileSelected(event: Event, input: HTMLInputElement): void {

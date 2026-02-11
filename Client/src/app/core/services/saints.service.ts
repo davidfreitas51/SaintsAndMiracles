@@ -123,23 +123,28 @@ export class SaintsService {
     return { day, month };
   }
 
-  private formatFeastDayToIso(feastDay?: string | null): string | null {
+  public formatFeastDayToIso(feastDay?: string | null): string | undefined {
     const parts = this.parseFeastDay(feastDay);
-    if (!parts) return null;
+    if (!parts) return undefined;
+
     const dd = String(parts.day).padStart(2, '0');
     const mm = String(parts.month).padStart(2, '0');
+
     return `0001-${mm}-${dd}`;
   }
 
   public formatFeastDayFromIso(
-    feastDayIso: string | null,
+    feastDayIso?: string,
     opts?: { raw?: boolean },
-  ): string | null {
-    if (!feastDayIso) return null;
+  ): string | undefined {
+    if (!feastDayIso) return undefined;
+
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(feastDayIso);
-    if (!m) return null;
+    if (!m) return undefined;
+
     const dd = m[3];
     const mm = m[2];
+
     return opts?.raw ? `${dd}${mm}` : `${dd}/${mm}`;
   }
 }

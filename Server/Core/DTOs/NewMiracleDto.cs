@@ -1,8 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Validation.Attributes;
 
-namespace Core.DTOs;
-
 public class NewMiracleDto
 {
     [Required]
@@ -13,10 +11,11 @@ public class NewMiracleDto
 
     [Required]
     [SafeText]
-    [StringLength(100)]
+    [StringLength(150, MinimumLength = 3)]
     public required string Country { get; set; }
 
-    [Range(-20, 21, ErrorMessage = "Century must be between 20 BC and 21 AD.")]
+    [Required]
+    [Range(-20, 21)]
     public int Century { get; set; }
 
     [Required]
@@ -25,20 +24,20 @@ public class NewMiracleDto
 
     [Required]
     [SafeText]
-    [StringLength(500)]
+    [StringLength(200, MinimumLength = 1)]
     public required string Description { get; set; }
 
     [Required]
     [SafeText]
-    [StringLength(20000)]
+    [StringLength(20000, MinimumLength = 1)]
     public required string MarkdownContent { get; set; }
 
     [SafeText]
-    [StringLength(50)]
+    [StringLength(50, MinimumLength = 1)]
     public string? Date { get; set; }
 
     [SafeText]
-    [StringLength(150)]
+    [StringLength(150, MinimumLength = 1)]
     public string? LocationDetails { get; set; }
 
     [MaxItems(5)]
