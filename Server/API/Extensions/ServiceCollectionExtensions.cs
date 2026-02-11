@@ -100,8 +100,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddMemoryCache();
-
         // Repositories
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<ISaintsRepository, SaintsRepository>();
@@ -121,6 +119,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAccountTokensService, AccountTokensService>();
         services.AddSingleton<IEmailSender<AppUser>, EmailSender>();
         services.AddSingleton<ICacheService, CacheService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddMemoryCacheWithLimit(this IServiceCollection services, int sizeLimit = 60_000)
+    {
+        services.AddMemoryCache(options =>
+        {
+            options.SizeLimit = sizeLimit;
+        });
 
         return services;
     }

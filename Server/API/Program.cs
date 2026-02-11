@@ -10,6 +10,7 @@ builder.Services.AddCorsPolicy();
 builder.Services.AddRateLimiting();
 builder.Services.AddApplicationCookieConfig();
 
+builder.Services.AddMemoryCacheWithLimit();
 builder.Services.AddApplicationServices();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddIdentityServices();
