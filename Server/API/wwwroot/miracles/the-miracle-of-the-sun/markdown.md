@@ -10,7 +10,7 @@ Between **May and October**, Our Lady appeared to them on the 13th of each month
 
 In response to growing skepticism and pressure, the children relayed a promise from the Virgin:
 
-> *“In October, I will perform a miracle so that all may believe.”*
+> _“In October, I will perform a miracle so that all may believe.”_
 
 News spread rapidly, and tens of thousands began to gather in Fátima, braving ridicule and harsh conditions, moved by faith—or curiosity.
 
@@ -30,13 +30,13 @@ The soaked ground and clothing of the crowd were instantly **dried**. Witnesses 
 
 ## Eyewitness Accounts
 
-A secular journalist for *O Século*, Portugal’s largest newspaper at the time, wrote:
+A secular journalist for _O Século_, Portugal’s largest newspaper at the time, wrote:
 
-> *“Before the astonished eyes of the crowd... the sun trembled, made sudden incredible movements outside all cosmic laws—the sun 'danced'!”*
+> _“Before the astonished eyes of the crowd... the sun trembled, made sudden incredible movements outside all cosmic laws—the sun 'danced'!”_
 
 Another witness, Maria de Capelinha, said:
 
-> *“It looked like a wheel of fire… It seemed to draw nearer to the earth as if to burn us.”*
+> _“It looked like a wheel of fire… It seemed to draw nearer to the earth as if to burn us.”_
 
 Even **atheists and Freemasons** who had come to mock the event were left **awestruck**, some dropping to their knees and begging for mercy.
 
@@ -67,7 +67,7 @@ The third secret was made public by the Vatican in **2000**, coinciding with the
 
 The Miracle of the Sun is not just a past event—it is a **wake-up call** for every generation. It confirms Heaven’s involvement in human affairs and the urgency of Mary’s message: **prayer, penance, and trust in God’s mercy**.
 
-> *“In the end, my Immaculate Heart will triumph.”*
+> _“In the end, my Immaculate Heart will triumph.”_
 
 ---
 

@@ -16,7 +16,7 @@ export class MiraclesService {
   public baseUrl = environment.apiUrl;
 
   getMiracles(
-    filters: MiracleFilters
+    filters: MiracleFilters,
   ): Observable<{ items: Miracle[]; totalCount: number }> {
     let params = new HttpParams();
 
@@ -39,7 +39,7 @@ export class MiraclesService {
 
     return this.http.get<{ items: Miracle[]; totalCount: number }>(
       this.baseUrl + 'miracles',
-      { params }
+      { params },
     );
   }
 
@@ -85,8 +85,8 @@ export class MiraclesService {
           .get(environment.assetsUrl + miracle.markdownPath, {
             responseType: 'text',
           })
-          .pipe(map((markdown) => ({ miracle, markdown })))
-      )
+          .pipe(map((markdown) => ({ miracle, markdown }))),
+      ),
     );
   }
 

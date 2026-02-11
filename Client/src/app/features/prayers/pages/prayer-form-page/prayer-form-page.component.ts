@@ -10,11 +10,10 @@ import {
 import {
   FormBuilder,
   FormControl,
-  FormGroup,
-  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -31,6 +30,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
 import { MarkdownComponent, provideMarkdown } from 'ngx-markdown';
 import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNumbersValidator';
+import { MatInputModule } from '@angular/material/input';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
 
 @Component({
   selector: 'app-prayer-form-page',
@@ -42,15 +43,15 @@ import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNu
     ReactiveFormsModule,
     MatIconModule,
     MatButtonModule,
-    FormsModule,
     MatSelectModule,
     RouterModule,
-    CommonModule,
     MarkdownComponent,
+    MatInputModule,
   ],
   providers: [provideMarkdown()],
 })
 export class PrayerFormPageComponent implements OnInit, AfterViewInit {
+  private fb = inject(FormBuilder);
   private prayersService = inject(PrayersService);
   private snackBarService = inject(SnackbarService);
   private tagsService = inject(TagsService);
@@ -67,24 +68,34 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
 
   imageBaseUrl = environment.assetsUrl;
   croppedImage: string | null = null;
-  form!: FormGroup;
   isEditMode = false;
   prayerId: string | null = null;
   imageLoading = false;
+  isSubmitting = false;
+
+  form = this.fb.nonNullable.group({
+    title: [
+      '',
+      [
+        Validators.required,
+        minMaxLengthValidator(3, 150),
+        notOnlyNumbersValidator(),
+      ],
+    ],
+    description: ['', [Validators.required, minMaxLengthValidator(1, 200)]],
+    markdownContent: [
+      '',
+      [Validators.required, minMaxLengthValidator(1, 20000)],
+    ],
+    image: ['', Validators.required],
+  });
 
   ngOnInit(): void {
     const filter = new EntityFilters({ type: TagType.Prayer });
-    filter.pageSize = 9999;
+    filter.pageSize = 100;
     this.tagsService.getTags(filter).subscribe((res) => {
       this.tagsList = res.items;
       this.cdr.detectChanges();
-    });
-
-    this.form = new FormBuilder().group({
-      title: ['', [Validators.required, notOnlyNumbersValidator()]],
-      description: ['', Validators.required],
-      markdownContent: ['', Validators.required],
-      image: [''],
     });
 
     this.route.paramMap.subscribe((params) => {
@@ -119,47 +130,54 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
     this.autoResizeOnLoad();
   }
 
-  onSubmit() {
-    if (this.imageLoading) return;
+  onSubmit(): void {
+    if (this.form.invalid || this.isSubmitting) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
+    this.isSubmitting = true;
+    const dto = this.buildPrayerDto();
+
+    const request =
+      this.isEditMode && this.prayerId
+        ? this.prayersService.updatePrayer(this.prayerId, dto)
+        : this.prayersService.createPrayer(dto);
+
+    request.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: () => {
+        this.snackBarService.success(
+          this.isEditMode
+            ? 'Prayer successfully updated'
+            : 'Prayer successfully created',
+        );
+        this.router.navigate(['admin/prayers']);
+      },
+      error: (err) => {
+        const errorMessage =
+          typeof err.error === 'string'
+            ? err.error
+            : (err.error?.message ?? 'Unexpected error.');
+        this.snackBarService.error(
+          `Error ${this.isEditMode ? 'updating' : 'creating'} prayer: ${errorMessage}`,
+        );
+      },
+    });
+  }
+
+  private buildPrayerDto() {
     const tagIds: number[] = this.currentTags
       .map((tagName) => this.tagsList.find((t) => t.name === tagName))
       .filter((t): t is Tag => !!t)
       .map((t) => t.id);
 
-    const prayerData = {
-      title: this.form.value.title,
-      description: this.form.value.description,
-      markdownContent: this.form.value.markdownContent,
-      image: this.form.value.image,
+    return {
+      title: this.form.controls.title.value.trim(),
+      description: this.form.controls.description.value.trim(),
+      markdownContent: this.form.controls.markdownContent.value,
+      image: this.form.controls.image.value,
       tagIds,
     };
-
-    if (this.isEditMode && this.prayerId) {
-      this.prayersService.updatePrayer(this.prayerId, prayerData).subscribe({
-        next: () => {
-          this.snackBarService.success('Prayer successfully updated');
-          this.router.navigate(['admin/prayers']);
-        },
-        error: () => {
-          this.snackBarService.error('Error updating prayer');
-        },
-      });
-    } else {
-      this.prayersService.createPrayer(prayerData).subscribe({
-        next: () => {
-          this.snackBarService.success('Prayer successfully created');
-          this.router.navigate(['admin/prayers']);
-        },
-        error: (err) => {
-          const errorMessage =
-            typeof err.error === 'string'
-              ? err.error
-              : err.error?.message ?? 'Unexpected error.';
-          this.snackBarService.error('Error creating prayer: ' + errorMessage);
-        },
-      });
-    }
   }
 
   onFileSelected(event: Event, input: HTMLInputElement): void {
@@ -226,7 +244,7 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
     if (!control) return;
 
     const textarea = document.querySelector<HTMLTextAreaElement>(
-      'textarea[formControlName="markdownContent"]'
+      'textarea[formControlName="markdownContent"]',
     );
     if (!textarea) return;
 
@@ -238,14 +256,14 @@ export class PrayerFormPageComponent implements OnInit, AfterViewInit {
     control.setValue(
       value.substring(0, selectionStart) +
         newText +
-        value.substring(selectionEnd)
+        value.substring(selectionEnd),
     );
 
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(
         selectionStart + start.length,
-        selectionEnd + start.length
+        selectionEnd + start.length,
       );
     }, 0);
   }

@@ -8,7 +8,6 @@ import { MiraclesPageComponent } from './features/miracles/pages/miracles-page/m
 import { SaintDetailsPageComponent } from './features/saints/pages/saint-details-page/saint-details-page.component';
 import { SaintsPageComponent } from './features/saints/pages/saints-page/saints-page.component';
 
-
 import { PrayersPageComponent } from './features/prayers/pages/prayers-page/prayers-page.component';
 import { PrayerDetailsPageComponent } from './features/prayers/pages/prayer-details-page/prayer-details-page.component';
 
@@ -47,10 +46,12 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    loadChildren: () => import('./features/admin/admin-routes').then(r => r.adminRoutes)
+    loadChildren: () =>
+      import('./features/admin/admin-routes').then((r) => r.adminRoutes),
   },
   {
     path: 'account',
-    loadChildren: () => import('./features/account/account-routes').then(r => r.accountRoutes)
-  }
+    loadChildren: () =>
+      import('./features/account/account-routes').then((r) => r.accountRoutes),
+  },
 ];

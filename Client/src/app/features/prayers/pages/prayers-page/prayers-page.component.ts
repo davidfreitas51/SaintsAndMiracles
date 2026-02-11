@@ -1,14 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule, MatSelectChange } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
 
 import { PrayersService } from '../../../../core/services/prayers.service';
 import { Prayer } from '../../interfaces/prayer';
@@ -16,7 +14,10 @@ import { PrayerFilters } from '../../interfaces/prayer-filter';
 import { environment } from '../../../../../environments/environment';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
-import { Tag } from '../../../../interfaces/tag';
+import { PrayerOrderBy } from '../../enums/prayerOrderBy';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { minMaxLengthValidator } from '../../../../shared/validators/min-max-length.validator';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-prayers-page',
@@ -28,25 +29,37 @@ import { Tag } from '../../../../interfaces/tag';
     RouterLink,
     MatSelectModule,
     MatInputModule,
-    FormsModule,
     MatButtonModule,
     MatIconModule,
-    CommonModule,
     MatPaginatorModule,
+    EmptyStateComponent,
+    ReactiveFormsModule,
   ],
   templateUrl: './prayers-page.component.html',
   styleUrl: './prayers-page.component.scss',
 })
 export class PrayersPageComponent implements OnInit {
+  private fb = inject(FormBuilder);
   private router = inject(Router);
   private prayersService = inject(PrayersService);
   private route = inject(ActivatedRoute);
 
-  public prayers: Prayer[] | null = null;
+  public prayers: Prayer[] = [];
+  PrayerOrderBy = PrayerOrderBy;
   totalCount: number = 0;
   imageBaseUrl = environment.assetsUrl;
 
+  searchForm: FormGroup = this.fb.group({
+    search: ['', minMaxLengthValidator(1, 100)],
+  });
+
   prayerFilters: PrayerFilters = new PrayerFilters();
+  prayerOrderOptions = [
+    { value: PrayerOrderBy.Title, viewValue: 'Title (A-Z)' },
+    { value: PrayerOrderBy.TitleDesc, viewValue: 'Title (Z-A)' },
+  ];
+
+  isLoading = false;
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
@@ -64,6 +77,9 @@ export class PrayersPageComponent implements OnInit {
           .filter((id) => !isNaN(id));
         this.prayerFilters.tagIds = tagIds;
       }
+
+      const searchValue = params['search'] ?? '';
+      this.searchForm.controls['search'].setValue(searchValue);
 
       this.updateData();
     });
@@ -84,7 +100,7 @@ export class PrayersPageComponent implements OnInit {
       queryParams.pageNumber = this.prayerFilters.pageNumber;
     if (this.prayerFilters.pageSize)
       queryParams.pageSize = this.prayerFilters.pageSize;
-    if (this.prayerFilters.tagIds && this.prayerFilters.tagIds.length > 0) {
+    if (this.prayerFilters.tagIds?.length) {
       queryParams.tagIds = this.prayerFilters.tagIds.join(',');
     }
 
@@ -93,17 +109,27 @@ export class PrayersPageComponent implements OnInit {
       replaceUrl: true,
     });
 
-    this.prayersService.getPrayers(this.prayerFilters).subscribe({
-      next: (res) => {
-        this.prayers = res.items;
-        this.totalCount = res.totalCount;
-      },
-      error: (err) => console.error(err),
-    });
+    this.prayers = [];
+    this.isLoading = true;
+
+    this.prayersService
+      .getPrayers(this.prayerFilters)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.prayers = res.items;
+          this.totalCount = res.totalCount;
+        },
+        error: (err) => console.error(err),
+      });
   }
 
-  handleFilterChange(key: keyof PrayerFilters, event: MatSelectChange) {
-    (this.prayerFilters as any)[key] = event.value;
+  handleFilterChange(value: PrayerOrderBy) {
+    this.prayerFilters.orderBy = value;
     this.prayerFilters.pageNumber = 1;
     this.updateData();
   }

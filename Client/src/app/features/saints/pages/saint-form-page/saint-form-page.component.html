@@ -1,5 +1,5 @@
 <div
-  class="flex flex-col gap-6 p-6 shadow rounded-lg bg-white dark:bg-gray-900 dark:text-gray-100 max-w-4xl mx-auto"
+  class="flex flex-col gap-6 p-6 shadow-lg rounded-lg bg-[var(--color-bg-light)] dark:bg-[var(--color-card-dark)] dark:text-[var(--color-text-dark)] max-w-4xl mx-auto border border-[var(--color-border-light)] dark:border-[var(--color-border-dark)]"
 >
   <form [formGroup]="form" class="flex flex-col gap-6" (ngSubmit)="onSubmit()">
     <!-- Image + Basic Info -->
@@ -9,147 +9,274 @@
         <label for="imageInput" class="block mb-2 font-semibold">
           Icon image <span class="text-red-600">*</span>
         </label>
+
         <label
           for="imageInput"
-          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-gray-500 dark:text-gray-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition overflow-hidden dark:border-gray-700"
+          class="block aspect-square w-full border-2 border-dashed rounded grid place-items-center text-[var(--color-border-light)] dark:text-[var(--color-border-dark)] cursor-pointer hover:border-[var(--color-accent-dark)] hover:text-[var(--color-accent-dark)] transition overflow-hidden"
         >
-          <ng-container *ngIf="form.get('image')?.value; else noImage">
+          @if (form.controls.image.value) {
             <img
               [src]="getImagePreview()"
               alt="Selected image"
               class="object-cover w-full h-full rounded"
             />
-          </ng-container>
-          <ng-template #noImage>
-            <ng-container *ngIf="croppedImage; else showIcon">
+          } @else {
+            @if (croppedImage) {
+              <div class="flex items-center justify-center">
+                <img
+                  [src]="croppedImage"
+                  alt="Selected image"
+                  class="object-cover w-full h-full rounded"
+                />
+              </div>
+            } @else {
+              <div class="flex items-center justify-center w-full h-full"></div>
+            }
+          }
+          @if (croppedImage) {
+            <div class="flex items-center justify-center">
               <img
                 [src]="croppedImage"
                 alt="Selected image"
                 class="object-cover w-full h-full rounded"
               />
-            </ng-container>
-            <ng-template #showIcon>
+            </div>
+          } @else {
+            <div class="flex items-center justify-center">
               <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-primary-app dark:text-blue-400"
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-[var(--color-accent-dark)] dark:text-[var(--color-accent)]"
                 fontIcon="add_a_photo"
               ></mat-icon>
-            </ng-template>
+            </div>
+          }
+
+          <ng-template #placeholderIcon>
+            <div class="flex items-center justify-center">
+              <mat-icon
+                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-[var(--color-accent-dark)] dark:text-[var(--color-accent)]"
+                fontIcon="add_a_photo"
+              ></mat-icon>
+            </div>
           </ng-template>
         </label>
+
         <input
           id="imageInput"
           #fileInput
           type="file"
           accept=".webp,.png,.jpg,.jpeg"
-          class="hidden"
           (change)="onFileSelected($event, fileInput)"
+          class="hidden"
         />
       </div>
 
       <!-- Basic Info -->
-      <div class="flex-1 flex flex-col gap-4 w-full">
+      <div class="flex-1 mt-8 flex flex-col gap-2 w-full">
         <!-- Name -->
-        <label class="block">
-          <span class="block pb-2 font-semibold">
-            Name <span class="text-red-600">*</span>
-          </span>
-          <input
-            type="text"
-            placeholder="Saint's name"
-            class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-            formControlName="name"
-          />
-          <div
-            *ngIf="
-              form.get('name')?.hasError('onlyNumbers') &&
-              form.get('name')?.touched
-            "
-            class="text-red-600 text-sm mt-1"
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
           >
-            Name cannot contain only numbers.
-          </div>
-        </label>
+            Saint name
+          </mat-label>
+
+          <input matInput type="text" formControlName="name" />
+
+          @let name = form.controls.name;
+
+          @if ((name?.touched || name?.dirty) && name?.invalid) {
+            <mat-error>
+              @switch (true) {
+                @case (name.errors?.["required"]) {
+                  Saint name is required
+                }
+
+                @case (name.errors?.["onlyNumbers"]) {
+                  Name cannot be only numbers
+                }
+
+                @case (name.errors?.["personName"]?.reason === "length") {
+                  Name must be between
+                  {{ name.errors?.["personName"]?.minLength }}
+                  and
+                  {{ name.errors?.["personName"]?.maxLength }}
+                  characters
+                }
+
+                @case (
+                  name.errors?.["personName"]?.reason === "invalidFormat"
+                ) {
+                  Only letters, spaces, apostrophes and hyphens are allowed
+                }
+
+                @case (name.errors?.["personName"]?.reason === "mustBeString") {
+                  Invalid name format
+                }
+              }
+            </mat-error>
+          }
+        </mat-form-field>
 
         <!-- Country -->
-        <label class="block relative">
-          <span class="block pb-2 font-semibold">
-            Country <span class="text-red-600">*</span>
-          </span>
-          <input
-            type="text"
-            placeholder="Saint's country"
-            class="w-full border rounded px-3 py-2 pr-10 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-            formControlName="country"
-          />
-          <img
-            *ngIf="form.get('country')?.value | countryCode as flagCode"
-            [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
-            [alt]="form.get('country')?.value + ' flag'"
-            class="absolute mt-4 right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 object-contain pointer-events-none"
-          />
-        </label>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Country
+          </mat-label>
+          <input matInput type="text" formControlName="country" />
+
+          @let country = form.controls.country;
+
+          @if ((country?.touched || country?.dirty) && country?.invalid) {
+            <mat-error>
+              @switch (true) {
+                @case (country.errors?.["required"]) {
+                  Country is required
+                }
+                @case (country.errors?.["minMaxLength"]?.reason === "min") {
+                  Minimum
+                  {{ country.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+                @case (country.errors?.["minMaxLength"]?.reason === "max") {
+                  Maximum
+                  {{ country.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+              }
+            </mat-error>
+          }
+
+          @if (country.value | countryCode; as flagCode) {
+            <ng-container matSuffix>
+              <img
+                [src]="'https://flagcdn.com/w20/' + flagCode + '.webp'"
+                [alt]="country.value + ' flag'"
+                class="w-5 h-5 mr-5 object-contain pointer-events-none"
+              />
+            </ng-container>
+          }
+        </mat-form-field>
 
         <!-- Century -->
-        <label class="block">
-          <span class="block pb-2 font-semibold">
-            Century <span class="text-red-600">*</span>
-          </span>
-          <mat-select
-            formControlName="century"
-            class="w-full border rounded px-4 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
           >
-            <mat-option *ngFor="let item of centuries" [value]="item">{{
-              item | roman
-            }}</mat-option>
+            Century
+          </mat-label>
+          <mat-select formControlName="century">
+            @for (item of centuries; track item) {
+              <mat-option [value]="item">
+                {{ item | roman }}
+              </mat-option>
+            }
           </mat-select>
-        </label>
+
+          @let century = form.controls.century;
+
+          @if ((century?.touched || century?.dirty) && century?.invalid) {
+            <mat-error>
+              @switch (true) {
+                @case (century.errors?.["required"]) {
+                  Century is required
+                }
+              }
+            </mat-error>
+          }
+        </mat-form-field>
 
         <!-- Description -->
-        <label class="block">
-          <span class="block pb-2 font-semibold">
-            Description <span class="text-red-600">*</span>
-          </span>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Description
+          </mat-label>
           <textarea
+            matInput
             #descriptionTextarea
-            rows="1"
-            placeholder="Saint's brief description"
-            class="w-full border rounded px-3 py-2 resize-none overflow-hidden min-h-[40px] dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
             formControlName="description"
+            rows="1"
+            class="resize-none overflow-hidden min-h-[40px]"
             (input)="autoResize($event)"
           ></textarea>
-        </label>
+
+          @let description = form.controls.description;
+
+          @if (
+            (description?.touched || description?.dirty) && description?.invalid
+          ) {
+            <mat-error>
+              @switch (true) {
+                @case (description.errors?.["required"]) {
+                  Description is required
+                }
+                @case (description.errors?.["minMaxLength"]?.reason === "min") {
+                  Minimum
+                  {{ description.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+                @case (description.errors?.["minMaxLength"]?.reason === "max") {
+                  Maximum
+                  {{ description.errors?.["minMaxLength"]?.requiredLength }}
+                  characters
+                }
+              }
+            </mat-error>
+          }
+        </mat-form-field>
 
         <!-- Tags -->
         <div class="block">
-          <p class="block font-semibold">Tags (max 5)</p>
-          <div class="flex flex-wrap items-center">
+          <mat-label
+            class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+          >
+            Tags
+          </mat-label>
+
+          <div class="flex flex-wrap items-center mt-2">
+            <!-- Tags existentes -->
             @for (tag of currentTags; track $index) {
-            <button
-              type="button"
-              (click)="removeTag(tag)"
-              class="text-xs font-medium rounded-full bg-green-600 text-white shadow-sm px-3 py-1 cursor-pointer transition hover:bg-red-600 mr-2 mb-2"
-            >
-              {{ tag }}
-            </button>
-            } @if(currentTags.length < 5){
-            <button
-              [matMenuTriggerFor]="tagsMenu"
-              type="button"
-              class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-100 hover:bg-gray-400 dark:hover:bg-gray-600 mr-2 mb-2"
-            >
-              +
-            </button>
-            }
-            <mat-menu #tagsMenu="matMenu" class="dark:bg-gray-800">
               <button
-                mat-menu-item
-                *ngFor="let tag of tagsList"
-                [disabled]="currentTags.includes(tag.name)"
-                (click)="addTag(tag.name)"
-                class="dark:text-gray-100 dark:hover:bg-gray-700"
+                type="button"
+                (click)="removeTag(tag)"
+                class="text-xs font-medium rounded-full bg-[var(--color-accent-dark)] text-white shadow-sm px-3 py-1 cursor-pointer transition hover:bg-[var(--color-primary)] focus:outline-none mr-2 mb-2"
+                aria-label="Remove tag"
               >
-                {{ tag.name }}
+                {{ tag }}
               </button>
+            }
+
+            <!-- Botão para abrir menu -->
+            @if (currentTags.length < 5) {
+              <button
+                [matMenuTriggerFor]="tagsMenu"
+                type="button"
+                class="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--color-border-dark)] text-[var(--color-text-dark)] hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] transition mr-2 mb-2"
+                aria-label="Add tag"
+              >
+                +
+              </button>
+            }
+
+            <!-- Menu com tags disponíveis -->
+            <mat-menu
+              #tagsMenu="matMenu"
+              class="w-48 bg-[var(--color-card-light)] dark:bg-[var(--color-card-dark)]"
+            >
+              @for (tag of tagsList; track tag.id) {
+                @if (!currentTags.includes(tag.name)) {
+                  <button
+                    mat-menu-item
+                    (click)="addTag(tag.name)"
+                    class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)] hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)]"
+                  >
+                    {{ tag.name }}
+                  </button>
+                }
+              }
             </mat-menu>
           </div>
         </div>
@@ -164,50 +291,50 @@
         </span>
 
         <div
-          class="flex flex-col border rounded overflow-hidden h-[300px] dark:border-gray-700"
+          class="flex flex-col border rounded overflow-hidden h-[300px] dark:border-[var(--color-border-dark)] dark:bg-[var(--color-card-dark)]"
         >
           <!-- Toolbar -->
           <div
-            class="flex gap-1 p-2 bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 flex-wrap"
+            class="flex gap-1 p-2 bg-gray-100 dark:bg-[var(--color-card-dark)] border-b dark:border-[var(--color-border-dark)] flex-wrap"
           >
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 font-bold"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)] font-bold"
               (click)="insertMarkdown('**', '**')"
             >
               Bold
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700 italic"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)] italic"
               (click)="insertMarkdown('*', '*')"
             >
               Italic
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('## ', '')"
             >
               H2
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('- ', '')"
             >
               List
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('1. ', '')"
             >
               Ordered
             </button>
             <button
               type="button"
-              class="px-3 py-1 border rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-700"
+              class="px-3 py-1 border rounded hover:bg-[var(--color-accent-dark)] dark:hover:bg-[var(--color-primary)] dark:bg-[var(--color-card-dark)] dark:border-[var(--color-border-dark)]"
               (click)="insertMarkdown('---\n', '')"
             >
               Divider
@@ -215,15 +342,15 @@
           </div>
 
           <!-- Editor + Preview -->
-          <div class="flex flex-1 overflow-hidden flex-col sm:flex-row">
+          <div class="flex flex-col sm:flex-row flex-1 overflow-hidden">
             <textarea
               formControlName="markdownContent"
-              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+              class="w-full sm:w-1/2 p-2 resize-none outline-none border-b sm:border-b-0 sm:border-r border-gray-300 dark:bg-[var(--color-bg-dark)] dark:border-[var(--color-border-dark)] dark:text-[var(--color-text-dark)]"
               placeholder="Type your markdown here..."
             ></textarea>
 
             <div
-              class="w-full sm:w-1/2 p-2 bg-white dark:bg-gray-800 overflow-auto markdown-body"
+              class="w-full sm:w-1/2 p-2 bg-white dark:bg-[var(--color-card-dark)] overflow-auto markdown-body"
             >
               <markdown
                 [data]="form.get('markdownContent')?.value"
@@ -237,59 +364,111 @@
 
     <!-- Optional Fields -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-      <label class="block">
-        <span class="block pb-2 font-semibold"
-          >Title (optional)</span
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label
+          class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
         >
-        <input
-          type="text"
-          placeholder="Saint's title"
-          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-          formControlName="title"
-        />
-      </label>
+          Saint's title
+        </mat-label>
 
-      <label class="block">
-        <span class="block pb-2 font-semibold"
-          >Feast Day (optional)</span
-        >
-        <input
-          type="text"
-          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-          formControlName="feastDay"
-          mask="d0/M0"
-          placeholder="DD/MM"
-        />
-      </label>
+        <input matInput type="text" formControlName="title" />
 
-      <label class="block">
-        <span class="block pb-2 font-semibold"
-          >Patron Of (optional)</span
-        >
-        <input
-          type="text"
-          placeholder="Patron of..."
-          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-          formControlName="patronOf"
-        />
-      </label>
+        @let title = form.controls.title;
 
-      <label class="block">
-        <span class="block pb-2 font-semibold"
-          >Religious Order (optional)</span
+        @if ((title?.touched || title?.dirty) && title?.invalid) {
+          <mat-error>
+            @switch (true) {
+              @case (title.errors?.["minMaxLength"]?.reason === "min") {
+                Minimum
+                {{ title.errors?.["minMaxLength"]?.requiredLength }} characters
+              }
+
+              @case (title.errors?.["minMaxLength"]?.reason === "max") {
+                Maximum
+                {{ title.errors?.["minMaxLength"]?.requiredLength }} characters
+              }
+            }
+          </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label
+          class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
         >
-        <mat-select
-          formControlName="religiousOrder"
-          class="w-full border rounded px-3 py-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+          Feast Day (optional)
+        </mat-label>
+
+        <input matInput type="text" formControlName="feastDay" mask="d0/M0" />
+
+        @let feastDay = form.controls.feastDay;
+
+        @if ((feastDay?.touched || feastDay?.dirty) && feastDay?.invalid) {
+          <mat-error>
+            @switch (true) {
+              @case (feastDay.errors?.["feastDay"]?.reason === "format") {
+                Use format DD/MM
+              }
+
+              @case (feastDay.errors?.["feastDay"]?.reason === "day") {
+                Invalid day
+              }
+
+              @case (feastDay.errors?.["feastDay"]?.reason === "month") {
+                Invalid month
+              }
+            }
+          </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label
+          class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
         >
+          Patron of
+        </mat-label>
+
+        <input matInput type="text" formControlName="patronOf" />
+
+        @let patronOf = form.controls.patronOf;
+
+        @if ((patronOf?.touched || patronOf?.dirty) && patronOf?.invalid) {
+          <mat-error>
+            @switch (true) {
+              @case (patronOf.errors?.["minMaxLength"]?.reason === "min") {
+                Minimum
+                {{ patronOf.errors?.["minMaxLength"]?.requiredLength }}
+                characters
+              }
+
+              @case (patronOf.errors?.["minMaxLength"]?.reason === "max") {
+                Maximum
+                {{ patronOf.errors?.["minMaxLength"]?.requiredLength }}
+                characters
+              }
+            }
+          </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label
+          class="text-[var(--color-text-light)] dark:text-[var(--color-text-dark)]"
+        >
+          Religious Order (optional)
+        </mat-label>
+
+        <mat-select formControlName="religiousOrder">
           <mat-option [value]="null">None</mat-option>
-          <mat-option
-            *ngFor="let order of religiousOrders"
-            [value]="order.id"
-            >{{ order.name }}</mat-option
-          >
+
+          @for (order of religiousOrders; track order.id) {
+            <mat-option [value]="order.id">
+              {{ order.name }}
+            </mat-option>
+          }
         </mat-select>
-      </label>
+      </mat-form-field>
     </div>
 
     <!-- Buttons -->
@@ -305,7 +484,7 @@
       <button
         mat-flat-button
         type="submit"
-        [disabled]="form.invalid || imageLoading"
+        [disabled]="form.invalid || imageLoading || isSubmitting"
         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center gap-2 w-full sm:w-auto"
       >
         <mat-icon class="text-white">{{
@@ -314,9 +493,5 @@
         {{ isEditMode ? "Update Saint" : "Create Saint" }}
       </button>
     </div>
-
-    <p class="text-sm text-gray-500 dark:text-gray-400 text-end pt-2">
-      Fields marked with <span class="text-red-600">*</span> are required.
-    </p>
   </form>
 </div>

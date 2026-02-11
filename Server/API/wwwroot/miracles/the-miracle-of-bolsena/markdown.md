@@ -18,7 +18,7 @@ Stunned and terrified, he attempted to hide the bleeding Host, but the miracle c
 
 Father Peter immediately halted the Mass and journeyed to nearby **Orvieto**, where **Pope Urban IV** was residing. After hearing the priest's confession and learning of the miracle, the Pope sent a delegation of cardinals and theologians to investigate.
 
-Upon confirming the authenticity of the event, the relics—including the **blood-stained corporal**—were solemnly brought to Orvieto in a grand procession. Moved by the miracle and desiring to strengthen Eucharistic devotion throughout Christendom, Pope Urban IV instituted the **Feast of Corpus Christi** the following year, in **1264**, with the papal bull *Transiturus de hoc mundo*.
+Upon confirming the authenticity of the event, the relics—including the **blood-stained corporal**—were solemnly brought to Orvieto in a grand procession. Moved by the miracle and desiring to strengthen Eucharistic devotion throughout Christendom, Pope Urban IV instituted the **Feast of Corpus Christi** the following year, in **1264**, with the papal bull _Transiturus de hoc mundo_.
 
 ---
 
@@ -26,9 +26,9 @@ Upon confirming the authenticity of the event, the relics—including the **bloo
 
 To accompany the new feast, Urban IV commissioned **Saint Thomas Aquinas** to compose its liturgical texts. Aquinas responded with some of the most profound Eucharistic hymns in Church history, including:
 
-* **Pange Lingua**, which ends in the **Tantum Ergo**
-* **Adoro Te Devote**
-* **Lauda Sion Salvatoris**
+- **Pange Lingua**, which ends in the **Tantum Ergo**
+- **Adoro Te Devote**
+- **Lauda Sion Salvatoris**
 
 These hymns not only glorify the Eucharistic mystery but also teach the faithful the Church’s deep theological understanding of it.
 
@@ -46,7 +46,7 @@ Artists such as **Raphael** and **Giulio Romano** later depicted the event in fr
 
 The Miracle of Bolsena affirms the **truth of Christ’s Real Presence** in the Eucharist—not as mere symbol or metaphor, but as the actual Body and Blood, Soul and Divinity of Jesus Christ. It underscores the Church’s teaching that **faith seeks understanding**, and that at times, God grants **visible signs** to strengthen those faltering in belief.
 
-> *“Blessed are those who have not seen and yet believe.”*
+> _“Blessed are those who have not seen and yet believe.”_
 > —John 20:29
 
 ---
@@ -57,4 +57,4 @@ To this day, the town of Orvieto celebrates an annual **Corpus Christi processio
 
 The Miracle of Bolsena reminds the faithful that the Eucharist is not simply a sacred ritual—it is **Christ Himself**, truly present, inviting each of us to deeper faith and reverence.
 
-> *“O Sacrament most holy, O Sacrament divine, all praise and all thanksgiving be every moment Thine.”*
+> _“O Sacrament most holy, O Sacrament divine, all praise and all thanksgiving be every moment Thine.”_

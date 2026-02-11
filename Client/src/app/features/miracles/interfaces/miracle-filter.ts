@@ -1,5 +1,7 @@
+import { MiracleOrderBy } from '../enums/miracleOrderBy';
+
 export class MiracleFilters {
-  orderBy: string = 'title';
+  orderBy: MiracleOrderBy = MiracleOrderBy.Title;
   country: string = '';
   century: number | '' = '';
   search: string = '';

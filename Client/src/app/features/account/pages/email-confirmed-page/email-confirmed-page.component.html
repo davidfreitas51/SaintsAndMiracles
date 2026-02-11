@@ -18,23 +18,21 @@
           }}
         </h2>
 
-        <p
-          class="text-center text-gray-700 dark:text-gray-300 mb-6"
-          *ngIf="success"
-        >
-          {{
-            logout
-              ? "Your email has been successfully changed. Please log in with your new email."
-              : "Your email has been successfully verified. You can now log in."
-          }}
-        </p>
+        @if (success) {
+          <p class="text-center text-gray-700 dark:text-gray-300 mb-6">
+            {{
+              logout
+                ? "Your email has been successfully changed. Please log in with your new email."
+                : "Your email has been successfully verified. You can now log in."
+            }}
+          </p>
+        }
 
-        <p
-          class="text-center text-gray-700 dark:text-gray-300 mb-6"
-          *ngIf="!success"
-        >
-          The confirmation link is invalid or expired.
-        </p>
+        @if (!success) {
+          <p class="text-center text-gray-700 dark:text-gray-300 mb-6">
+            The confirmation link is invalid or expired.
+          </p>
+        }
 
         <div class="text-center">
           <a

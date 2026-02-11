@@ -34,6 +34,6 @@ Commits to confessing sins, performing penance, and striving to live a better li
 
 The Act of Contrition has evolved over time:
 
-* **Early Middle Ages**: Expressions of sorrow and confession were often spontaneous or orally taught.
-* **13th–14th century**: Standardized forms of contrition began to appear in devotional manuals.
-* **16th century onward**: Formal versions were included in catechisms and prayer books, becoming a normative part of the Sacrament of Penance.
+- **Early Middle Ages**: Expressions of sorrow and confession were often spontaneous or orally taught.
+- **13th–14th century**: Standardized forms of contrition began to appear in devotional manuals.
+- **16th century onward**: Formal versions were included in catechisms and prayer books, becoming a normative part of the Sacrament of Penance.

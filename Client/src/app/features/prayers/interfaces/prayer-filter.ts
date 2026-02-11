@@ -1,5 +1,7 @@
+import { PrayerOrderBy } from '../enums/prayerOrderBy';
+
 export class PrayerFilters {
-  orderBy: string = 'title';
+  orderBy: PrayerOrderBy = PrayerOrderBy.Title;
   search: string = '';
   tagIds: number[] = [];
   pageNumber: number = 1;

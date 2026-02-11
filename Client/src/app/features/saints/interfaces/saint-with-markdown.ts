@@ -1,4 +1,4 @@
-import { Saint } from "./saint";
+import { Saint } from './saint';
 
 export interface SaintWithMarkdown {
   saint: Saint;

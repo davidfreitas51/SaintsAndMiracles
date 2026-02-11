@@ -11,76 +11,109 @@
         </h2>
 
         <form
-          #form="ngForm"
+          [formGroup]="form"
+          (ngSubmit)="onSubmit()"
           class="flex flex-col gap-4"
-          (ngSubmit)="onSubmit(form)"
         >
           <!-- First Name -->
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>First Name</mat-label>
-            <input
-              matInput
-              type="text"
-              name="firstName"
-              [(ngModel)]="registerDto.firstName"
-              required
-              #firstName="ngModel"
-            />
-            <mat-error *ngIf="firstName.invalid && firstName.touched">
-              First name is required
-            </mat-error>
+
+            <input matInput type="text" formControlName="firstName" />
+
+            @let firstName = form.controls.firstName;
+
+            @if (firstName?.touched && firstName?.invalid) {
+              <mat-error>
+                @switch (true) {
+                  @case (firstName.errors?.["required"]) {
+                    First name is required
+                  }
+                  @case (
+                    firstName.errors?.["personName"]?.reason === "length"
+                  ) {
+                    Minimum
+                    {{
+                      firstName?.errors?.["personName"]?.minLength
+                    }}
+                    characters
+                  }
+                  @case (
+                    firstName?.errors?.["personName"]?.reason ===
+                    "invalidFormat"
+                  ) {
+                    Only letters, spaces, apostrophes and hyphens allowed
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Last Name -->
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Last Name</mat-label>
-            <input
-              matInput
-              type="text"
-              name="lastName"
-              [(ngModel)]="registerDto.lastName"
-              required
-              #lastName="ngModel"
-            />
-            <mat-error *ngIf="lastName.invalid && lastName.touched">
-              Last name is required
-            </mat-error>
+
+            <input matInput type="text" formControlName="lastName" />
+
+            @let lastName = form.controls.lastName;
+
+            @if (lastName?.touched && lastName?.invalid) {
+              <mat-error>
+                @switch (true) {
+                  @case (lastName.errors?.["required"]) {
+                    Last name is required
+                  }
+                  @case (lastName.errors?.["personName"]?.reason === "length") {
+                    Minimum
+                    {{ lastName?.errors?.["personName"]?.minLength }} characters
+                  }
+                  @case (
+                    lastName?.errors?.["personName"]?.reason === "invalidFormat"
+                  ) {
+                    Only letters, spaces, apostrophes and hyphens allowed
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Email -->
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Email</mat-label>
-            <input
-              matInput
-              type="email"
-              name="email"
-              [(ngModel)]="registerDto.email"
-              required
-              email
-              #emailCtrl="ngModel"
-            />
-            <mat-error *ngIf="emailCtrl.invalid && emailCtrl.touched">
-              <ng-container *ngIf="emailCtrl.errors?.['required']">
-                Email is required
-              </ng-container>
-              <ng-container *ngIf="emailCtrl.errors?.['email']">
-                Invalid email address
-              </ng-container>
-            </mat-error>
+
+            <input matInput type="email" formControlName="email" />
+
+            @let email = form.controls.email;
+
+            @if (email?.touched && email?.invalid) {
+              <mat-error>
+                @switch (true) {
+                  @case (email?.errors?.["required"]) {
+                    Email is required
+                  }
+
+                  @case (email?.errors?.["email"]) {
+                    Invalid email address
+                  }
+
+                  @case (email?.errors?.["safeEmail"]) {
+                    This email domain is not allowed
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Password -->
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Password</mat-label>
+
             <input
               matInput
               [type]="hidePassword ? 'password' : 'text'"
-              name="password"
-              [(ngModel)]="registerDto.password"
-              required
-              [pattern]="passwordPattern"
-              #passwordCtrl="ngModel"
+              formControlName="password"
             />
+
             <button
               mat-icon-button
               matSuffix
@@ -88,32 +121,38 @@
               (click)="hidePassword = !hidePassword"
               [attr.aria-label]="'Hide or show password'"
             >
-              <mat-icon class="dark:text-gray-200">{{
-                hidePassword ? "visibility_off" : "visibility"
-              }}</mat-icon>
+              <mat-icon class="dark:text-gray-200">
+                {{ hidePassword ? "visibility_off" : "visibility" }}
+              </mat-icon>
             </button>
-            <mat-error *ngIf="passwordCtrl.invalid && passwordCtrl.touched">
-              <ng-container *ngIf="passwordCtrl.errors?.['required']">
-                Password is required
-              </ng-container>
-              <ng-container *ngIf="passwordCtrl.errors?.['pattern']">
-                Must be at least 8 characters, include uppercase, lowercase,
-                number, and symbol
-              </ng-container>
-            </mat-error>
+
+            @let password = form.controls.password;
+
+            @if (password.touched || password.dirty) {
+              <mat-error>
+                @switch (true) {
+                  @case (password.errors?.["required"]) {
+                    Password is required
+                  }
+
+                  @case (password.errors?.["weakPassword"]) {
+                    Must be at least 12 characters
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Confirm Password -->
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Confirm Password</mat-label>
+
             <input
               matInput
               [type]="hideConfirmPassword ? 'password' : 'text'"
-              name="confirmPassword"
-              [(ngModel)]="registerDto.confirmPassword"
-              required
-              #confirmCtrl="ngModel"
+              formControlName="confirmPassword"
             />
+
             <button
               mat-icon-button
               matSuffix
@@ -121,37 +160,44 @@
               (click)="hideConfirmPassword = !hideConfirmPassword"
               [attr.aria-label]="'Hide or show confirm password'"
             >
-              <mat-icon class="dark:text-gray-200">{{
-                hideConfirmPassword ? "visibility_off" : "visibility"
-              }}</mat-icon>
+              <mat-icon class="dark:text-gray-200">
+                {{ hideConfirmPassword ? "visibility_off" : "visibility" }}
+              </mat-icon>
             </button>
-            <mat-error *ngIf="confirmCtrl.invalid && confirmCtrl.touched">
-              Confirmation is required
-            </mat-error>
-            <mat-error
-              *ngIf="
-                registerDto.confirmPassword &&
-                registerDto.confirmPassword !== registerDto.password
-              "
-            >
-              Passwords do not match
-            </mat-error>
+
+            @let confirm = form.controls.confirmPassword;
+            @let showErrors = confirm.touched || confirm.dirty;
+
+            @if (showErrors) {
+              <mat-error>
+                @switch (true) {
+                  @case (confirm.errors?.["required"]) {
+                    Confirmation is required
+                  }
+
+                  @case (confirm.errors?.["mismatch"]) {
+                    Passwords do not match
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Invite Token -->
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Invite Token</mat-label>
-            <input
-              matInput
-              type="text"
-              name="inviteToken"
-              [(ngModel)]="registerDto.inviteToken"
-              required
-              #inviteToken="ngModel"
-            />
-            <mat-error *ngIf="inviteToken.invalid && inviteToken.touched">
-              Invite token is required
-            </mat-error>
+
+            <input matInput type="text" formControlName="token" />
+
+            @let token = form.controls.token;
+
+            @if (token?.touched && token?.invalid) {
+              <mat-error>
+                @if (token?.errors?.["required"]) {
+                  Invite token is required
+                }
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Submit Button -->
@@ -160,7 +206,7 @@
             color="primary"
             class="rounded-xl shadow-md mt-4 dark:bg-blue-700 dark:text-white"
             type="submit"
-            [disabled]="!form.valid"
+            [disabled]="form.invalid || isSubmitting"
           >
             Register
           </button>

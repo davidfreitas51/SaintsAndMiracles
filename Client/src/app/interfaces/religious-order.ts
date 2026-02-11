@@ -1,4 +1,4 @@
 export interface ReligiousOrder {
-  id: string
+  id: string;
   name: string;
 }

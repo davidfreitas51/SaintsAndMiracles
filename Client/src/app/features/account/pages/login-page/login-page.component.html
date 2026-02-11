@@ -11,20 +11,32 @@
         </h2>
 
         <form
-          #loginForm="ngForm"
+          [formGroup]="form"
           (ngSubmit)="onSubmit()"
           class="flex flex-col gap-4"
         >
           <!-- Email -->
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
-            <input
-              matInput
-              type="email"
-              name="email"
-              [(ngModel)]="loginDto.email"
-              required
-            />
+            <input matInput type="email" formControlName="email" />
+            @let email = form.controls.email;
+            @if (email.touched && email.invalid) {
+              <mat-error>
+                @switch (true) {
+                  @case (email.errors?.["required"]) {
+                    Email is required
+                  }
+
+                  @case (email.errors?.["email"]) {
+                    Invalid email format
+                  }
+
+                  @case (email.errors?.["safeEmail"]) {
+                    Invalid email address
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Password -->
@@ -33,10 +45,7 @@
             <input
               matInput
               [type]="hidePassword ? 'password' : 'text'"
-              name="password"
-              [(ngModel)]="loginDto.password"
-              required
-              minlength="6"
+              formControlName="password"
             />
             <button
               mat-icon-button
@@ -49,6 +58,10 @@
                 hidePassword ? "visibility_off" : "visibility"
               }}</mat-icon>
             </button>
+            @let password = form.controls.password;
+            @if (password.touched && password.invalid) {
+              <mat-error> Password is required </mat-error>
+            }
           </mat-form-field>
 
           <!-- Forgot password -->
@@ -62,11 +75,8 @@
           </div>
 
           <!-- Remember me -->
-          <mat-checkbox
-            name="rememberMe"
-            [(ngModel)]="loginDto.rememberMe"
-          >
-            <span class="dark:text-gray-200"> Remember me </span>
+          <mat-checkbox formControlName="rememberMe" labelPosition="after">
+            <span class="dark:text-gray-200">Remember me</span>
           </mat-checkbox>
 
           <button
@@ -74,7 +84,7 @@
             color="primary"
             class="rounded-xl shadow-md mt-4 dark:bg-blue-700 dark:text-white"
             type="submit"
-            [disabled]="!loginForm.valid"
+            [disabled]="form.invalid || isSubmitting"
           >
             Login
           </button>

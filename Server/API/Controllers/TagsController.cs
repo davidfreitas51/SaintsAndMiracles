@@ -2,15 +2,19 @@ using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
+using Core.Models.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
-public class TagsController(ITagsRepository tagsRepository, ITagsService tagsService, UserManager<AppUser> userManager) : ControllerBase
+[Route("api/[controller]")]
+public class TagsController(
+    ITagsRepository tagsRepository,
+    ITagsService tagsService,
+    UserManager<AppUser> userManager) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] EntityFilters filters)
@@ -19,15 +23,15 @@ public class TagsController(ITagsRepository tagsRepository, ITagsService tagsSer
         return Ok(tags);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:int:min(1)}")]
     public async Task<IActionResult> GetById(int id)
     {
         var tag = await tagsRepository.GetByIdAsync(id);
         return tag is null ? NotFound() : Ok(tag);
     }
 
-    [HttpPost]
     [Authorize]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] NewTagDto dto)
     {
         var user = await userManager.GetUserAsync(User);
@@ -35,11 +39,13 @@ public class TagsController(ITagsRepository tagsRepository, ITagsService tagsSer
 
         var tag = await tagsService.CreateTagAsync(dto, user.Id);
 
-        return tag is null ? BadRequest() : CreatedAtAction(nameof(GetById), new { id = tag.Id }, tag);
+        return tag is null
+            ? BadRequest()
+            : CreatedAtAction(nameof(GetById), new { id = tag.Id }, tag);
     }
 
-    [HttpPut("{id:int}")]
     [Authorize]
+    [HttpPut("{id:int:min(1)}")]
     public async Task<IActionResult> Update(int id, [FromBody] NewTagDto dto)
     {
         var user = await userManager.GetUserAsync(User);
@@ -50,8 +56,8 @@ public class TagsController(ITagsRepository tagsRepository, ITagsService tagsSer
         return success ? NoContent() : NotFound();
     }
 
-    [HttpDelete("{id:int}")]
     [Authorize]
+    [HttpDelete("{id:int:min(1)}")]
     public async Task<IActionResult> Delete(int id)
     {
         var user = await userManager.GetUserAsync(User);

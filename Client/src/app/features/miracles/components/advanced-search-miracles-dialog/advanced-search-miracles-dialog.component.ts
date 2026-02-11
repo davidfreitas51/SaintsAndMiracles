@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -7,10 +7,8 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
-import { CommonModule } from '@angular/common';
 import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
 import { TagsService } from '../../../../core/services/tags.service';
-import { SaintsService } from '../../../../core/services/saints.service';
 import { EntityFilters, TagType } from '../../../../interfaces/entity-filters';
 import { Tag } from '../../../../interfaces/tag';
 import { MiracleFilters } from '../../interfaces/miracle-filter';
@@ -23,34 +21,39 @@ import { MiraclesService } from '../../../../core/services/miracles.service';
   styleUrl: './advanced-search-miracles-dialog.component.scss',
   standalone: true,
   imports: [
+    ReactiveFormsModule,
     MatDialogModule,
     MatSelectModule,
-    FormsModule,
     MatButtonModule,
-    CommonModule,
     RomanPipe,
   ],
 })
 export class AdvancedSearchMiraclesDialogComponent implements OnInit {
-  readonly dialogRef = inject(
-    MatDialogRef<AdvancedSearchMiraclesDialogComponent>
+  private fb = inject(FormBuilder);
+  private dialogRef = inject(
+    MatDialogRef<AdvancedSearchMiraclesDialogComponent>,
   );
-  readonly tagsService = inject(TagsService);
-  readonly saintsService = inject(SaintsService);
-  readonly miraclesService = inject(MiraclesService);
-  readonly data = inject(MAT_DIALOG_DATA) as MiracleFilters;
+  private tagsService = inject(TagsService);
+  private miraclesService = inject(MiraclesService);
+  private data = inject(MAT_DIALOG_DATA) as MiracleFilters;
 
   tags: Tag[] = [];
   saints: Saint[] = [];
-
   countries: string[] = [];
   centuries: number[] = Array.from({ length: 21 }, (_, i) => i + 1);
 
-  selectedTags: Tag[] = [];
-  selectedCentury: number | '' = '';
-  selectedCountry: string = '';
+  form = this.fb.nonNullable.group({
+    country: [''],
+    century: ['' as number | ''],
+    tags: [[] as Tag[]],
+  });
 
   ngOnInit(): void {
+    this.form.patchValue({
+      century: this.data.century ? Number(this.data.century) : '',
+      country: this.data.country || '',
+    });
+
     this.tagsService
       .getTags(new EntityFilters({ type: TagType.Miracle }))
       .subscribe({
@@ -58,43 +61,45 @@ export class AdvancedSearchMiraclesDialogComponent implements OnInit {
           this.tags = res.items;
 
           if (this.data.tagIds?.length) {
-            const ids = this.data.tagIds.map((t) => t);
-            this.selectedTags = this.tags.filter((tag) => ids.includes(tag.id));
+            const selected = this.tags.filter((t) =>
+              this.data.tagIds!.includes(t.id),
+            );
+
+            this.form.controls.tags.setValue(selected);
           }
         },
-        error: (err) => {
-          console.error('Failed to load tags', err);
-        },
+        error: (err) => console.error('Failed to load tags', err),
       });
 
     this.miraclesService.getCountries().subscribe({
-      next: (res) => {
-        this.countries = res;
-      },
-      error: (err) => {
-        console.error('Failed to load countries', err);
-      },
+      next: (res) => (this.countries = res),
+      error: (err) => console.error('Failed to load countries', err),
     });
-
-    this.selectedCentury = this.data.century ? Number(this.data.century) : '';
-    this.selectedCountry = this.data.country || '';
   }
 
   selectTag(tag: Tag) {
-    if (!this.selectedTags.some((t) => t.id === tag.id)) {
-      this.selectedTags = [...this.selectedTags, tag];
+    const current = this.form.controls.tags.value;
+
+    if (!current.some((t) => t.id === tag.id)) {
+      this.form.controls.tags.setValue([...current, tag]);
     }
   }
 
   unselectTag(tag: Tag) {
-    this.selectedTags = this.selectedTags.filter((t) => t.id !== tag.id);
+    const current = this.form.controls.tags.value;
+
+    this.form.controls.tags.setValue(current.filter((t) => t.id !== tag.id));
   }
 
   onApplyFilters() {
+    if (this.form.invalid) return;
+
+    const value = this.form.getRawValue();
+
     this.dialogRef.close({
-      century: this.selectedCentury,
-      country: this.selectedCountry,
-      tags: this.selectedTags,
+      century: value.century,
+      country: value.country,
+      tags: value.tags,
     });
   }
 }

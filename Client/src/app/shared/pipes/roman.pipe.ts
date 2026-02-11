@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { toRoman } from 'roman-numerals';
 
 @Pipe({
-  name: 'roman'
+  name: 'roman',
 })
 export class RomanPipe implements PipeTransform {
   transform(value: number): string {

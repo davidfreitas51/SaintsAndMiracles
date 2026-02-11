@@ -1,24 +1,31 @@
 using System.ComponentModel.DataAnnotations;
+using Core.Validation.Attributes;
 
 namespace Core.DTOs;
 
 public class RegisterDto
 {
     [Required]
-    public string FirstName { get; set; } = string.Empty;
+    [PersonName]
+    public required string FirstName { get; set; }
 
     [Required]
-    public string LastName { get; set; } = string.Empty;
+    [PersonName]
+    public required string LastName { get; set; }
 
     [Required]
-    public string Email { get; set; } = string.Empty;
+    [EmailAddress]
+    [SafeEmail]
+    public required string Email { get; set; }
 
     [Required]
-    public string Password { get; set; } = string.Empty;
+    public required string Password { get; set; }
 
     [Required]
-    public string ConfirmPassword { get; set; } = string.Empty;
+    [MatchProperty(nameof(Password))]
+    public required string ConfirmPassword { get; set; }
 
     [Required]
-    public string InviteToken { get; set; } = string.Empty;
+    [SafeToken]
+    public required string InviteToken { get; set; }
 }

@@ -14,7 +14,7 @@ export class TagsService {
   private baseUrl = environment.apiUrl + 'tags';
 
   getTags(
-    filters: EntityFilters
+    filters: EntityFilters,
   ): Observable<{ items: Tag[]; totalCount: number }> {
     let params = new HttpParams();
 

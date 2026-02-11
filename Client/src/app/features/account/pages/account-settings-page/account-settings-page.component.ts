@@ -1,21 +1,19 @@
 import { Component, inject, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminHeaderComponent } from '../../../../shared/components/admin-header/admin-header.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+
 import { AccountManagementService } from '../../../../core/services/account-management.service';
 import { UserSessionService } from '../../../../core/services/user-session.service';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
-import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
-import { PASSWORD_PATTERN } from '../../constants/constants';
-import { Router } from '@angular/router';
+import { matchValueValidator } from '../../../../shared/validators/match-value.validator';
+import { passwordValidator } from '../../../../shared/validators/password.validator';
+import { personNameValidator } from '../../../../shared/validators/person-name.validator';
 
 @Component({
   selector: 'app-account-settings-page',
@@ -23,7 +21,6 @@ import { Router } from '@angular/router';
   styleUrls: ['./account-settings-page.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     AdminHeaderComponent,
     MatCardModule,
     MatInputModule,
@@ -33,109 +30,144 @@ import { Router } from '@angular/router';
   ],
 })
 export class AccountSettingsPageComponent implements OnInit {
-  public profileForm!: FormGroup;
-  public emailForm!: FormGroup;
-  public passwordForm!: FormGroup;
+  private fb = inject(FormBuilder);
+  private accountManagementService = inject(AccountManagementService);
+  private userSessionService = inject(UserSessionService);
+  private snackbarService = inject(SnackbarService);
+  private router = inject(Router);
 
   hideCurrentPassword = true;
   hideNewPassword = true;
   hideConfirmPassword = true;
 
-  private accountManagementService = inject(AccountManagementService);
-  private userSessionService = inject(UserSessionService);
-  private snackBarService = inject(SnackbarService);
-  private router = inject(Router)
-  private fb = inject(FormBuilder);
+  isProfileSubmitting = false;
+  isEmailSubmitting = false;
+  isPasswordSubmitting = false;
+
+  profileForm = this.fb.nonNullable.group({
+    firstName: ['', [Validators.required, personNameValidator]],
+    lastName: ['', [Validators.required, personNameValidator]],
+  });
+
+  emailForm = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+  });
+
+  passwordForm = this.fb.nonNullable.group(
+    {
+      currentPassword: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, passwordValidator]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    {
+      validators: matchValueValidator('newPassword', 'confirmPassword'),
+    },
+  );
 
   ngOnInit(): void {
     this.userSessionService.currentUser$.subscribe((user) => {
-      if (user) {
-        this.profileForm = this.fb.group({
-          firstName: [user.firstName, Validators.required],
-          lastName: [user.lastName, Validators.required],
-        });
+      if (!user) return;
 
-        this.emailForm = this.fb.group({
-          email: [user.email, [Validators.required, Validators.email]],
-        });
-      }
+      this.profileForm.patchValue({
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+
+      this.emailForm.patchValue({
+        email: user.email,
+      });
     });
 
-    this.passwordForm = this.fb.group(
-      {
-        currentPassword: ['', Validators.required],
-        newPassword: [
-          '',
-          [Validators.required, Validators.pattern(PASSWORD_PATTERN)],
-        ],
-        confirmPassword: ['', Validators.required],
-      },
-    );
+    this.passwordForm.controls.newPassword.valueChanges.subscribe(() => {
+      this.passwordForm.controls.confirmPassword.updateValueAndValidity();
+    });
   }
 
-  updateProfile(): void {
-    if (this.profileForm.invalid) return;
+  updateProfile() {
+    if (this.profileForm.invalid || this.isProfileSubmitting) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
+
+    const dto = {
+      firstName: this.profileForm.controls.firstName.value,
+      lastName: this.profileForm.controls.lastName.value,
+    };
+
+    this.isProfileSubmitting = true;
 
     this.accountManagementService
-      .updateProfile(this.profileForm.value)
+      .updateProfile(dto)
+      .pipe(finalize(() => (this.isProfileSubmitting = false)))
       .subscribe({
         next: (user) => {
-          this.snackBarService.success('Profile updated successfully!');
+          this.snackbarService.success('Profile updated successfully!');
           this.userSessionService.setUser(user);
         },
         error: (err) => {
-          console.error(err);
-          this.snackBarService.error('Failed to update profile.');
+          this.snackbarService.error(
+            err?.error?.message || 'Failed to update profile.',
+          );
         },
       });
   }
 
-  updateEmail(): void {
-    if (this.emailForm.invalid) return;
+  updateEmail() {
+    if (this.emailForm.invalid || this.isEmailSubmitting) {
+      this.emailForm.markAllAsTouched();
+      return;
+    }
 
-    const newEmail = this.emailForm.value.email;
-    this.accountManagementService.requestEmailChange(newEmail).subscribe({
-      next: () =>
-        this.snackBarService.success(
-          'Confirmation email sent! Check your inbox to confirm the new email.'
-        ),
-      error: (err) => {
-        let errorMessage = 'Failed to send confirmation email.';
-        if (err.error?.message) errorMessage = err.error.message;
-        this.snackBarService.error(errorMessage);
-      },
-    });
+    const email = this.emailForm.controls.email.value;
+
+    this.isEmailSubmitting = true;
+
+    this.accountManagementService
+      .requestEmailChange(email)
+      .pipe(finalize(() => (this.isEmailSubmitting = false)))
+      .subscribe({
+        next: () =>
+          this.snackbarService.success(
+            'Confirmation email sent! Check your inbox.',
+          ),
+        error: (err) => {
+          this.snackbarService.error(
+            err?.error?.message || 'Failed to send confirmation email.',
+          );
+        },
+      });
   }
 
+  updatePassword() {
+    if (this.passwordForm.invalid || this.isPasswordSubmitting) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
 
-updatePassword(): void {
-  if (this.passwordForm.invalid) return;
+    const dto = {
+      currentPassword: this.passwordForm.controls.currentPassword.value,
+      newPassword: this.passwordForm.controls.newPassword.value,
+    };
 
-  const { currentPassword, newPassword, confirmPassword } =
-    this.passwordForm.value;
+    this.isPasswordSubmitting = true;
 
-  if (newPassword !== confirmPassword) {
-    this.snackBarService.error('New passwords do not match.');
-    return;
+    this.accountManagementService
+      .changePassword(dto)
+      .pipe(finalize(() => (this.isPasswordSubmitting = false)))
+      .subscribe({
+        next: () => {
+          this.snackbarService.success('Password changed successfully.');
+          this.passwordForm.reset();
+          this.router.navigateByUrl('/account/login');
+        },
+        error: (err) => {
+          const message =
+            err?.error?.message ||
+            err?.error?.Errors?.join(', ') ||
+            'Failed to change password.';
+
+          this.snackbarService.error(message);
+        },
+      });
   }
-
-  this.accountManagementService
-    .changePassword({ currentPassword, newPassword })
-    .subscribe({
-      next: () => {
-        this.snackBarService.success('Password changed successfully.');
-
-        this.passwordForm.reset();
-
-        this.router.navigate(['/account/login']);
-      },
-      error: (err) => {
-        let errorMessage = 'Failed to change password.';
-        if (err.error?.message) errorMessage = err.error.message;
-        else if (err.error?.Errors)
-          errorMessage = err.error.Errors.join(', ');
-        this.snackBarService.error(errorMessage);
-      },
-    });
-}
 }

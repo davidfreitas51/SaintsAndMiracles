@@ -12,7 +12,7 @@ Over the following weeks, the **"beautiful Lady"** appeared to Bernadette **18 t
 
 On **March 25**, the Lady revealed her name:
 
-> *“I am the Immaculate Conception.”*
+> _“I am the Immaculate Conception.”_
 
 This title, proclaimed as dogma by Pope Pius IX just four years earlier, was unknown to the uneducated Bernadette. Yet it confirmed the apparition’s authenticity to Church authorities.
 
@@ -22,7 +22,7 @@ This title, proclaimed as dogma by Pope Pius IX just four years earlier, was unk
 
 During one of the apparitions, the Lady told Bernadette:
 
-> *“Go, drink from the spring and wash yourself in it.”*
+> _“Go, drink from the spring and wash yourself in it.”_
 
 Bernadette began digging in the mud, and to everyone’s surprise, a **clear spring of water** emerged. Since then, this spring has **never stopped flowing** and has been the source of thousands of reported **healings**—some **instantaneous**, **permanent**, and **scientifically inexplicable**.
 
@@ -48,7 +48,7 @@ One such miracle is that of **Marie Bailly**, a young woman dying of tubercular 
 
 At the heart of Lourdes is not simply physical healing, but a call to **conversion, penance, and prayer**. The Lady repeatedly urged Bernadette:
 
-> *“Penance, penance, penance. Pray to God for sinners.”*
+> _“Penance, penance, penance. Pray to God for sinners.”_
 
 Through the humble messenger of Bernadette, Our Lady continues to lead countless souls to **Christ’s mercy**, especially through the **Sacrament of Reconciliation** and **devotion to the Holy Eucharist**.
 
@@ -56,7 +56,7 @@ Through the humble messenger of Bernadette, Our Lady continues to lead countless
 
 ## Saint Bernadette
 
-Bernadette entered the **Sisters of Charity** in Nevers, France, where she lived a hidden life of suffering and prayer. She died at the age of **35**, whispering, *“Holy Mary, Mother of God, pray for me, poor sinner.”* Her body remains **incorrupt** and is venerated to this day.
+Bernadette entered the **Sisters of Charity** in Nevers, France, where she lived a hidden life of suffering and prayer. She died at the age of **35**, whispering, _“Holy Mary, Mother of God, pray for me, poor sinner.”_ Her body remains **incorrupt** and is venerated to this day.
 
 She was canonized in **1933**, and her feast is celebrated on **April 16**.
 
@@ -66,7 +66,7 @@ She was canonized in **1933**, and her feast is celebrated on **April 16**.
 
 Lourdes remains one of the **great centers of grace in the world**—not merely for its physical miracles, but because it draws hearts to **Our Lady**, who leads them to **her Son**.
 
-> *“I do not promise to make you happy in this world, but in the next.”*
+> _“I do not promise to make you happy in this world, but in the next.”_
 > —Our Lady to Bernadette
 
 ---
@@ -75,5 +75,5 @@ Lourdes remains one of the **great centers of grace in the world**—not merely 
 
 The Sanctuary of Lourdes is a living testimony to the **power of faith, suffering offered in union with Christ**, and the tender care of the **Immaculate Mother**. In every candle, every procession, and every Rosary prayed at that grotto, her maternal voice still echoes:
 
-> *“Come here in procession… and build a chapel.”*
+> _“Come here in procession… and build a chapel.”_
 > And the Church has responded—with love, reverence, and unwavering hope.

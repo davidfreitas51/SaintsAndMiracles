@@ -15,7 +15,7 @@ export class PrayersService {
   public baseUrl = environment.apiUrl;
 
   getPrayers(
-    filters: PrayerFilters
+    filters: PrayerFilters,
   ): Observable<{ items: Prayer[]; totalCount: number }> {
     let params = new HttpParams();
 
@@ -38,7 +38,7 @@ export class PrayersService {
 
     return this.http.get<{ items: Prayer[]; totalCount: number }>(
       this.baseUrl + 'prayers',
-      { params }
+      { params },
     );
   }
 
@@ -73,8 +73,8 @@ export class PrayersService {
           .get(environment.assetsUrl + prayer.markdownPath, {
             responseType: 'text',
           })
-          .pipe(map((markdown) => ({ prayer, markdown })))
-      )
+          .pipe(map((markdown) => ({ prayer, markdown }))),
+      ),
     );
   }
 

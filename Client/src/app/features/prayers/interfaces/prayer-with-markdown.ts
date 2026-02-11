@@ -1,6 +1,6 @@
-import { Prayer } from "./prayer";
+import { Prayer } from './prayer';
 
-export interface PrayerWithMarkdown{
-    prayer: Prayer
-    markdown: string
+export interface PrayerWithMarkdown {
+  prayer: Prayer;
+  markdown: string;
 }

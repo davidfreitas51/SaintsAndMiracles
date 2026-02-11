@@ -1,6 +1,7 @@
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
+using Core.Models.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
@@ -76,21 +77,29 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
             return false;
 
         trackedSaint.Name = saint.Name;
+        trackedSaint.Title = saint.Title;
         trackedSaint.Description = saint.Description;
         trackedSaint.Country = saint.Country;
         trackedSaint.Century = saint.Century;
         trackedSaint.FeastDay = saint.FeastDay;
         trackedSaint.ReligiousOrderId = saint.ReligiousOrderId;
+        trackedSaint.Slug = saint.Slug;
+        trackedSaint.MarkdownPath = saint.MarkdownPath;
+        trackedSaint.Image = saint.Image;
+        trackedSaint.PatronOf = saint.PatronOf;
         trackedSaint.UpdatedAt = DateTime.UtcNow;
 
-        trackedSaint.Tags.RemoveAll(t => !saint.Tags.Any(st => st.Id == t.Id));
+        trackedSaint.Tags.RemoveAll(t =>
+            !saint.Tags.Any(st => st.Id == t.Id));
 
         foreach (var tag in saint.Tags)
         {
             if (!trackedSaint.Tags.Any(t => t.Id == tag.Id))
             {
-                var existingTag = await context.Tags.FindAsync(tag.Id) ?? tag;
-                trackedSaint.Tags.Add(existingTag);
+                var existingTag = await context.Tags.FindAsync(tag.Id);
+
+                if (existingTag != null)
+                    trackedSaint.Tags.Add(existingTag);
             }
         }
 
@@ -113,9 +122,11 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
             return;
 
         context.Saints.Remove(saint);
-        await context.SaveChangesAsync();
-    }
+        var deleted = await context.SaveChangesAsync() > 0;
 
+        if (deleted)
+            InvalidateSaintCaches(saint);
+    }
 
     public async Task<IReadOnlyList<string>> GetCountriesAsync()
     {
@@ -261,22 +272,26 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         if (filters.TagIds is { Count: > 0 })
             query = query.Where(s => s.Tags.Any(tag => filters.TagIds.Contains(tag.Id)));
 
-        query = string.IsNullOrWhiteSpace(filters.OrderBy)
-            ? query.OrderBy(s => s.Name)
-            : filters.OrderBy.ToLower() switch
-            {
-                "name" => query.OrderBy(s => s.Name),
-                "name_desc" => query.OrderByDescending(s => s.Name),
-                "century" => query.OrderBy(s => s.Century),
-                "century_desc" => query.OrderByDescending(s => s.Century),
-                "feastday" => query.OrderBy(s => s.FeastDay.HasValue
-                    ? s.FeastDay.Value.Month * 100 + s.FeastDay.Value.Day
-                    : int.MaxValue),
-                "feastday_desc" => query.OrderByDescending(s => s.FeastDay.HasValue
-                    ? s.FeastDay.Value.Month * 100 + s.FeastDay.Value.Day
-                    : int.MinValue),
-                _ => query.OrderBy(s => s.Name)
-            };
+        query = filters.OrderBy switch
+        {
+            SaintOrderBy.Name => query.OrderBy(s => s.Name),
+            SaintOrderBy.NameDesc => query.OrderByDescending(s => s.Name),
+            SaintOrderBy.Century => query.OrderBy(s => s.Century),
+            SaintOrderBy.CenturyDesc => query.OrderByDescending(s => s.Century),
+
+            SaintOrderBy.FeastDay => query
+                .OrderBy(s => s.FeastDay.HasValue ? s.FeastDay.Value.Month : 13)
+                .ThenBy(s => s.FeastDay.HasValue ? s.FeastDay.Value.Day : 32),
+
+            SaintOrderBy.FeastDayDesc => query
+                .OrderByDescending(s => s.FeastDay.HasValue ? s.FeastDay.Value.Month : 0)
+                .ThenByDescending(s => s.FeastDay.HasValue ? s.FeastDay.Value.Day : 0),
+
+
+            _ => query.OrderBy(s => s.Name)
+        };
+
+
 
         var totalCount = await query.CountAsync();
 

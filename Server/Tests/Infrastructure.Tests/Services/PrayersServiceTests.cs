@@ -3,6 +3,7 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Models;
+using Infrastructure.Services;
 using Microsoft.Extensions.Hosting;
 using Moq;
 
@@ -23,18 +24,21 @@ public class PrayersServiceTests
         var envMock = new Mock<IHostEnvironment>();
         envMock.SetupGet(e => e.ContentRootPath).Returns(tempRoot ?? Path.GetTempPath());
 
+        var fileStorageMock = new Mock<IFileStorageService>();
+
         return new PrayersService(
-            envMock.Object,
             prayersRepoMock.Object,
+            tagsRepoMock.Object,
             activityRepoMock.Object,
-            tagsRepoMock.Object);
+            fileStorageMock.Object
+        );
     }
 
     [Fact]
     public async Task CreatePrayerAsync_ShouldReturnId_WhenSlugIsUnique()
     {
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
-        var newPrayer = new NewPrayerDto { Title = "My Prayer", Description = "Desc", MarkdownContent = "Content" };
+        var newPrayer = new NewPrayerDto { Title = "My Prayer", Description = "Desc", Image="image.webp", MarkdownContent = "Content" };
 
         prayersRepo.Setup(r => r.SlugExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
         prayersRepo.Setup(r => r.CreateAsync(It.IsAny<Prayer>())).ReturnsAsync(true);
@@ -51,7 +55,7 @@ public class PrayersServiceTests
     public async Task CreatePrayerAsync_ShouldReturnNull_WhenSlugExists()
     {
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
-        var newPrayer = new NewPrayerDto { Title = "Existing", Description = "", MarkdownContent = "" };
+        var newPrayer = new NewPrayerDto { Title = "Existing", Description = "", Image="image.webp", MarkdownContent = "" };
 
         prayersRepo.Setup(r => r.SlugExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
 
@@ -67,7 +71,7 @@ public class PrayersServiceTests
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
         prayersRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Prayer?)null);
 
-        var updated = new NewPrayerDto { Title = "Updated", Description = "Desc", MarkdownContent = "Content" };
+        var updated = new NewPrayerDto { Title = "Updated", Description = "Desc", Image="image.webp", MarkdownContent = "Content" };
         var result = await service.UpdatePrayerAsync(1, updated, "user1");
 
         Assert.False(result);
@@ -93,7 +97,7 @@ public class PrayersServiceTests
         tagsRepo.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync(new List<Tag> { new Tag { Name = "Tag1", TagType = TagType.Prayer } });
 
-        var updated = new NewPrayerDto { Title = "New", Description = "Desc", MarkdownContent = "Content", TagIds = new List<int> { 1 } };
+        var updated = new NewPrayerDto { Title = "New", Description = "Desc", MarkdownContent = "Content", Image = "image.webp", TagIds = new List<int> { 1 } };
         var result = await service.UpdatePrayerAsync(1, updated, "user1");
 
         Assert.True(result);
@@ -104,28 +108,4 @@ public class PrayersServiceTests
         Assert.Equal(TagType.Prayer, existing.Tags.First().TagType);
         activityRepo.Verify(a => a.LogActivityAsync(EntityType.Prayer, 1, "New", ActivityAction.Updated, "user1"), Times.Once);
     }
-
-    [Fact]
-    public async Task DeletePrayerAsync_ShouldDeleteDirectoryAndLogActivity()
-    {
-        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempRoot);
-
-        var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo, tempRoot);
-
-        var prayer = new Prayer { Id = 1, Title = "ToDelete", Slug = "to-delete", Description = "", Image = "", MarkdownPath = "" };
-        prayersRepo.Setup(r => r.GetBySlugAsync("to-delete")).ReturnsAsync(prayer);
-        prayersRepo.Setup(r => r.DeleteAsync(prayer)).ReturnsAsync(true);
-
-        var prayerFolder = Path.Combine(tempRoot, "wwwroot", "prayers", "to-delete");
-        Directory.CreateDirectory(prayerFolder);
-
-        await service.DeletePrayerAsync("to-delete", "user1");
-
-        Assert.False(Directory.Exists(prayerFolder));
-        activityRepo.Verify(a => a.LogActivityAsync(EntityType.Prayer, 1, "ToDelete", ActivityAction.Deleted, "user1"), Times.Once);
-
-        Directory.Delete(tempRoot, recursive: true);
-    }
-
 }

@@ -51,7 +51,8 @@ export class ManageMiraclesPageComponent {
       data: {
         entityName: 'Tag',
         getAllFn: (filters: EntityFilters) => this.tagsService.getTags(filters),
-        createFn: (name: string) => this.tagsService.createTag(name, TagType.Miracle),
+        createFn: (name: string) =>
+          this.tagsService.createTag(name, TagType.Miracle),
         updateFn: (entity: any) => this.tagsService.updateTag(entity),
         deleteFn: (id: number) => this.tagsService.deleteTag(id),
       },

@@ -41,7 +41,8 @@ public class CacheService(IMemoryCache cache) : ICacheService
         {
             cache.Set(cacheKey, result, new MemoryCacheEntryOptions
             {
-                SlidingExpiration = _slidingExpiration
+                SlidingExpiration = _slidingExpiration,
+                Size = 1
             });
         }
 
@@ -57,7 +58,8 @@ public class CacheService(IMemoryCache cache) : ICacheService
 
         cache.Set(key, result, new MemoryCacheEntryOptions
         {
-            SlidingExpiration = _slidingExpiration
+            SlidingExpiration = _slidingExpiration,
+            Size = 1
         });
 
         return result;

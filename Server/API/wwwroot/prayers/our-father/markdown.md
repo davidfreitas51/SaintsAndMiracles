@@ -34,6 +34,6 @@ Requests God’s kingdom, provision, forgiveness, guidance, and deliverance from
 
 ## Historical Development
 
-* **1st century**: Taught directly by Jesus to His disciples (cf. Matthew 6:9–13; Luke 11:2–4).
-* **Early Church**: Used in liturgical prayers and catechesis.
-* **Medieval and modern periods**: Incorporated into personal devotion, communal worship, and the Rosary.
+- **1st century**: Taught directly by Jesus to His disciples (cf. Matthew 6:9–13; Luke 11:2–4).
+- **Early Church**: Used in liturgical prayers and catechesis.
+- **Medieval and modern periods**: Incorporated into personal devotion, communal worship, and the Rosary.

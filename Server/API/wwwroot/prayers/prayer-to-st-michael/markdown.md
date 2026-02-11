@@ -33,6 +33,6 @@ Calls on God’s power to cast away evil and safeguard souls from temptation.
 
 ## Historical Development
 
-* **Late 19th century**: Composed by **Pope Leo XIII** after a mystical vision of spiritual warfare.
-* **Early 20th century**: Recommended for recitation after Mass by priests.
-* **Today**: Widely used in personal devotion, spiritual exercises, and to accompany the Rosary or other prayers for protection.
+- **Late 19th century**: Composed by **Pope Leo XIII** after a mystical vision of spiritual warfare.
+- **Early 20th century**: Recommended for recitation after Mass by priests.
+- **Today**: Widely used in personal devotion, spiritual exercises, and to accompany the Rosary or other prayers for protection.

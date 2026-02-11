@@ -1,8 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+using Core.Validation.Attributes;
+
 namespace Core.DTOs;
 
 public class ResetPasswordDto
 {
-    public string Email { get; set; }
-    public string Token { get; set; }
-    public string NewPassword { get; set; }
+    [Required]
+    [EmailAddress]
+    [SafeEmail]
+    public required string Email { get; set; }
+
+    [Required]
+    [SafeText]
+    public required string Token { get; set; }
+
+    [Required]
+    public required string NewPassword { get; set; }
 }

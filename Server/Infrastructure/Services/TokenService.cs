@@ -2,6 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Core.Interfaces.Services;
 
+namespace Infrastructure.Services;
+
 public class TokenService : ITokenService
 {
     public string GenerateClearToken(int size = 32)

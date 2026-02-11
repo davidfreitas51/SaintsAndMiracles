@@ -1,6 +1,7 @@
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
+using Core.Models.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
@@ -73,16 +74,24 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         trackedMiracle.Country = miracle.Country;
         trackedMiracle.Century = miracle.Century;
         trackedMiracle.Date = miracle.Date;
+        trackedMiracle.LocationDetails = miracle.LocationDetails;
+        trackedMiracle.Slug = miracle.Slug;
+        trackedMiracle.MarkdownPath = miracle.MarkdownPath;
+        trackedMiracle.Image = miracle.Image;
         trackedMiracle.UpdatedAt = DateTime.UtcNow;
 
-        trackedMiracle.Tags.RemoveAll(t => !miracle.Tags.Any(mt => mt.Id == t.Id));
+
+        trackedMiracle.Tags.RemoveAll(t =>
+            !miracle.Tags.Any(mt => mt.Id == t.Id));
 
         foreach (var tag in miracle.Tags)
         {
             if (!trackedMiracle.Tags.Any(t => t.Id == tag.Id))
             {
-                var existingTag = await context.Tags.FindAsync(tag.Id) ?? tag;
-                trackedMiracle.Tags.Add(existingTag);
+                var existingTag = await context.Tags.FindAsync(tag.Id);
+
+                if (existingTag != null)
+                    trackedMiracle.Tags.Add(existingTag);
             }
         }
 
@@ -165,18 +174,14 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         if (filters.TagIds is { Count: > 0 })
             query = query.Where(m => m.Tags.Any(tag => filters.TagIds.Contains(tag.Id)));
 
-        query = string.IsNullOrWhiteSpace(filters.OrderBy)
-            ? query.OrderBy(m => m.Title)
-            : filters.OrderBy.ToLower() switch
-            {
-                "title" => query.OrderBy(m => m.Title),
-                "title_desc" => query.OrderByDescending(m => m.Title),
-                "century" => query.OrderBy(m => m.Century),
-                "century_desc" => query.OrderByDescending(m => m.Century),
-                "date" => query.OrderBy(m => m.Date),
-                "date_desc" => query.OrderByDescending(m => m.Date),
-                _ => query.OrderBy(m => m.Title)
-            };
+        query = filters.OrderBy switch
+        {
+            MiracleOrderBy.Title => query.OrderBy(m => m.Title),
+            MiracleOrderBy.TitleDesc => query.OrderByDescending(m => m.Title),
+            MiracleOrderBy.Century => query.OrderBy(m => m.Century),
+            MiracleOrderBy.CenturyDesc => query.OrderByDescending(m => m.Century),
+            _ => query.OrderBy(m => m.Title)
+        };
 
         var totalCount = await query.CountAsync();
 

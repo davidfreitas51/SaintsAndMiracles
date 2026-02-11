@@ -26,7 +26,7 @@ export class CropDialogComponent {
   constructor(
     private sanitizer: DomSanitizer,
     private dialogRef: MatDialogRef<CropDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { imageChangedEvent: Event }
+    @Inject(MAT_DIALOG_DATA) public data: { imageChangedEvent: Event },
   ) {
     this.imageChangedEvent = data.imageChangedEvent;
   }
@@ -50,7 +50,7 @@ export class CropDialogComponent {
 
   imageCropped(event: ImageCroppedEvent): void {
     this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(
-      event.objectUrl ?? ''
+      event.objectUrl ?? '',
     );
   }
 

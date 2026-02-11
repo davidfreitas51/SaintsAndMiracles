@@ -64,13 +64,13 @@ export class HomePageComponent implements OnInit {
       .pipe(
         finalize(() => {
           this.loadingSaintsOfTheDay = false;
-        })
+        }),
       )
       .subscribe({
-        next: saints => {
+        next: (saints) => {
           this.universalFeastsOfTheDay = saints ?? [];
         },
-        error: err => {
+        error: (err) => {
           console.error('Failed to load saints of the day:', err);
           this.universalFeastsOfTheDay = [];
         },
@@ -83,13 +83,13 @@ export class HomePageComponent implements OnInit {
       .pipe(
         finalize(() => {
           this.loadingUpcomingFeasts = false;
-        })
+        }),
       )
       .subscribe({
-        next: feasts => {
+        next: (feasts) => {
           this.upcomingFeasts = feasts ?? [];
         },
-        error: err => {
+        error: (err) => {
           console.error('Failed to load upcoming feasts:', err);
           this.upcomingFeasts = [];
         },

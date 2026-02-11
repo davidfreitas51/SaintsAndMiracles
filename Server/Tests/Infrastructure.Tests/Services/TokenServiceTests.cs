@@ -1,3 +1,5 @@
+using Infrastructure.Services;
+
 namespace Infrastructure.Tests.Services;
 
 public class TokenServiceTests

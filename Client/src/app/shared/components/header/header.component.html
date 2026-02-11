@@ -8,7 +8,7 @@
       class="flex items-center gap-2 h-full my-auto text-secondary-app dark:text-gray-200"
     >
       <img
-        src="assets/SaintsNMiracles-logo.webp"
+        src="assets/SaintsAndMiracles-logo.webp"
         alt="Logo"
         class="h-16 w-auto"
       />
@@ -57,7 +57,7 @@
       <!-- Dark Mode Toggle -->
       <button
         (click)="toggleDarkMode()"
-        class="flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10  transition text-secondary-app dark:text-gray-200"
+        class="flex items-center gap-1 p-2 rounded bg-transparent hover:bg-white/10 transition text-secondary-app dark:text-gray-200"
         aria-label="Toggle dark mode"
       >
         <mat-icon>{{ isDarkMode ? "light_mode" : "dark_mode" }}</mat-icon>
@@ -81,7 +81,7 @@
   <!-- Mobile menu -->
   <mat-menu
     #mobileMenu="matMenu"
-    class="bg-primary-app dark:bg-gray-800 w-48 text-secondary-app "
+    class="bg-primary-app dark:bg-gray-800 w-48 text-secondary-app"
   >
     <button
       mat-menu-item
@@ -123,14 +123,6 @@
       class="text-lg font-semibold hover:darken dark:text-white"
     >
       About Us
-    </button>
-    <button
-      mat-menu-item
-      [routerLink]="'/admin'"
-      routerLinkActive="active"
-      class="text-lg font-semibold hover:darken dark:text-white"
-    >
-      Admin
     </button>
   </mat-menu>
 

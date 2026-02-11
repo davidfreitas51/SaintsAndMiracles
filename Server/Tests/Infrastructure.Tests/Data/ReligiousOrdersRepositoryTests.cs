@@ -1,5 +1,6 @@
 using Common;
 using Core.Models;
+using Core.Models.Filters;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;

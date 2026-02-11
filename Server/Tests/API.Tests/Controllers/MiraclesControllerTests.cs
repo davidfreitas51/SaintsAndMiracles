@@ -3,6 +3,7 @@ using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
+using Core.Models.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -94,15 +95,22 @@ public class MiraclesControllerTests
     private static NewMiracleDto CreateNewMiracleDto(
         string? title = null,
         string? description = null,
-        string? markdownContent = null)
+        string? markdownContent = null,
+        string? country = null,
+        string? image = null,
+        int century = 0)
     {
         return new NewMiracleDto
         {
             Title = title ?? "New Miracle",
+            Country = country ?? "Italy",
+            Century = century,
+            Image = image ?? "miracle.jpg",
             Description = description ?? "Miracle description",
             MarkdownContent = markdownContent ?? "miracle.md"
         };
     }
+
 
     #endregion
 
@@ -253,7 +261,7 @@ public class MiraclesControllerTests
     }
 
     [Fact]
-    public async Task DeleteMiracle_ShouldReturnOk_WhenSuccessful()
+    public async Task DeleteMiracle_ShouldReturnNoContent_WhenSuccessful()
     {
         var controller = CreateController(out var repo, out var service, out _);
 
@@ -267,7 +275,7 @@ public class MiraclesControllerTests
 
         var result = await controller.DeleteMiracle(1);
 
-        Assert.IsType<OkResult>(result);
+        Assert.IsType<NoContentResult>(result);
     }
 
     #endregion

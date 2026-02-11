@@ -3,7 +3,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatDividerModule } from '@angular/material/divider';
-import { CommonModule } from '@angular/common';
 import { marked } from 'marked';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
@@ -12,13 +11,7 @@ import { PrayersService } from '../../../../core/services/prayers.service';
 @Component({
   selector: 'app-prayer-details-page',
   templateUrl: './prayer-details-page.component.html',
-  imports: [
-    FooterComponent,
-    HeaderComponent,
-    MatDividerModule,
-    CommonModule,
-    RouterLink,
-  ],
+  imports: [FooterComponent, HeaderComponent, MatDividerModule, RouterLink],
 })
 export class PrayerDetailsPageComponent implements OnInit {
   private route = inject(ActivatedRoute);

@@ -36,7 +36,7 @@ export class UserSessionService {
         catchError(() => {
           this.clearSession();
           return of(null);
-        })
+        }),
       );
   }
 
@@ -50,7 +50,7 @@ export class UserSessionService {
           next: (res) => this.setUserRole(res.role),
           error: () => this.setUserRole(null),
         }),
-        catchError(() => of(null))
+        catchError(() => of(null)),
       )
       .subscribe();
   }
@@ -84,7 +84,7 @@ export class UserSessionService {
         catchError(() => {
           this.clearSession();
           return of(null);
-        })
+        }),
       );
   }
 

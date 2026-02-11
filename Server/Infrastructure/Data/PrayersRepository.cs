@@ -71,16 +71,22 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
 
         trackedPrayer.Title = prayer.Title;
         trackedPrayer.Description = prayer.Description;
+        trackedPrayer.Slug = prayer.Slug;
+        trackedPrayer.MarkdownPath = prayer.MarkdownPath;
+        trackedPrayer.Image = prayer.Image;
         trackedPrayer.UpdatedAt = DateTime.UtcNow;
 
-        trackedPrayer.Tags.RemoveAll(t => !prayer.Tags.Any(pt => pt.Id == t.Id));
+        trackedPrayer.Tags.RemoveAll(t =>
+            !prayer.Tags.Any(pt => pt.Id == t.Id));
 
         foreach (var tag in prayer.Tags)
         {
             if (!trackedPrayer.Tags.Any(t => t.Id == tag.Id))
             {
-                var existingTag = await context.Tags.FindAsync(tag.Id) ?? tag;
-                trackedPrayer.Tags.Add(existingTag);
+                var existingTag = await context.Tags.FindAsync(tag.Id);
+
+                if (existingTag != null)
+                    trackedPrayer.Tags.Add(existingTag);
             }
         }
 
@@ -152,14 +158,12 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         if (filters.TagIds is { Count: > 0 })
             query = query.Where(p => p.Tags.Any(tag => filters.TagIds.Contains(tag.Id)));
 
-        query = string.IsNullOrWhiteSpace(filters.OrderBy)
-            ? query.OrderBy(p => p.Title)
-            : filters.OrderBy.ToLower() switch
-            {
-                "title" => query.OrderBy(p => p.Title),
-                "title_desc" => query.OrderByDescending(p => p.Title),
-                _ => query.OrderBy(p => p.Title)
-            };
+        query = filters.OrderBy switch
+        {
+            PrayerOrderBy.Title => query.OrderBy(p => p.Title),
+            PrayerOrderBy.TitleDesc => query.OrderByDescending(p => p.Title),
+            _ => query.OrderBy(p => p.Title)
+        };
 
         var totalCount = await query.CountAsync();
 

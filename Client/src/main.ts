@@ -8,6 +8,6 @@ bootstrapApplication(AppComponent, {
   providers: [
     ...appConfig.providers,
     provideEnvironmentNgxMask({ validation: true }),
-    provideCharts(withDefaultRegisterables())
+    provideCharts(withDefaultRegisterables()),
   ],
 }).catch((err) => console.error(err));

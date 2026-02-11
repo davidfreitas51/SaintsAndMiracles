@@ -30,6 +30,6 @@ Requests Mary to pray for us sinners, now and at the hour of our death.
 
 The prayer was formalized over centuries:
 
-* **11th–12th century**: The first part (“Hail Mary, full of grace…”) was used in liturgical and devotional contexts.
-* **15th century**: The full Hail Mary, including the petition, became standard.
-* **16th century**: Officially codified in Catholic prayer books.
+- **11th–12th century**: The first part (“Hail Mary, full of grace…”) was used in liturgical and devotional contexts.
+- **15th century**: The full Hail Mary, including the petition, became standard.
+- **16th century**: Officially codified in Catholic prayer books.

@@ -18,7 +18,7 @@ import { FeastDayFormatPipe } from '../../pipes/feast-day-format.pipe';
 import { RomanPipe } from '../../pipes/roman.pipe';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-admin-content-table',
@@ -33,7 +33,6 @@ import { CommonModule, DatePipe } from '@angular/common';
     MatCardModule,
     MatSortModule,
     MatTableModule,
-    CommonModule,
   ],
   providers: [DatePipe],
 })
@@ -79,7 +78,7 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
 
   private setColumns(): void {
     this.columns = Object.keys(this.data[0] || {}).filter(
-      (col) => !this.excludedColumns.includes(col)
+      (col) => !this.excludedColumns.includes(col),
     );
 
     if (!this.columns.includes('actions')) {
@@ -137,7 +136,7 @@ export class AdminContentTableComponent implements OnChanges, AfterViewInit {
 
     // Find a user-friendly column to display in the confirmation dialog
     const labelColumn = this.displayedColumns.find(
-      (col) => col !== (this.identifierColumn || 'id') && col !== 'actions'
+      (col) => col !== (this.identifierColumn || 'id') && col !== 'actions',
     );
     const displayName = labelColumn
       ? entity[labelColumn]

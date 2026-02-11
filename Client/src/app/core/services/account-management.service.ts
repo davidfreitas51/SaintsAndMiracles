@@ -25,7 +25,7 @@ export class AccountManagementService {
         tap({
           next: (user) => this.session.setUser(user),
           error: () => this.session.setUser(null),
-        })
+        }),
       );
   }
 
@@ -34,12 +34,12 @@ export class AccountManagementService {
       .put<CurrentUser>(
         `${this.baseUrl}accountManagement/update-profile`,
         dto,
-        {}
+        {},
       )
       .pipe(
         tap({
           next: (user) => this.session.setUser(user),
-        })
+        }),
       );
   }
 
@@ -47,34 +47,34 @@ export class AccountManagementService {
     return this.http.post<void>(
       `${this.baseUrl}accountManagement/request-email-change`,
       { newEmail },
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
   public changePassword(dto: { currentPassword: string; newPassword: string }) {
     return this.http.post(
       `${this.baseUrl}accountManagement/change-password`,
-      dto
+      dto,
     );
   }
 
   public requestPasswordReset(email: string) {
     return this.http.post<void>(
       `${this.baseUrl}accountManagement/forgot-password`,
-      { email }
+      { email },
     );
   }
 
   public resetPassword(dto: ResetPasswordDto) {
     return this.http.post<void>(
       `${this.baseUrl}accountManagement/reset-password`,
-      dto
+      dto,
     );
   }
 
   public getAllUsers() {
     return this.http.get<UserSummary[]>(
-      `${this.baseUrl}accountManagement/users`
+      `${this.baseUrl}accountManagement/users`,
     );
   }
 
@@ -83,7 +83,7 @@ export class AccountManagementService {
       `${this.baseUrl}accountManagement/users/${userEmail}`,
       {
         withCredentials: true,
-      }
+      },
     );
   }
 }

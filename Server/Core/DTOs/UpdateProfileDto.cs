@@ -1,7 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+using Core.Validation.Attributes;
+
 namespace Core.DTOs;
 
 public class UpdateProfileDto
 {
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
+    [Required]
+    [PersonName]
+    public required string FirstName { get; set; }
+
+    [Required]
+    [PersonName]
+    public required string LastName { get; set; }
 }

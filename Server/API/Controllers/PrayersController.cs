@@ -3,14 +3,15 @@ using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
+using Core.Validation.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class PrayersController(
     IPrayersRepository prayersRepository,
     IPrayersService prayersService,
@@ -23,7 +24,7 @@ public class PrayersController(
         return Ok(prayers);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:int:min(1)}")]
     public async Task<IActionResult> GetById(int id)
     {
         var prayer = await prayersRepository.GetByIdAsync(id);
@@ -31,14 +32,14 @@ public class PrayersController(
     }
 
     [HttpGet("{slug}")]
-    public async Task<IActionResult> GetPrayerBySlug(string slug)
+    public async Task<IActionResult> GetPrayerBySlug([FromRoute][SafeSlug] string slug)
     {
         var prayer = await prayersRepository.GetBySlugAsync(slug);
         return prayer is null ? NotFound() : Ok(prayer);
     }
 
-    [HttpPost]
     [Authorize]
+    [HttpPost]
     public async Task<IActionResult> CreatePrayer([FromBody] NewPrayerDto newPrayer)
     {
         var userId = userManager.GetUserId(User);
@@ -50,21 +51,18 @@ public class PrayersController(
         return CreatedAtAction(nameof(GetById), new { id = created.Value }, null);
     }
 
-    [HttpPut("{id}")]
     [Authorize]
+    [HttpPut("{id:int:min(1)}")]
     public async Task<IActionResult> UpdatePrayer(int id, [FromBody] NewPrayerDto updatedPrayer)
     {
         var userId = userManager.GetUserId(User);
         var updated = await prayersService.UpdatePrayerAsync(id, updatedPrayer, userId);
 
-        if (!updated)
-            return NotFound();
-
-        return NoContent();
+        return updated ? NoContent() : NotFound();
     }
 
-    [HttpDelete("{id:int}")]
     [Authorize]
+    [HttpDelete("{id:int:min(1)}")]
     public async Task<IActionResult> DeletePrayer(int id)
     {
         var userId = userManager.GetUserId(User);

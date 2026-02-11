@@ -36,7 +36,8 @@ export class ManageAccountsPageComponent {
     });
   };
 
-  deleteUser = (email: string) => this.accountManagementService.deleteUser(email);
+  deleteUser = (email: string) =>
+    this.accountManagementService.deleteUser(email);
 
   openRegisterAccountDialog() {
     this.dialog.open(GenerateTokenDialogComponent, {

@@ -1,221 +1,296 @@
-<app-admin-header></app-admin-header>
+<div class="min-h-screen flex flex-col">
+  <app-admin-header />
 
-<div class="flex flex-col gap-6 max-w-3xl mx-auto p-6 dark:text-gray-100">
-  <!-- Profile Card -->
-  <mat-card
-    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-gray-800"
-  >
-    <h2 class="text-xl font-semibold mb-6 text-primary-app dark:text-blue-400">
-      Profile
-    </h2>
-    <form
-      [formGroup]="profileForm"
-      class="flex flex-col gap-6"
-      (ngSubmit)="updateProfile()"
-    >
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <mat-form-field
-          appearance="fill"
-          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+  <main class="flex-grow relative">
+    <div class="p-4 pt-10 w-full max-w-screen-md mx-auto flex flex-col gap-6">
+      <!-- PROFILE -->
+
+      <mat-card class="p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+        <h2
+          class="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-200"
         >
-          <mat-label>First Name</mat-label>
-          <input
-            matInput
-            placeholder="First name"
-            formControlName="firstName"
-            required
-          />
-        </mat-form-field>
+          Profile
+        </h2>
 
-        <mat-form-field
-          appearance="fill"
-          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+        <form
+          [formGroup]="profileForm"
+          (ngSubmit)="updateProfile()"
+          class="flex flex-col gap-4"
         >
-          <mat-label>Last Name</mat-label>
-          <input
-            matInput
-            placeholder="Last name"
-            formControlName="lastName"
-            required
-          />
-        </mat-form-field>
-      </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- First Name -->
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>First Name</mat-label>
 
-      <div class="flex justify-end">
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          [disabled]="profileForm.invalid"
-          class="rounded-lg dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-white"
-        >
-          <mat-icon>save</mat-icon>
-          Save Changes
-        </button>
-      </div>
-    </form>
-  </mat-card>
+              <input matInput formControlName="firstName" />
 
-  <!-- Email Card -->
-  <mat-card
-    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-gray-800"
-  >
-    <h2 class="text-xl font-semibold mb-6 text-primary-app dark:text-blue-400">
-      Email
-    </h2>
-    <form
-      [formGroup]="emailForm"
-      class="flex flex-col gap-6"
-      (ngSubmit)="updateEmail()"
-    >
-      <mat-form-field
-        appearance="fill"
-        class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
-      >
-        <mat-label>Email</mat-label>
-        <input
-          matInput
-          placeholder="Email address"
-          formControlName="email"
-          required
-        />
-      </mat-form-field>
+              @let firstName = profileForm.controls.firstName;
 
-      <div class="flex justify-end">
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          [disabled]="emailForm.invalid"
-          class="rounded-lg dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-white"
-        >
-          <mat-icon>mail</mat-icon>
-          Update Email
-        </button>
-      </div>
-    </form>
-  </mat-card>
+              @if (firstName?.touched && firstName?.invalid) {
+                <mat-error>
+                  @switch (true) {
+                    @case (firstName.errors?.["required"]) {
+                      First name is required
+                    }
+                    @case (
+                      firstName.errors?.["personName"]?.reason === "length"
+                    ) {
+                      Minimum
+                      {{ firstName?.errors?.["personName"]?.minLength }}
+                      characters
+                    }
+                    @case (
+                      firstName?.errors?.["personName"]?.reason ===
+                      "invalidFormat"
+                    ) {
+                      Only letters, spaces, apostrophes and hyphens allowed
+                    }
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
 
-  <!-- Password Card -->
-  <mat-card
-    class="p-6 rounded-2xl shadow-md hover:shadow-lg transition bg-white dark:bg-gray-800"
-  >
-    <h2 class="text-xl font-semibold mb-6 text-primary-app dark:text-blue-400">
-      Password
-    </h2>
-    <form
-      [formGroup]="passwordForm"
-      class="flex flex-col gap-6"
-      (ngSubmit)="updatePassword()"
-    >
-      <!-- Current Password -->
-      <mat-form-field
-        appearance="fill"
-        class="w-full dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
-      >
-        <mat-label>Current Password</mat-label>
-        <input
-          matInput
-          [type]="hideCurrentPassword ? 'password' : 'text'"
-          formControlName="currentPassword"
-          required
-        />
-        <button
-          mat-icon-button
-          matSuffix
-          type="button"
-          (click)="hideCurrentPassword = !hideCurrentPassword"
-          [attr.aria-label]="'Hide or show current password'"
-          class="dark:text-gray-300"
-        >
-          <mat-icon>{{
-            hideCurrentPassword ? "visibility_off" : "visibility"
-          }}</mat-icon>
-        </button>
-      </mat-form-field>
+            <!-- Last Name -->
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Last Name</mat-label>
 
-      <!-- New Password + Confirm Password -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- New Password -->
-        <mat-form-field
-          appearance="fill"
-          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
-        >
-          <mat-label>New Password</mat-label>
-          <input
-            matInput
-            [type]="hideNewPassword ? 'password' : 'text'"
-            formControlName="newPassword"
-            required
-          />
+              <input matInput formControlName="lastName" />
+
+              @let lastName = profileForm.controls.lastName;
+
+              @if (lastName?.touched && lastName?.invalid) {
+                <mat-error>
+                  @switch (true) {
+                    @case (lastName.errors?.["required"]) {
+                      Last name is required
+                    }
+                    @case (
+                      lastName.errors?.["personName"]?.reason === "length"
+                    ) {
+                      Minimum
+                      {{ lastName?.errors?.["personName"]?.minLength }}
+                      characters
+                    }
+                    @case (
+                      lastName?.errors?.["personName"]?.reason ===
+                      "invalidFormat"
+                    ) {
+                      Only letters, spaces, apostrophes and hyphens allowed
+                    }
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
           <button
-            mat-icon-button
-            matSuffix
-            type="button"
-            (click)="hideNewPassword = !hideNewPassword"
-            [attr.aria-label]="'Hide or show new password'"
-            class="dark:text-gray-300"
+            mat-flat-button
+            color="primary"
+            type="submit"
+            class="rounded-xl shadow-md mt-4 dark:bg-blue-700 dark:text-white"
+            [disabled]="profileForm.invalid || isProfileSubmitting"
           >
-            <mat-icon>{{
-              hideNewPassword ? "visibility_off" : "visibility"
-            }}</mat-icon>
+            Save Changes
           </button>
+        </form>
+      </mat-card>
 
-          <mat-error
-            *ngIf="passwordForm.get('newPassword')?.hasError('pattern')"
-          >
-            Password must contain at least 1 uppercase, 1 lowercase, 1 number,
-            and 1 special character and be at least 8 characters long.
-          </mat-error>
-        </mat-form-field>
+      <!-- EMAIL -->
 
-        <!-- Confirm New Password -->
-        <mat-form-field
-          appearance="fill"
-          class="dark:[&_input]:text-gray-100 dark:[&_mat-label]:text-gray-300"
+      <mat-card class="p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+        <h2
+          class="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-200"
         >
-          <mat-label>Confirm New Password</mat-label>
-          <input
-            matInput
-            [type]="hideConfirmPassword ? 'password' : 'text'"
-            formControlName="confirmPassword"
-            required
-          />
+          Email
+        </h2>
+
+        <form
+          [formGroup]="emailForm"
+          (ngSubmit)="updateEmail()"
+          class="flex flex-col gap-4"
+        >
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Email</mat-label>
+
+            <input matInput formControlName="email" />
+
+            @let email = emailForm.controls.email;
+
+            @if (email?.touched && email?.invalid) {
+              <mat-error>
+                @switch (true) {
+                  @case (email?.errors?.["required"]) {
+                    Email is required
+                  }
+
+                  @case (email?.errors?.["email"]) {
+                    Invalid email address
+                  }
+
+                  @case (email?.errors?.["safeEmail"]) {
+                    This email domain is not allowed
+                  }
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
           <button
-            mat-icon-button
-            matSuffix
-            type="button"
-            (click)="hideConfirmPassword = !hideConfirmPassword"
-            [attr.aria-label]="'Hide or show confirm password'"
-            class="dark:text-gray-300"
+            mat-flat-button
+            color="primary"
+            type="submit"
+            class="rounded-xl shadow-md mt-4 dark:bg-blue-700 dark:text-white"
+            [disabled]="emailForm.invalid || isEmailSubmitting"
           >
-            <mat-icon>{{
-              hideConfirmPassword ? "visibility_off" : "visibility"
-            }}</mat-icon>
+            Update Email
           </button>
+        </form>
+      </mat-card>
 
-          <mat-error
-            *ngIf="
-              passwordForm.hasError('passwordMismatch') &&
-              passwordForm.get('confirmPassword')?.touched
-            "
-          >
-            Passwords do not match.
-          </mat-error>
-        </mat-form-field>
-      </div>
+      <!-- PASSWORD -->
 
-      <div class="flex justify-end">
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          [disabled]="passwordForm.invalid"
-          class="rounded-lg dark:bg-blue-700 dark:hover:bg-blue-600 dark:text-white"
+      <mat-card class="p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+        <h2
+          class="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-200"
         >
-          Change Password
-        </button>
-      </div>
-    </form>
-  </mat-card>
+          Password
+        </h2>
+
+        <form
+          [formGroup]="passwordForm"
+          (ngSubmit)="updatePassword()"
+          class="flex flex-col gap-4"
+        >
+          <!-- Current -->
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Current Password</mat-label>
+
+            <input
+              matInput
+              [type]="hideCurrentPassword ? 'password' : 'text'"
+              formControlName="currentPassword"
+            />
+
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hideCurrentPassword = !hideCurrentPassword"
+              [attr.aria-label]="'Hide or show password'"
+            >
+              <mat-icon class="dark:text-gray-200">
+                {{ hideCurrentPassword ? "visibility_off" : "visibility" }}
+              </mat-icon>
+            </button>
+
+            @let password = passwordForm.controls.currentPassword;
+
+            @if (password.touched || password.dirty) {
+              <mat-error>
+                @switch (true) {
+                  @case (password.errors?.["required"]) {
+                    Password is required
+                  }
+
+                  @case (password.errors?.["weakPassword"]) {
+                    Must be at least 12 characters
+                  }
+                }
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- New -->
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>New Password</mat-label>
+
+              <input
+                matInput
+                [type]="hideNewPassword ? 'password' : 'text'"
+                formControlName="newPassword"
+              />
+
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hideNewPassword = !hideNewPassword"
+              >
+                <mat-icon>
+                  {{ hideNewPassword ? "visibility_off" : "visibility" }}
+                </mat-icon>
+              </button>
+
+              @let newPassword = passwordForm.controls.newPassword;
+
+              @if (newPassword.touched || newPassword.dirty) {
+                <mat-error>
+                  @switch (true) {
+                    @case (newPassword.errors?.["required"]) {
+                      Password is required
+                    }
+
+                    @case (newPassword.errors?.["weakPassword"]) {
+                      Must be at least 12 characters
+                    }
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Confirm -->
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Confirm New Password</mat-label>
+
+              <input
+                matInput
+                [type]="hideConfirmPassword ? 'password' : 'text'"
+                formControlName="confirmPassword"
+              />
+
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hideConfirmPassword = !hideConfirmPassword"
+              >
+                <mat-icon>
+                  {{ hideConfirmPassword ? "visibility_off" : "visibility" }}
+                </mat-icon>
+              </button>
+
+              @let confirm = passwordForm.controls.confirmPassword;
+              @let showErrors = confirm.touched || confirm.dirty;
+
+              @if (showErrors) {
+                <mat-error>
+                  @if (confirm.errors?.["required"]) {
+                    Confirmation is required
+                  }
+
+                  @if (confirm.errors?.["mismatch"]) {
+                    Passwords do not match
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            class="rounded-xl shadow-md mt-4 dark:bg-blue-700 dark:text-white"
+            [disabled]="passwordForm.invalid || isPasswordSubmitting"
+          >
+            Change Password
+          </button>
+        </form>
+      </mat-card>
+    </div>
+  </main>
 </div>

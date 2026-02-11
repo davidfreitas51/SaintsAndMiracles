@@ -1,111 +1,121 @@
-using System.Text.RegularExpressions;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Hosting;
 
-public class SaintsService(
-    IHostEnvironment env,
-    ISaintsRepository saintsRepository,
-    ITagsRepository tagsRepository,
-    IReligiousOrdersRepository religiousOrdersRepository,
-    IRecentActivityRepository recentActivityRepository,
-    UserManager<AppUser> userManager) : ISaintsService
+namespace Infrastructure.Services;
+
+public class SaintsService : ISaintsService
 {
+    private readonly ISaintsRepository saintsRepository;
+    private readonly ITagsRepository tagsRepository;
+    private readonly IReligiousOrdersRepository religiousOrdersRepository;
+    private readonly IRecentActivityRepository recentActivityRepository;
+    private readonly UserManager<AppUser> userManager;
+    private readonly IFileStorageService fileStorage;
+
+    public SaintsService(
+        ISaintsRepository saintsRepository,
+        ITagsRepository tagsRepository,
+        IReligiousOrdersRepository religiousOrdersRepository,
+        IRecentActivityRepository recentActivityRepository,
+        UserManager<AppUser> userManager,
+        IFileStorageService fileStorage)
+    {
+        this.saintsRepository = saintsRepository;
+        this.tagsRepository = tagsRepository;
+        this.religiousOrdersRepository = religiousOrdersRepository;
+        this.recentActivityRepository = recentActivityRepository;
+        this.userManager = userManager;
+        this.fileStorage = fileStorage;
+    }
+
     public async Task<int?> CreateSaintAsync(NewSaintDto newSaint, string userId)
     {
-        var slug = GenerateSlug(newSaint.Name);
+        var slug = fileStorage.GenerateSlug(newSaint.Name);
         if (await saintsRepository.SlugExistsAsync(slug))
             return null;
 
-        var (markdownPath, imagePath) = await SaveFilesAsync(newSaint, slug);
+        var (markdownPath, imagePath) = await fileStorage.SaveFilesAsync("saints", slug, newSaint.MarkdownContent, newSaint.Image);
 
-        var tags = new List<Tag>();
-        if (newSaint.TagIds != null && newSaint.TagIds.Any())
-            tags = await tagsRepository.GetByIdsAsync(newSaint.TagIds);
+        var tags = (newSaint.TagIds != null && newSaint.TagIds.Any())
+            ? await tagsRepository.GetByIdsAsync(newSaint.TagIds)
+            : new List<Tag>();
 
-        ReligiousOrder? religiousOrder = null;
+        ReligiousOrder? order = null;
         if (newSaint.ReligiousOrderId.HasValue)
-            religiousOrder = await religiousOrdersRepository.GetByIdAsync(newSaint.ReligiousOrderId.Value);
+            order = await religiousOrdersRepository.GetByIdAsync(newSaint.ReligiousOrderId.Value);
 
         var user = await userManager.FindByIdAsync(userId);
-        if (user is null)
-            return null;
+        if (user is null) return null;
 
         var saint = new Saint
         {
             Name = newSaint.Name,
             Country = newSaint.Country,
             Century = newSaint.Century,
+            MarkdownPath = markdownPath,
             Image = imagePath ?? "",
             Description = newSaint.Description,
             Slug = slug,
-            MarkdownPath = markdownPath,
             Title = newSaint.Title,
             FeastDay = newSaint.FeastDay,
             PatronOf = newSaint.PatronOf,
-            ReligiousOrder = religiousOrder,
-            Tags = tags,
+            ReligiousOrder = order,
+            Tags = tags
         };
 
         var created = await saintsRepository.CreateAsync(saint);
         if (!created) return null;
 
-        await recentActivityRepository.LogActivityAsync(
-            EntityType.Saint,
-            saint.Id,
-            saint.Name,
-            ActivityAction.Created,
-            userId
-        );
-
+        await recentActivityRepository.LogActivityAsync(EntityType.Saint, saint.Id, saint.Name, ActivityAction.Created, userId);
         return saint.Id;
     }
 
     public async Task<bool> UpdateSaintAsync(int id, NewSaintDto updatedSaint, string userId)
     {
-        var existingSaint = await saintsRepository.GetByIdAsync(id);
-        if (existingSaint == null)
-            return false;
+        var saint = await saintsRepository.GetByIdAsync(id);
+        if (saint == null) return false;
 
-        var slug = GenerateSlug(updatedSaint.Name);
-        var (markdownPath, imagePath) = await UpdateFilesAsync(updatedSaint, slug);
+        var oldSlug = saint.Slug;
+        var newSlug = fileStorage.GenerateSlug(updatedSaint.Name);
 
-        existingSaint.Name = updatedSaint.Name;
-        existingSaint.Country = updatedSaint.Country;
-        existingSaint.Century = updatedSaint.Century;
-        existingSaint.Description = updatedSaint.Description;
-        existingSaint.Slug = slug;
-        existingSaint.Title = updatedSaint.Title;
-        existingSaint.FeastDay = updatedSaint.FeastDay;
-        existingSaint.PatronOf = updatedSaint.PatronOf;
+        string? oldImagePath = saint.Image;
 
-        if (!string.IsNullOrWhiteSpace(imagePath))
-            existingSaint.Image = imagePath;
-        if (!string.IsNullOrWhiteSpace(markdownPath))
-            existingSaint.MarkdownPath = markdownPath;
+        var (markdownPath, imagePath) = await fileStorage.SaveFilesAsync(
+            folderName: "saints",
+            slug: newSlug,
+            markdownContent: updatedSaint.MarkdownContent,
+            image: updatedSaint.Image,
+            existingImagePath: oldImagePath
+        );
 
-        if (updatedSaint.ReligiousOrderId.HasValue)
-            existingSaint.ReligiousOrder = await religiousOrdersRepository.GetByIdAsync(updatedSaint.ReligiousOrderId.Value);
-        else
-            existingSaint.ReligiousOrder = null;
+        saint.Name = updatedSaint.Name;
+        saint.Slug = newSlug;
+        saint.MarkdownPath = markdownPath;
+        saint.Image = imagePath ?? oldImagePath;
+        saint.Country = updatedSaint.Country;
+        saint.Century = updatedSaint.Century;
+        saint.Description = updatedSaint.Description;
+        saint.Title = updatedSaint.Title;
+        saint.FeastDay = updatedSaint.FeastDay;
+        saint.PatronOf = updatedSaint.PatronOf;
+        saint.ReligiousOrderId = updatedSaint.ReligiousOrderId;
+        saint.Tags = (updatedSaint.TagIds != null && updatedSaint.TagIds.Any())
+            ? await tagsRepository.GetByIdsAsync(updatedSaint.TagIds)
+            : new List<Tag>();
 
-        if (updatedSaint.TagIds != null && updatedSaint.TagIds.Any())
-            existingSaint.Tags = await tagsRepository.GetByIdsAsync(updatedSaint.TagIds);
-        else
-            existingSaint.Tags = new List<Tag>();
+        var updatedResult = await saintsRepository.UpdateAsync(saint);
+        if (!updatedResult) return false;
 
-        var updated = await saintsRepository.UpdateAsync(existingSaint);
-        if (!updated) return false;
+        if (!string.Equals(oldSlug, newSlug, StringComparison.OrdinalIgnoreCase))
+        {
+            await fileStorage.DeleteFolderAsync("saints", oldSlug);
+        }
 
         await recentActivityRepository.LogActivityAsync(
-            EntityType.Saint,
-            existingSaint.Id,
-            existingSaint.Name,
-            ActivityAction.Updated,
-            userId
+            EntityType.Saint, saint.Id, saint.Name, ActivityAction.Updated, userId
         );
 
         return true;
@@ -114,70 +124,11 @@ public class SaintsService(
     public async Task DeleteSaintAsync(int id, string userId)
     {
         var saint = await saintsRepository.GetByIdAsync(id);
-        if (saint is null)
-            return;
+        if (saint == null) return;
 
-        await DeleteFilesAsync(saint.Slug);
+        await fileStorage.DeleteFolderAsync("saints", saint.Slug);
 
         await saintsRepository.DeleteAsync(saint.Id);
-
-        await recentActivityRepository.LogActivityAsync(
-            EntityType.Saint,
-            saint.Id,
-            saint.Name,
-            ActivityAction.Deleted,
-            userId
-        );
-    }
-
-    public async Task DeleteFilesAsync(string slug)
-    {
-        var wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
-        var saintFolder = Path.Combine(wwwroot, "saints", slug);
-
-        if (Directory.Exists(saintFolder))
-            Directory.Delete(saintFolder, recursive: true);
-
-        await Task.CompletedTask;
-    }
-
-    private string GenerateSlug(string name)
-    {
-        return Regex.Replace(name.ToLower(), @"[^a-z0-9]+", "-").Trim('-');
-    }
-
-    public async Task<(string markdownPath, string? imagePath)> SaveFilesAsync(NewSaintDto saintDto, string slug)
-    {
-        var wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
-        var saintFolder = Path.Combine(wwwroot, "saints", slug);
-        Directory.CreateDirectory(saintFolder);
-
-        var markdownPath = Path.Combine(saintFolder, "markdown.md");
-        await File.WriteAllTextAsync(markdownPath, saintDto.MarkdownContent);
-        var relativeMarkdownPath = $"/saints/{slug}/markdown.md";
-
-        string? relativeImagePath = null;
-        if (!string.IsNullOrWhiteSpace(saintDto.Image) && saintDto.Image.StartsWith("data:image/"))
-        {
-            var match = Regex.Match(saintDto.Image, @"data:image/(?<type>.+?);base64,(?<data>.+)");
-            if (match.Success)
-            {
-                var extension = match.Groups["type"].Value;
-                var base64Data = match.Groups["data"].Value;
-                var imageBytes = Convert.FromBase64String(base64Data);
-
-                var imagePath = Path.Combine(saintFolder, $"image.{extension}");
-                await File.WriteAllBytesAsync(imagePath, imageBytes);
-
-                relativeImagePath = $"/saints/{slug}/image.{extension}";
-            }
-        }
-
-        return (relativeMarkdownPath, relativeImagePath);
-    }
-
-    public async Task<(string markdownPath, string? imagePath)> UpdateFilesAsync(NewSaintDto saintDto, string slug)
-    {
-        return await SaveFilesAsync(saintDto, slug);
+        await recentActivityRepository.LogActivityAsync(EntityType.Saint, saint.Id, saint.Name, ActivityAction.Deleted, userId);
     }
 }

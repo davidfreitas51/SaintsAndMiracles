@@ -15,16 +15,45 @@
         >
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Search {{ entityName | lowercase }}</mat-label>
+
             <input
               matInput
               type="text"
               placeholder="Type to search..."
-              [(ngModel)]="filters.search"
+              [formControl]="form.controls.search"
               (keyup.enter)="loadEntities()"
             />
-            <button mat-icon-button matSuffix (click)="loadEntities()">
+
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="loadEntities()"
+            >
               <mat-icon>search</mat-icon>
             </button>
+
+            @let search = form.controls.search;
+
+            @if ((search.dirty || search.touched) && search.invalid) {
+              <mat-error>
+                @switch (true) {
+                  @case (search.errors?.["minMaxLength"]?.reason === "min") {
+                    Minimum
+                    {{ search.errors?.["minMaxLength"]?.min }} characters
+                  }
+
+                  @case (search.errors?.["minMaxLength"]?.reason === "max") {
+                    Maximum
+                    {{ search.errors?.["minMaxLength"]?.max }} characters
+                  }
+
+                  @default {
+                    Invalid search
+                  }
+                }
+              </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -44,14 +73,14 @@
   </div>
 
   <div
-    class="flex-grow overflow-auto rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+    class="flex-grow overflow-auto rounded-xl border border-[var(--color-border-light)] dark:border-[var(--color-border-dark)] bg-[var(--color-bg-light)] dark:bg-[var(--color-card-dark)]"
   >
     <div class="overflow-x-auto">
       <table
         mat-table
-        [dataSource]="dataSource"
         matSort
-        class="min-w-[400px] max-w-full mx-auto w-full text-gray-800 dark:text-gray-200 [&_th]:dark:text-gray-300 [&_td]:dark:text-gray-100"
+        [dataSource]="dataSource"
+        class="w-full border mat-elevation-z2 border-[var(--color-border-light)] dark:border-[var(--color-border-dark)]"
       >
         <!-- Name Column -->
         <ng-container matColumnDef="name">
@@ -59,26 +88,20 @@
             mat-header-cell
             *matHeaderCellDef
             mat-sort-header
-            class="text-left px-4 py-3 bg-gray-100 dark:bg-gray-800 font-medium text-sm text-gray-700 dark:text-gray-300"
+            class="px-4 py-3 text-left font-semibold bg-[var(--color-secondary)] text-[var(--color-text-light)] dark:bg-[var(--color-card-dark)] dark:text-[var(--color-text-dark)]"
           >
             Name
           </th>
-          <td
-            mat-cell
-            *matCellDef="let element"
-            class="px-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-800 dark:text-gray-100"
-          >
-            <ng-container
-              *ngIf="editingElement?.id === element.id; else viewMode"
-            >
+
+          <td mat-cell *matCellDef="let element" class="px-4 py-3">
+            @if (editingElement?.id === element.id) {
               <input
-                class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-primary-app text-gray-800 dark:text-gray-100"
-                [(ngModel)]="editingElement!.name"
+                class="w-full bg-transparent border rounded px-2 py-1 border-[var(--color-border-light)] dark:border-[var(--color-border-dark)] focus:outline-none focus:ring-2 focus:ring-primary-app"
+                [formControl]="form.controls.editName"
               />
-            </ng-container>
-            <ng-template #viewMode>
+            } @else {
               {{ element.name }}
-            </ng-template>
+            }
           </td>
         </ng-container>
 
@@ -87,87 +110,78 @@
           <th
             mat-header-cell
             *matHeaderCellDef
-            class="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-center font-medium text-sm text-gray-700 dark:text-gray-300"
+            class="px-4 py-3 text-center font-semibold bg-[var(--color-secondary)] text-[var(--color-text-light)] dark:bg-[var(--color-card-dark)] dark:text-[var(--color-text-dark)]"
             style="width: 120px"
           >
             Actions
           </th>
+
           <td
             mat-cell
             *matCellDef="let element"
-            class="text-center px-4 py-2 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-800 dark:text-gray-100"
+            class="px-4 py-3 text-center"
             style="width: 120px"
           >
-            <div
-              class="flex justify-center gap-2 items-center"
-              style="min-width: 120px"
-            >
-              <button
-                mat-icon-button
-                class="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
-                (click)="startEdit(element)"
-                aria-label="Edit"
-                *ngIf="editingElement?.id !== element.id"
-              >
-                <mat-icon>edit</mat-icon>
-              </button>
+            <div class="flex justify-end gap-2 items-center">
+              @if (editingElement?.id !== element.id) {
+                <button
+                  mat-icon-button
+                  class="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                  (click)="startEdit(element)"
+                  aria-label="Edit"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
 
-              <button
-                mat-icon-button
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                aria-label="Confirm"
-                *ngIf="editingElement?.id === element.id"
-                (click)="saveEdit()"
-              >
-                <mat-icon>check</mat-icon>
-              </button>
+                <button
+                  mat-icon-button
+                  class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                  (click)="deleteEntity(element)"
+                  aria-label="Delete"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              } @else {
+                <!-- Botão de confirmar agora com fundo azul e ícone branco -->
+                <button
+                  mat-icon-button
+                  class="bg-primary-app text-white hover:bg-primary-app/80 dark:bg-primary-light dark:text-gray-900 dark:hover:bg-primary-light/80 transition-colors rounded"
+                  aria-label="Confirm"
+                  (click)="saveEdit()"
+                >
+                  <mat-icon>check</mat-icon>
+                </button>
 
-              <button
-                mat-icon-button
-                class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
-                (click)="cancelEdit()"
-                aria-label="Cancel"
-                *ngIf="editingElement?.id === element.id"
-              >
-                <mat-icon>close</mat-icon>
-              </button>
-
-              <button
-                *ngIf="editingElement?.id !== element.id"
-                mat-icon-button
-                class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-150"
-                (click)="deleteEntity(element)"
-                aria-label="Delete"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
+                <button
+                  mat-icon-button
+                  class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                  (click)="cancelEdit()"
+                  aria-label="Cancel"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
             </div>
           </td>
         </ng-container>
 
-        <tr
-          mat-header-row
-          *matHeaderRowDef="['name', 'actions']"
-          class="bg-gray-100 dark:bg-gray-800"
-        ></tr>
+        <tr mat-header-row *matHeaderRowDef="['name', 'actions']"></tr>
+
         <tr
           mat-row
           *matRowDef="let row; columns: ['name', 'actions']"
-          class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          class="transition hover:bg-[var(--color-accent-light)] dark:hover:bg-[rgba(207,162,138,0.18)]"
         ></tr>
       </table>
     </div>
-  </div>
 
-  <div class="flex justify-end pt-2">
     <mat-paginator
+      class="mt-4"
       [length]="paginator?.length || 0"
-      [pageSizeOptions]="[5, 10, 20]"
       [pageSize]="filters.pageSize"
+      [pageSizeOptions]="[5, 10, 20]"
       showFirstLastButtons
       (page)="onPageChange($event)"
-      class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 rounded-md"
-    >
-    </mat-paginator>
+    ></mat-paginator>
   </div>
 </div>

@@ -16,7 +16,7 @@ export class RegistrationService {
       values,
       {
         withCredentials: true,
-      }
+      },
     );
   }
 
@@ -24,7 +24,7 @@ export class RegistrationService {
     return this.http.post<void>(
       `${this.baseUrl}registration/resend-confirmation`,
       { email },
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
