@@ -111,7 +111,10 @@ export class EntityManagerDialogComponent implements OnInit, AfterViewInit {
   }
 
   loadEntities(): void {
+    this.filters.search = this.form.controls.search.value;
+
     this.isLoading = true;
+
     this.data
       .getAllFn(this.filters)
       .pipe(finalize(() => (this.isLoading = false)))
