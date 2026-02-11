@@ -38,11 +38,11 @@ jobs:
 
       # 5. Restaura dependências do .NET
       - name: Restore .NET dependencies
-        run: dotnet restore ./SignsNSaints.sln
+        run: dotnet restore ./SaintsAndMiracles.sln
 
       # 6. Build da solução .NET
       - name: Build .NET solution
-        run: dotnet build ./SignsNSaints.sln --no-restore --configuration Release
+        run: dotnet build ./SaintsAndMiracles.sln --no-restore --configuration Release
 
       # 7. Executa todos os testes da solução
       - name: Run .NET tests
