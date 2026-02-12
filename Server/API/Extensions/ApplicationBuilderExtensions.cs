@@ -16,7 +16,8 @@ public static class ApplicationBuilderExtensions
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<AppUser>>();
         var tokenService = services.GetRequiredService<ITokenService>();
+        var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("SeedData");
 
-        await SeedData.SeedAsync(context, roleManager, userManager, tokenService);
+        await SeedData.SeedAsync(context, roleManager, userManager, tokenService, logger);
     }
 }

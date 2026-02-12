@@ -18,11 +18,14 @@ public class DashboardController(
     IMiraclesRepository miraclesRepository,
     IPrayersRepository prayersRepository,
     IRecentActivityRepository recentActivityRepository,
-    UserManager<AppUser> userManager) : ControllerBase
+    UserManager<AppUser> userManager,
+    ILogger<DashboardController> logger) : ControllerBase
 {
     [HttpGet("summary")]
     public async Task<IActionResult> GetSummary()
     {
+        logger.LogInformation("Dashboard summary solicitado");
+
         var summary = new DashboardSummaryDto
         {
             TotalSaints = await saintsRepository.GetTotalSaintsAsync(),
@@ -30,6 +33,14 @@ public class DashboardController(
             TotalPrayers = await prayersRepository.GetTotalPrayersAsync(),
             TotalAccounts = await userManager.Users.CountAsync(u => u.EmailConfirmed)
         };
+
+        logger.LogInformation(
+            "Dashboard summary retornado: Saints={Saints}, Miracles={Miracles}, Prayers={Prayers}, Accounts={Accounts}",
+            summary.TotalSaints,
+            summary.TotalMiracles,
+            summary.TotalPrayers,
+            summary.TotalAccounts
+        );
 
         return Ok(summary);
     }

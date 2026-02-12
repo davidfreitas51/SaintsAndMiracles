@@ -1,6 +1,18 @@
 using API.Extensions;
+using Serilog;
+
+// Bootstrap logger
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+// Serilog via appsettings.json
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration)
+); ;
 
 // Controllers + JSON
 builder.Services.AddApiControllers();
@@ -17,6 +29,9 @@ builder.Services.AddIdentityServices();
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Serilog HTTP request logging
+app.UseSerilogRequestLogging();
 
 // Seed
 await app.SeedDatabaseAsync();

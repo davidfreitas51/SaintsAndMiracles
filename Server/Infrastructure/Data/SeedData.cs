@@ -7,6 +7,7 @@ using Core.Models;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
@@ -23,12 +24,13 @@ public static class SeedData
         DataContext context,
         RoleManager<IdentityRole> roleManager,
         UserManager<AppUser> userManager,
-        ITokenService tokenService)
-    {
+        ITokenService tokenService,
+        ILogger logger
+    ){
         await context.Database.MigrateAsync();
 
         await SeedRoles(roleManager);
-        await SeedBootstrapToken(context, userManager, tokenService);
+        await SeedBootstrapToken(context, userManager, tokenService, logger);
         await SeedTags(context);
         await SeedSaints(context);
         await SeedMiracles(context);
@@ -53,7 +55,7 @@ public static class SeedData
         }
     }
 
-    private static async Task SeedBootstrapToken(DataContext context, UserManager<AppUser> userManager, ITokenService tokenService)
+    private static async Task SeedBootstrapToken(DataContext context, UserManager<AppUser> userManager, ITokenService tokenService, ILogger logger)
     {
         if ((await userManager.GetUsersInRoleAsync("SuperAdmin")).Any()) return;
 
@@ -73,14 +75,14 @@ public static class SeedData
         context.AccountTokens.Add(bootstrapToken);
         await context.SaveChangesAsync();
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("=================================================");
-        Console.WriteLine(" NO SUPER-ADMIN USERS FOUND ");
-        Console.WriteLine(" Use this bootstrap token to create the first super admin account:");
-        Console.WriteLine(clearToken);
-        Console.WriteLine($" This token will expire at: {bootstrapToken.ExpiresAtUtc}");
-        Console.WriteLine("=================================================");
-        Console.ResetColor();
+        logger.LogWarning("""
+        =================================================
+        NO SUPER-ADMIN USERS FOUND
+        Use this bootstrap token to create the first super admin account:
+        {Token}
+        This token will expire at: {Expiration}
+        =================================================
+        """, clearToken, bootstrapToken.ExpiresAtUtc);
     }
 
     internal static async Task SeedTags(DataContext context)
