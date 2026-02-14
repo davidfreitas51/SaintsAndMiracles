@@ -9,14 +9,8 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class AuthenticationController(SignInManager<AppUser> signInManager, IEmailSender<AppUser> emailSender) : ControllerBase
-{
-    [HttpPost("Login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-    {
-        var user = await signInManager.UserManager.FindByEmailAsync(loginDto.Email);
-
-        if (user == null)
-            return Unauthorized("Invalid email or password");
+{ [HttpPost("Login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto) { var user = await signInManager.UserManager.FindByEmailAsync(loginDto.Email); if (user == null) return Unauthorized("Invalid email or password");
 
         if (!await signInManager.UserManager.IsEmailConfirmedAsync(user))
         {
