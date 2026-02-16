@@ -4,10 +4,11 @@ using Core.Models;
 using Core.Models.Filters;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
-public class ReligiousOrdersRepository(DataContext context, ICacheService cacheService) : IReligiousOrdersRepository
+public class ReligiousOrdersRepository(DataContext context, ICacheService cacheService, ILogger<ReligiousOrdersRepository> logger) : IReligiousOrdersRepository
 {
     public async Task<PagedResult<ReligiousOrder>> GetAllAsync(EntityFilters filters)
     {
@@ -63,7 +64,14 @@ public class ReligiousOrdersRepository(DataContext context, ICacheService cacheS
         var created = await context.SaveChangesAsync() > 0;
 
         if (created)
-            InvalidateCaches();
+        {
+            InvalidateCaches(order);
+            logger.LogInformation("Religious order created in database. Id={Id}, Name={Name}", order.Id, order.Name);
+        }
+        else
+        {
+            logger.LogWarning("Religious order creation failed to save. Name={Name}", order.Name);
+        }
 
         return created;
     }
@@ -74,7 +82,14 @@ public class ReligiousOrdersRepository(DataContext context, ICacheService cacheS
         var updated = await context.SaveChangesAsync() > 0;
 
         if (updated)
-            InvalidateCaches();
+        {
+            InvalidateCaches(order);
+            logger.LogInformation("Religious order updated in database. Id={Id}, Name={Name}", order.Id, order.Name);
+        }
+        else
+        {
+            logger.LogWarning("Religious order update failed to save. Id={Id}, Name={Name}", order.Id, order.Name);
+        }
 
         return updated;
     }
@@ -82,16 +97,30 @@ public class ReligiousOrdersRepository(DataContext context, ICacheService cacheS
     public async Task DeleteAsync(int id)
     {
         var order = await context.ReligiousOrders.FindAsync(id);
-        if (order is null) return;
+        if (order is null)
+        {
+            logger.LogWarning("Delete failed: Religious order not found. Id={Id}", id);
+            return;
+        }
 
         context.ReligiousOrders.Remove(order);
-        await context.SaveChangesAsync();
+        var deleted = await context.SaveChangesAsync() > 0;
 
-        InvalidateCaches();
+        if (deleted)
+        {
+            InvalidateCaches(order);
+            logger.LogInformation("Religious order deleted from database. Id={Id}, Name={Name}", id, order.Name);
+        }
+        else
+        {
+            logger.LogWarning("Religious order deletion failed to save. Id={Id}", id);
+        }
     }
 
-    private void InvalidateCaches()
+    private void InvalidateCaches(ReligiousOrder order)
     {
         cacheService.GetNextVersion("religious_order");
+
+        logger.LogInformation("Religious order caches invalidated. Id={Id}, Name={Name}", order.Id, order.Name);
     }
 }
