@@ -3,6 +3,7 @@ using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
@@ -14,6 +15,7 @@ public class SaintsService : ISaintsService
     private readonly IRecentActivityRepository recentActivityRepository;
     private readonly UserManager<AppUser> userManager;
     private readonly IFileStorageService fileStorage;
+    private readonly ILogger<SaintsService> logger;
 
     public SaintsService(
         ISaintsRepository saintsRepository,
@@ -21,7 +23,8 @@ public class SaintsService : ISaintsService
         IReligiousOrdersRepository religiousOrdersRepository,
         IRecentActivityRepository recentActivityRepository,
         UserManager<AppUser> userManager,
-        IFileStorageService fileStorage)
+        IFileStorageService fileStorage,
+        ILogger<SaintsService> logger)
     {
         this.saintsRepository = saintsRepository;
         this.tagsRepository = tagsRepository;
@@ -29,13 +32,19 @@ public class SaintsService : ISaintsService
         this.recentActivityRepository = recentActivityRepository;
         this.userManager = userManager;
         this.fileStorage = fileStorage;
+        this.logger = logger;
     }
 
     public async Task<int?> CreateSaintAsync(NewSaintDto newSaint, string userId)
     {
+        logger.LogInformation("Creating saint: Name={Name}, UserId={UserId}", newSaint.Name, userId);
+
         var slug = fileStorage.GenerateSlug(newSaint.Name);
         if (await saintsRepository.SlugExistsAsync(slug))
+        {
+            logger.LogWarning("Saint slug already exists: Slug={Slug}, UserId={UserId}", slug, userId);
             return null;
+        }
 
         var (markdownPath, imagePath) = await fileStorage.SaveFilesAsync("saints", slug, newSaint.MarkdownContent, newSaint.Image);
 
@@ -48,7 +57,11 @@ public class SaintsService : ISaintsService
             order = await religiousOrdersRepository.GetByIdAsync(newSaint.ReligiousOrderId.Value);
 
         var user = await userManager.FindByIdAsync(userId);
-        if (user is null) return null;
+        if (user is null)
+        {
+            logger.LogWarning("User not found while creating saint: UserId={UserId}", userId);
+            return null;
+        }
 
         var saint = new Saint
         {
@@ -67,16 +80,27 @@ public class SaintsService : ISaintsService
         };
 
         var created = await saintsRepository.CreateAsync(saint);
-        if (!created) return null;
+        if (!created)
+        {
+            logger.LogWarning("Failed to create saint: Name={Name}, Slug={Slug}, UserId={UserId}", saint.Name, saint.Slug, userId);
+            return null;
+        }
 
         await recentActivityRepository.LogActivityAsync(EntityType.Saint, saint.Id, saint.Name, ActivityAction.Created, userId);
+        logger.LogInformation("Saint created: Id={Id}, Name={Name}, UserId={UserId}", saint.Id, saint.Name, userId);
         return saint.Id;
     }
 
     public async Task<bool> UpdateSaintAsync(int id, NewSaintDto updatedSaint, string userId)
     {
+        logger.LogInformation("Updating saint: Id={Id}, UserId={UserId}", id, userId);
+
         var saint = await saintsRepository.GetByIdAsync(id);
-        if (saint == null) return false;
+        if (saint is null)
+        {
+            logger.LogWarning("Saint not found for update: Id={Id}, UserId={UserId}", id, userId);
+            return false;
+        }
 
         var oldSlug = saint.Slug;
         var newSlug = fileStorage.GenerateSlug(updatedSaint.Name);
@@ -107,28 +131,42 @@ public class SaintsService : ISaintsService
             : new List<Tag>();
 
         var updatedResult = await saintsRepository.UpdateAsync(saint);
-        if (!updatedResult) return false;
+        if (!updatedResult)
+        {
+            logger.LogWarning("Failed to update saint: Id={Id}, UserId={UserId}", id, userId);
+            return false;
+        }
 
         if (!string.Equals(oldSlug, newSlug, StringComparison.OrdinalIgnoreCase))
         {
             await fileStorage.DeleteFolderAsync("saints", oldSlug);
+            logger.LogInformation("Saint slug changed: OldSlug={OldSlug}, NewSlug={NewSlug}, Id={Id}", oldSlug, newSlug, id);
         }
 
         await recentActivityRepository.LogActivityAsync(
             EntityType.Saint, saint.Id, saint.Name, ActivityAction.Updated, userId
         );
 
+        logger.LogInformation("Saint updated: Id={Id}, Name={Name}, UserId={UserId}", saint.Id, saint.Name, userId);
+
         return true;
     }
 
     public async Task DeleteSaintAsync(int id, string userId)
     {
+        logger.LogInformation("Deleting saint: Id={Id}, UserId={UserId}", id, userId);
+
         var saint = await saintsRepository.GetByIdAsync(id);
-        if (saint == null) return;
+        if (saint is null)
+        {
+            logger.LogWarning("Saint not found for delete: Id={Id}, UserId={UserId}", id, userId);
+            return;
+        }
 
         await fileStorage.DeleteFolderAsync("saints", saint.Slug);
 
         await saintsRepository.DeleteAsync(saint.Id);
         await recentActivityRepository.LogActivityAsync(EntityType.Saint, saint.Id, saint.Name, ActivityAction.Deleted, userId);
+        logger.LogInformation("Saint deleted: Id={Id}, Name={Name}, UserId={UserId}", saint.Id, saint.Name, userId);
     }
 }

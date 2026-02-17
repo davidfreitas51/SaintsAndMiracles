@@ -1,10 +1,11 @@
 using System.Collections.Concurrent;
 using Core.Interfaces.Services;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
-public class CacheService(IMemoryCache cache) : ICacheService
+public class CacheService(IMemoryCache cache, ILogger<CacheService> logger) : ICacheService
 {
     private readonly TimeSpan _slidingExpiration = TimeSpan.FromMinutes(60);
     private static readonly ConcurrentDictionary<string, int> Versions = new ConcurrentDictionary<string, int>();
@@ -12,11 +13,13 @@ public class CacheService(IMemoryCache cache) : ICacheService
 
     public int GetNextVersion(string mainPrefix)
     {
-        return Versions.AddOrUpdate(
+        var newVersion = Versions.AddOrUpdate(
             mainPrefix,
             1,
             (_, current) => (current + 1) > MaxVersion ? 1 : current + 1
         );
+        logger.LogInformation("Cache invalidated for prefix: {Prefix}. New version: {Version}", mainPrefix, newVersion);
+        return newVersion;
     }
 
     public int GetCurrentVersion(string mainPrefix)
@@ -33,7 +36,9 @@ public class CacheService(IMemoryCache cache) : ICacheService
     public async Task<T?> GetOrSetAsync<T>(string cacheKey, Func<Task<T?>> fetchFromDb) where T : class
     {
         if (cache.TryGetValue(cacheKey, out T? cached))
+        {
             return cached;
+        }
 
         var result = await fetchFromDb();
 
@@ -52,7 +57,9 @@ public class CacheService(IMemoryCache cache) : ICacheService
     public async Task<T> GetOrSetValueAsync<T>(string key, Func<Task<T>> fetch) where T : struct
     {
         if (cache.TryGetValue(key, out T cached))
+        {
             return cached;
+        }
 
         var result = await fetch();
 
@@ -68,5 +75,6 @@ public class CacheService(IMemoryCache cache) : ICacheService
     public void Remove(string cacheKey)
     {
         cache.Remove(cacheKey);
+        logger.LogInformation("Cache entry removed: {CacheKey}", cacheKey);
     }
 }

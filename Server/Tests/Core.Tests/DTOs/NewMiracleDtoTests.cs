@@ -1,4 +1,3 @@
-using Core.DTOs;
 using Xunit;
 
 namespace Core.Tests.DTOs;

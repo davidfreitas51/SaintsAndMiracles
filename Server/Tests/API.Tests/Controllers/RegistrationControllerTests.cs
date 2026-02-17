@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace API.Tests.Controllers;
@@ -42,7 +43,8 @@ public class RegistrationControllerTests
         var controller = new RegistrationController(
             signInManagerMock.Object,
             tokensServiceMock.Object,
-            emailSenderMock.Object
+            emailSenderMock.Object,
+            NullLogger<RegistrationController>.Instance
         );
 
         var claims = new List<Claim>();

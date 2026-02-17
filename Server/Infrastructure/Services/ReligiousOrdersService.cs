@@ -4,12 +4,14 @@ using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
 public class ReligiousOrdersService(
     IReligiousOrdersRepository religiousOrdersRepository,
-    IRecentActivityRepository recentActivityRepository
+    IRecentActivityRepository recentActivityRepository,
+    ILogger<ReligiousOrdersService> logger
 ) : IReligiousOrdersService
 {
 
@@ -32,16 +34,22 @@ public class ReligiousOrdersService(
                 userId
             );
 
+            logger.LogInformation("Religious order created successfully. Id={Id}, Name={Name}, UserId={UserId}", order.Id, order.Name, userId);
             return order;
         }
 
+        logger.LogWarning("Religious order creation failed in repository. Name={Name}, UserId={UserId}", dto.Name, userId);
         return null;
     }
 
     public async Task<bool> UpdateReligiousOrderAsync(int id, NewReligiousOrderDto dto, string userId)
     {
         var order = await religiousOrdersRepository.GetByIdAsync(id);
-        if (order is null) return false;
+        if (order is null)
+        {
+            logger.LogWarning("Update religious order failed: Order not found. Id={Id}, UserId={UserId}", id, userId);
+            return false;
+        }
 
         order.Name = dto.Name;
 
@@ -56,6 +64,12 @@ public class ReligiousOrdersService(
                 ActivityAction.Updated,
                 userId
             );
+
+            logger.LogInformation("Religious order updated successfully. Id={Id}, Name={Name}, UserId={UserId}", id, dto.Name, userId);
+        }
+        else
+        {
+            logger.LogWarning("Religious order update failed in repository. Id={Id}, Name={Name}, UserId={UserId}", id, dto.Name, userId);
         }
 
         return updated;
@@ -64,7 +78,11 @@ public class ReligiousOrdersService(
     public async Task<bool> DeleteReligiousOrderAsync(int id, string userId)
     {
         var order = await religiousOrdersRepository.GetByIdAsync(id);
-        if (order is null) return false;
+        if (order is null)
+        {
+            logger.LogWarning("Delete religious order failed: Order not found. Id={Id}, UserId={UserId}", id, userId);
+            return false;
+        }
 
         await religiousOrdersRepository.DeleteAsync(id);
 
@@ -76,6 +94,7 @@ public class ReligiousOrdersService(
             userId
         );
 
+        logger.LogInformation("Religious order deleted successfully. Id={Id}, Name={Name}, UserId={UserId}", id, order.Name, userId);
         return true;
     }
 }

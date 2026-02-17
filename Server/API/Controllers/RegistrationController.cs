@@ -13,14 +13,21 @@ namespace API.Controllers;
 public class RegistrationController(
     SignInManager<AppUser> signInManager,
     IAccountTokensService accountTokensService,
-    IEmailSender<AppUser> emailSender) : ControllerBase
+    IEmailSender<AppUser> emailSender,
+    ILogger<RegistrationController> logger) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
+        var maskedEmail = MaskEmail(registerDto.Email);
+        logger.LogInformation("User registration attempt. Email={MaskedEmail}, FirstName={FirstName}, LastName={LastName}", maskedEmail, registerDto.FirstName, registerDto.LastName);
+
         var tokenRecord = await accountTokensService.GetValidTokenAsync(registerDto.InviteToken);
         if (tokenRecord == null)
+        {
+            logger.LogWarning("Registration failed: Invalid or expired token. Email={MaskedEmail}", maskedEmail);
             return BadRequest(new ApiErrorResponse { Message = "Invalid or expired token" });
+        }
 
         var user = new AppUser
         {
@@ -33,6 +40,7 @@ public class RegistrationController(
         var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded)
         {
+            logger.LogWarning("Registration failed: User creation error. Email={MaskedEmail}", maskedEmail);
             return BadRequest(new ApiErrorResponse
             {
                 Message = "User registration failed",
@@ -43,6 +51,7 @@ public class RegistrationController(
         var roleResult = await signInManager.UserManager.AddToRoleAsync(user, tokenRecord.Role);
         if (!roleResult.Succeeded)
         {
+            logger.LogWarning("Registration failed: Role assignment error. Email={MaskedEmail}, UserId={UserId}, Role={Role}", maskedEmail, user.Id, tokenRecord.Role);
             await signInManager.UserManager.DeleteAsync(user);
 
             return BadRequest(new ApiErrorResponse
@@ -64,6 +73,7 @@ public class RegistrationController(
 
         await emailSender.SendConfirmationLinkAsync(user, user.Email, confirmationLink);
 
+        logger.LogInformation("User registered successfully. Email={MaskedEmail}, UserId={UserId}, Role={Role}", maskedEmail, user.Id, tokenRecord.Role);
         return Created("", new { Message = "User created. Please check your email to confirm." });
     }
 
@@ -116,7 +126,25 @@ public class RegistrationController(
     [HttpPost("invite")]
     public async Task<IActionResult> GenerateInviteToken([FromBody] InviteRequest request)
     {
+        logger.LogInformation("Invite token generated. Role={Role}", request.Role);
         var token = await accountTokensService.GenerateInviteAsync(request.Role);
+        logger.LogInformation("Invite token created successfully. Role={Role}, Token={TokenValue}", request.Role, token);
         return Ok(token);
+    }
+
+    private static string MaskEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            return "***";
+
+        var parts = email.Split('@');
+        var localPart = parts[0];
+        var domain = parts[1];
+
+        var maskedLocal = localPart.Length <= 2
+            ? new string('*', localPart.Length)
+            : localPart[0] + new string('*', localPart.Length - 2) + localPart[^1];
+
+        return $"{maskedLocal}@{domain}";
     }
 }

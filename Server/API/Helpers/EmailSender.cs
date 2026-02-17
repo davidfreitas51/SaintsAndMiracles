@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace API.Helpers;
 
-public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
+public class EmailSender(IConfiguration _configuration, ILogger<EmailSender> logger) : IEmailSender<AppUser>
 {
     public async Task SendConfirmationLinkAsync(AppUser user, string email, string confirmationLink)
     {
@@ -71,30 +71,55 @@ public class EmailSender(IConfiguration _configuration) : IEmailSender<AppUser>
 
     private async Task SendEmailAsync(string toEmail, string subject, string body)
     {
-        var smtpHost = _configuration["Smtp:Host"]!;
-        var smtpPort = int.Parse(_configuration["Smtp:Port"]!);
-        var smtpUser = _configuration["Smtp:User"]!;
-        var smtpPass = _configuration["Smtp:Pass"]!;
-        var fromEmail = _configuration["Smtp:From"]!;
-        var fromName = _configuration["Smtp:FromName"] ?? "Saints And Miracles";
-
-        using var client = new SmtpClient(smtpHost, smtpPort)
+        try
         {
-            Credentials = new NetworkCredential(smtpUser, smtpPass),
-            EnableSsl = true
-        };
+            var smtpHost = _configuration["Smtp:Host"]!;
+            var smtpPort = int.Parse(_configuration["Smtp:Port"]!);
+            var smtpUser = _configuration["Smtp:User"]!;
+            var smtpPass = _configuration["Smtp:Pass"]!;
+            var fromEmail = _configuration["Smtp:From"]!;
+            var fromName = _configuration["Smtp:FromName"] ?? "Saints And Miracles";
 
-        var mailMessage = new MailMessage
+            using var client = new SmtpClient(smtpHost, smtpPort)
+            {
+                Credentials = new NetworkCredential(smtpUser, smtpPass),
+                EnableSsl = true
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(fromEmail, fromName),
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            };
+
+            mailMessage.To.Add(toEmail);
+
+            await client.SendMailAsync(mailMessage);
+
+            logger.LogInformation("Email sent successfully. To={MaskedEmail}, Subject={Subject}", MaskEmail(toEmail), subject);
+        }
+        catch (Exception ex)
         {
-            From = new MailAddress(fromEmail, fromName),
-            Subject = subject,
-            Body = body,
-            IsBodyHtml = true
-        };
-
-        mailMessage.To.Add(toEmail);
-
-        await client.SendMailAsync(mailMessage);
+            logger.LogError(ex, "Error sending email. To={MaskedEmail}, Subject={Subject}", MaskEmail(toEmail), subject);
+            throw;
+        }
     }
 
+    private static string MaskEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            return "***";
+
+        var parts = email.Split('@');
+        var localPart = parts[0];
+        var domain = parts[1];
+
+        var maskedLocal = localPart.Length <= 2
+            ? new string('*', localPart.Length)
+            : localPart[0] + new string('*', localPart.Length - 2) + localPart[^1];
+
+        return $"{maskedLocal}@{domain}";
+    }
 }

@@ -3,10 +3,11 @@ using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Data;
 
-public class SaintsRepository(DataContext context, ICacheService cacheService) : ISaintsRepository
+public class SaintsRepository(DataContext context, ICacheService cacheService, ILogger<SaintsRepository> logger) : ISaintsRepository
 {
     public async Task<PagedResult<Saint>> GetAllAsync(SaintFilters filters)
     {
@@ -61,7 +62,14 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         var created = await context.SaveChangesAsync() > 0;
 
         if (created)
+        {
             InvalidateSaintCaches(newSaint);
+            logger.LogInformation("Saint created in database. Id={Id}, Name={Name}, Slug={Slug}", newSaint.Id, newSaint.Name, newSaint.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Saint creation failed to save. Name={Name}", newSaint.Name);
+        }
 
         return created;
     }
@@ -74,7 +82,10 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
             .FirstOrDefaultAsync(s => s.Id == saint.Id);
 
         if (trackedSaint == null)
+        {
+            logger.LogWarning("Update failed: Saint not found. Id={Id}", saint.Id);
             return false;
+        }
 
         trackedSaint.Name = saint.Name;
         trackedSaint.Title = saint.Title;
@@ -106,7 +117,14 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         var updated = await context.SaveChangesAsync() > 0;
 
         if (updated)
+        {
             InvalidateSaintCaches(trackedSaint);
+            logger.LogInformation("Saint updated in database. Id={Id}, Name={Name}, Slug={Slug}", saint.Id, saint.Name, saint.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Saint update failed to save. Id={Id}, Name={Name}", saint.Id, saint.Name);
+        }
 
         return updated;
     }
@@ -119,13 +137,23 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (saint is null)
+        {
+            logger.LogWarning("Delete failed: Saint not found. Id={Id}", id);
             return;
+        }
 
         context.Saints.Remove(saint);
         var deleted = await context.SaveChangesAsync() > 0;
 
         if (deleted)
+        {
             InvalidateSaintCaches(saint);
+            logger.LogInformation("Saint deleted from database. Id={Id}, Name={Name}, Slug={Slug}", id, saint.Name, saint.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Saint deletion failed to save. Id={Id}", id);
+        }
     }
 
     public async Task<IReadOnlyList<string>> GetCountriesAsync()
@@ -319,5 +347,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService) :
         cacheService.Remove(cacheService.BuildKey("saint", "countries_all", incrementVersion: false));
 
         cacheService.GetNextVersion("saint");
+
+        logger.LogInformation("Saint caches invalidated. Id={Id}, Slug={Slug}", saint.Id, saint.Slug);
     }
 }

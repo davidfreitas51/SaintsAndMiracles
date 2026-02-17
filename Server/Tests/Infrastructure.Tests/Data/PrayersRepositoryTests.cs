@@ -3,6 +3,7 @@ using Core.Models;
 using Core.Models.Filters;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Data;
 
@@ -18,7 +19,7 @@ public class PrayersRepositoryTests
         context.Database.EnsureCreated();
 
         var cache = new DummyCacheService();
-        var repo = new PrayersRepository(context, cache);
+        var repo = new PrayersRepository(context, cache, NullLogger<PrayersRepository>.Instance);
 
         context.Prayers.AddRange(GetSeedData());
         context.SaveChanges();

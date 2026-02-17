@@ -4,6 +4,7 @@ using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Models;
 using Infrastructure.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Infrastructure.Tests.Services;
@@ -19,7 +20,8 @@ public class ReligiousOrdersServiceTests
 
         return new ReligiousOrdersService(
             ordersRepo.Object,
-            activityRepo.Object
+            activityRepo.Object,
+            NullLogger<ReligiousOrdersService>.Instance
         );
     }
 

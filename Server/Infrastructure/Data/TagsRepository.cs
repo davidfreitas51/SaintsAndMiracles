@@ -5,10 +5,11 @@ using Core.Models;
 using Core.Models.Filters;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
-public class TagsRepository(DataContext context, ICacheService cacheService) : ITagsRepository
+public class TagsRepository(DataContext context, ICacheService cacheService, ILogger<TagsRepository> logger) : ITagsRepository
 {
     public async Task<PagedResult<Tag>> GetAllAsync(EntityFilters filters)
     {
@@ -81,22 +82,38 @@ public class TagsRepository(DataContext context, ICacheService cacheService) : I
 
     public async Task<bool> CreateAsync(Tag tag)
     {
+        logger.LogInformation("Creating tag: Name={Name}, Type={TagType}", tag.Name, tag.TagType);
         context.Tags.Add(tag);
         var created = await context.SaveChangesAsync() > 0;
 
         if (created)
+        {
             InvalidateCaches(tag);
+            logger.LogInformation("Tag created: Id={Id}, Name={Name}, Type={TagType}", tag.Id, tag.Name, tag.TagType);
+        }
+        else
+        {
+            logger.LogWarning("Tag creation failed to save. Name={Name}, Type={TagType}", tag.Name, tag.TagType);
+        }
 
         return created;
     }
 
     public async Task<bool> UpdateAsync(Tag tag)
     {
+        logger.LogInformation("Updating tag: Id={Id}, Name={Name}, Type={TagType}", tag.Id, tag.Name, tag.TagType);
         context.Tags.Update(tag);
         var updated = await context.SaveChangesAsync() > 0;
 
         if (updated)
+        {
             InvalidateCaches(tag);
+            logger.LogInformation("Tag updated: Id={Id}, Name={Name}, Type={TagType}", tag.Id, tag.Name, tag.TagType);
+        }
+        else
+        {
+            logger.LogWarning("Tag update failed to save. Id={Id}", tag.Id);
+        }
 
         return updated;
     }
@@ -104,12 +121,24 @@ public class TagsRepository(DataContext context, ICacheService cacheService) : I
     public async Task DeleteAsync(int id)
     {
         var tag = await context.Tags.FindAsync(id);
-        if (tag is null) return;
+        if (tag is null)
+        {
+            logger.LogWarning("Delete failed: Tag not found. Id={Id}", id);
+            return;
+        }
 
         context.Tags.Remove(tag);
-        await context.SaveChangesAsync();
+        var deleted = await context.SaveChangesAsync() > 0;
 
-        InvalidateCaches(tag);
+        if (deleted)
+        {
+            InvalidateCaches(tag);
+            logger.LogInformation("Tag deleted from database. Id={Id}, Name={Name}, Type={TagType}", id, tag.Name, tag.TagType);
+        }
+        else
+        {
+            logger.LogWarning("Tag deletion failed to save. Id={Id}", id);
+        }
     }
 
     private void InvalidateCaches(Tag tag)
@@ -128,5 +157,7 @@ public class TagsRepository(DataContext context, ICacheService cacheService) : I
         }
 
         cacheService.GetNextVersion("tag");
+
+        logger.LogInformation("Tag caches invalidated. Id={Id}, Name={Name}, Type={TagType}", tag.Id, tag.Name, tag.TagType);
     }
 }

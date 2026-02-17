@@ -4,6 +4,7 @@ using Core.Models;
 using Core.Models.Filters;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Data;
 
@@ -19,7 +20,7 @@ public class SaintsRepositoryTests
         context.Database.EnsureCreated();
 
         var cache = new DummyCacheService();
-        var repo = new SaintsRepository(context, cache);
+        var repo = new SaintsRepository(context, cache, NullLogger<SaintsRepository>.Instance);
 
         context.Saints.AddRange(GetSeedData());
         context.SaveChanges();

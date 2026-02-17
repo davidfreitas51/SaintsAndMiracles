@@ -3,10 +3,11 @@ using Core.Interfaces.Repositories;
 using Core.Interfaces.Services;
 using Core.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Data;
 
-public class RecentActivityRepository(DataContext context, ICacheService cacheService) : IRecentActivityRepository
+public class RecentActivityRepository(DataContext context, ICacheService cacheService, ILogger<RecentActivityRepository> logger) : IRecentActivityRepository
 {
     private const int MaxRecords = 100;
 
@@ -71,5 +72,7 @@ public class RecentActivityRepository(DataContext context, ICacheService cacheSe
         }
 
         cacheService.GetNextVersion("recent_activity");
+
+        logger.LogInformation("Activity logged. EntityType={EntityType}, EntityId={EntityId}, Action={Action}, UserId={UserId}", entityType, entityId, action, userId ?? "system");
     }
 }

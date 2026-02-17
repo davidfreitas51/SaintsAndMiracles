@@ -5,6 +5,7 @@ using Core.Models.Filters;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Data;
 
@@ -26,7 +27,7 @@ public class TagsRepositoryTests
     {
         using var context = CreateContext();
         var cache = CreateCache();
-        var repo = new TagsRepository(context, cache);
+        var repo = new TagsRepository(context, cache, NullLogger<TagsRepository>.Instance);
 
         // Seed 10 tags
         for (int i = 1; i <= 10; i++)
@@ -51,7 +52,7 @@ public class TagsRepositoryTests
     {
         using var context = CreateContext();
         var cache = CreateCache();
-        var repo = new TagsRepository(context, cache);
+        var repo = new TagsRepository(context, cache, NullLogger<TagsRepository>.Instance);
 
         var tag = new Tag { Name = "TestTag", TagType = TagType.Saint };
         context.Tags.Add(tag);
@@ -69,7 +70,7 @@ public class TagsRepositoryTests
     {
         using var context = CreateContext();
         var cache = CreateCache();
-        var repo = new TagsRepository(context, cache);
+        var repo = new TagsRepository(context, cache, NullLogger<TagsRepository>.Instance);
 
         var tags = new List<Tag>
         {
@@ -92,7 +93,7 @@ public class TagsRepositoryTests
     {
         using var context = CreateContext();
         var cache = CreateCache();
-        var repo = new TagsRepository(context, cache);
+        var repo = new TagsRepository(context, cache, NullLogger<TagsRepository>.Instance);
 
         var tag = new Tag { Name = "NewTag", TagType = TagType.Prayer };
         var created = await repo.CreateAsync(tag);
@@ -107,7 +108,7 @@ public class TagsRepositoryTests
     {
         using var context = CreateContext();
         var cache = CreateCache();
-        var repo = new TagsRepository(context, cache);
+        var repo = new TagsRepository(context, cache, NullLogger<TagsRepository>.Instance);
 
         var tag = new Tag { Name = "OldName", TagType = TagType.Prayer };
         context.Tags.Add(tag);
@@ -125,7 +126,7 @@ public class TagsRepositoryTests
     {
         using var context = CreateContext();
         var cache = CreateCache();
-        var repo = new TagsRepository(context, cache);
+        var repo = new TagsRepository(context, cache, NullLogger<TagsRepository>.Instance);
 
         var tag = new Tag { Name = "ToDelete", TagType = TagType.Saint };
         context.Tags.Add(tag);

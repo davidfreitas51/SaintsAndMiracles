@@ -1,5 +1,6 @@
 using Infrastructure.Services;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Services;
 
@@ -8,7 +9,7 @@ public class CacheServiceTests
     private CacheService CreateService()
     {
         var memoryCache = new MemoryCache(new MemoryCacheOptions());
-        return new CacheService(memoryCache);
+        return new CacheService(memoryCache, NullLogger<CacheService>.Instance);
     }
 
     [Fact]

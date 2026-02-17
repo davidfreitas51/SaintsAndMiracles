@@ -3,10 +3,11 @@ using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Data;
 
-public class MiraclesRepository(DataContext context, ICacheService cacheService) : IMiraclesRepository
+public class MiraclesRepository(DataContext context, ICacheService cacheService, ILogger<MiraclesRepository> logger) : IMiraclesRepository
 {
     public async Task<PagedResult<Miracle>> GetAllAsync(MiracleFilters filters)
     {
@@ -55,7 +56,14 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         var created = await context.SaveChangesAsync() > 0;
 
         if (created)
+        {
             InvalidateMiracleCaches(newMiracle);
+            logger.LogInformation("Miracle created in database. Id={Id}, Title={Title}, Slug={Slug}", newMiracle.Id, newMiracle.Title, newMiracle.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Miracle creation failed to save. Title={Title}", newMiracle.Title);
+        }
 
         return created;
     }
@@ -67,7 +75,10 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
             .FirstOrDefaultAsync(m => m.Id == miracle.Id);
 
         if (trackedMiracle == null)
+        {
+            logger.LogWarning("Update failed: Miracle not found. Id={Id}", miracle.Id);
             return false;
+        }
 
         trackedMiracle.Title = miracle.Title;
         trackedMiracle.Description = miracle.Description;
@@ -79,7 +90,6 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         trackedMiracle.MarkdownPath = miracle.MarkdownPath;
         trackedMiracle.Image = miracle.Image;
         trackedMiracle.UpdatedAt = DateTime.UtcNow;
-
 
         trackedMiracle.Tags.RemoveAll(t =>
             !miracle.Tags.Any(mt => mt.Id == t.Id));
@@ -98,7 +108,14 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         var updated = await context.SaveChangesAsync() > 0;
 
         if (updated)
+        {
             InvalidateMiracleCaches(trackedMiracle);
+            logger.LogInformation("Miracle updated in database. Id={Id}, Title={Title}, Slug={Slug}", miracle.Id, miracle.Title, miracle.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Miracle update failed to save. Id={Id}, Title={Title}", miracle.Id, miracle.Title);
+        }
 
         return updated;
     }
@@ -109,13 +126,23 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
             .Include(m => m.Tags)
             .FirstOrDefaultAsync(m => m.Id == id);
 
-        if (miracle is not null)
+        if (miracle is null)
         {
-            context.Miracles.Remove(miracle);
-            var deleted = await context.SaveChangesAsync() > 0;
+            logger.LogWarning("Delete failed: Miracle not found. Id={Id}", id);
+            return;
+        }
 
-            if (deleted)
-                InvalidateMiracleCaches(miracle);
+        context.Miracles.Remove(miracle);
+        var deleted = await context.SaveChangesAsync() > 0;
+
+        if (deleted)
+        {
+            InvalidateMiracleCaches(miracle);
+            logger.LogInformation("Miracle deleted from database. Id={Id}, Title={Title}, Slug={Slug}", id, miracle.Title, miracle.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Miracle deletion failed to save. Id={Id}", id);
         }
     }
 
@@ -209,5 +236,7 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService)
         cacheService.Remove(cacheService.BuildKey("miracle", $"slugexists_{miracle.Slug}", incrementVersion: false));
 
         cacheService.GetNextVersion("miracle");
+
+        logger.LogInformation("Miracle caches invalidated. Id={Id}, Slug={Slug}", miracle.Id, miracle.Slug);
     }
 }

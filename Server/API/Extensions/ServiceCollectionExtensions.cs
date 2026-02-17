@@ -137,14 +137,18 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
     {
-        var connectionString = config.GetConnectionString("defaultConnection");
+        var connectionString = config.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<DataContext>(options =>
+        {
             options.UseMySql(
                 connectionString,
                 new MySqlServerVersion(new Version(8, 1, 0))
-            )
-        );
+            );
+
+            options.EnableSensitiveDataLogging(false);
+            options.LogTo(_ => { });
+        });
 
         return services;
     }

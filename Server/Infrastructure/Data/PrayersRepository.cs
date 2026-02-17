@@ -3,10 +3,11 @@ using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Data;
 
-public class PrayersRepository(DataContext context, ICacheService cacheService) : IPrayersRepository
+public class PrayersRepository(DataContext context, ICacheService cacheService, ILogger<PrayersRepository> logger) : IPrayersRepository
 {
     public async Task<PagedResult<Prayer>> GetAllAsync(PrayerFilters filters)
     {
@@ -55,7 +56,14 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         var created = await context.SaveChangesAsync() > 0;
 
         if (created)
+        {
             InvalidatePrayerCaches(newPrayer);
+            logger.LogInformation("Prayer created in database. Id={Id}, Title={Title}, Slug={Slug}", newPrayer.Id, newPrayer.Title, newPrayer.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Prayer creation failed to save. Title={Title}", newPrayer.Title);
+        }
 
         return created;
     }
@@ -67,7 +75,10 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
             .FirstOrDefaultAsync(p => p.Id == prayer.Id);
 
         if (trackedPrayer == null)
+        {
+            logger.LogWarning("Update failed: Prayer not found. Id={Id}", prayer.Id);
             return false;
+        }
 
         trackedPrayer.Title = prayer.Title;
         trackedPrayer.Description = prayer.Description;
@@ -93,7 +104,14 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         var updated = await context.SaveChangesAsync() > 0;
 
         if (updated)
+        {
             InvalidatePrayerCaches(trackedPrayer);
+            logger.LogInformation("Prayer updated in database. Id={Id}, Title={Title}, Slug={Slug}", prayer.Id, prayer.Title, prayer.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Prayer update failed to save. Id={Id}, Title={Title}", prayer.Id, prayer.Title);
+        }
 
         return updated;
     }
@@ -104,7 +122,14 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         var deleted = await context.SaveChangesAsync() > 0;
 
         if (deleted)
+        {
             InvalidatePrayerCaches(prayer);
+            logger.LogInformation("Prayer deleted from database. Id={Id}, Title={Title}, Slug={Slug}", prayer.Id, prayer.Title, prayer.Slug);
+        }
+        else
+        {
+            logger.LogWarning("Prayer deletion failed to save. Id={Id}", prayer.Id);
+        }
 
         return deleted;
     }
@@ -191,5 +216,7 @@ public class PrayersRepository(DataContext context, ICacheService cacheService) 
         cacheService.Remove(cacheService.BuildKey("prayer", $"slugexists_{prayer.Slug}", incrementVersion: false));
 
         cacheService.GetNextVersion("prayer");
+
+        logger.LogInformation("Prayer caches invalidated. Id={Id}, Slug={Slug}", prayer.Id, prayer.Slug);
     }
 }

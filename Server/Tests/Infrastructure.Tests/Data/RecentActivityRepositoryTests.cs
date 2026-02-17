@@ -3,6 +3,7 @@ using Core.Enums;
 using Core.Models;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Data;
 
@@ -22,7 +23,7 @@ public class RecentActivityRepositoryTests
     {
         using var context = CreateContext();
         var cacheService = new DummyCacheService();
-        var repo = new RecentActivityRepository(context, cacheService);
+        var repo = new RecentActivityRepository(context, cacheService, NullLogger<RecentActivityRepository>.Instance);
 
         for (int i = 1; i <= 10; i++)
         {
@@ -52,7 +53,7 @@ public class RecentActivityRepositoryTests
     {
         using var context = CreateContext();
         var cacheService = new DummyCacheService();
-        var repo = new RecentActivityRepository(context, cacheService);
+        var repo = new RecentActivityRepository(context, cacheService, NullLogger<RecentActivityRepository>.Instance);
 
         await repo.LogActivityAsync(EntityType.Prayer, 1, "Our Father", ActivityAction.Created, "user123");
 
@@ -70,7 +71,7 @@ public class RecentActivityRepositoryTests
     {
         using var context = CreateContext();
         var cacheService = new DummyCacheService();
-        var repo = new RecentActivityRepository(context, cacheService);
+        var repo = new RecentActivityRepository(context, cacheService, NullLogger<RecentActivityRepository>.Instance);
 
         // Cria 101 registros antigos
         for (int i = 0; i < 101; i++)
@@ -97,7 +98,7 @@ public class RecentActivityRepositoryTests
     {
         using var context = CreateContext();
         var cacheService = new DummyCacheService();
-        var repo = new RecentActivityRepository(context, cacheService);
+        var repo = new RecentActivityRepository(context, cacheService, NullLogger<RecentActivityRepository>.Instance);
 
         int before = cacheService.GetNextVersion("recent_activity");
         await repo.LogActivityAsync(EntityType.Saint, 1, "St. Francis", ActivityAction.Updated);
@@ -111,7 +112,7 @@ public class RecentActivityRepositoryTests
     {
         using var context = CreateContext();
         var cacheService = new DummyCacheService();
-        var repo = new RecentActivityRepository(context, cacheService);
+        var repo = new RecentActivityRepository(context, cacheService, NullLogger<RecentActivityRepository>.Instance);
 
         var result = await repo.GetRecentActivitiesAsync();
 

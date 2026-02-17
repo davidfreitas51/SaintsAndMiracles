@@ -1,10 +1,10 @@
-using Core.DTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Repositories;
 using Core.Models;
 using Infrastructure.Services;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Infrastructure.Tests.Services;
@@ -30,7 +30,8 @@ public class PrayersServiceTests
             prayersRepoMock.Object,
             tagsRepoMock.Object,
             activityRepoMock.Object,
-            fileStorageMock.Object
+            fileStorageMock.Object,
+            NullLogger<PrayersService>.Instance
         );
     }
 
@@ -38,7 +39,7 @@ public class PrayersServiceTests
     public async Task CreatePrayerAsync_ShouldReturnId_WhenSlugIsUnique()
     {
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
-        var newPrayer = new NewPrayerDto { Title = "My Prayer", Description = "Desc", Image="image.webp", MarkdownContent = "Content" };
+        var newPrayer = new NewPrayerDto { Title = "My Prayer", Description = "Desc", Image = "image.webp", MarkdownContent = "Content" };
 
         prayersRepo.Setup(r => r.SlugExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
         prayersRepo.Setup(r => r.CreateAsync(It.IsAny<Prayer>())).ReturnsAsync(true);
@@ -55,7 +56,7 @@ public class PrayersServiceTests
     public async Task CreatePrayerAsync_ShouldReturnNull_WhenSlugExists()
     {
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
-        var newPrayer = new NewPrayerDto { Title = "Existing", Description = "", Image="image.webp", MarkdownContent = "" };
+        var newPrayer = new NewPrayerDto { Title = "Existing", Description = "", Image = "image.webp", MarkdownContent = "" };
 
         prayersRepo.Setup(r => r.SlugExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
 
@@ -71,7 +72,7 @@ public class PrayersServiceTests
         var service = CreateService(out var prayersRepo, out var activityRepo, out var tagsRepo);
         prayersRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Prayer?)null);
 
-        var updated = new NewPrayerDto { Title = "Updated", Description = "Desc", Image="image.webp", MarkdownContent = "Content" };
+        var updated = new NewPrayerDto { Title = "Updated", Description = "Desc", Image = "image.webp", MarkdownContent = "Content" };
         var result = await service.UpdatePrayerAsync(1, updated, "user1");
 
         Assert.False(result);
