@@ -15,7 +15,8 @@ public class AccountManagementController(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
     IEmailSender<AppUser> emailSender,
-    IConfiguration configuration
+    IConfiguration configuration,
+    ILogger<AccountManagementController> logger
 ) : ControllerBase
 {
     private readonly string frontendBaseUrl = configuration["Frontend:BaseUrl"]!;
@@ -59,18 +60,32 @@ public class AccountManagementController(
     public async Task<IActionResult> DeleteUserByEmail(
         [FromRoute, Required, SafeEmail] string email)
     {
+        var adminUser = await userManager.GetUserAsync(User);
+        var maskedEmail = MaskEmail(email);
+        logger.LogInformation("Attempting to delete user. Email={MaskedEmail}, AdminUserId={AdminUserId}", maskedEmail, adminUser?.Id);
+
         var user = await userManager.FindByEmailAsync(email);
         if (user == null)
+        {
+            logger.LogWarning("User deletion failed: User not found. Email={MaskedEmail}, AdminUserId={AdminUserId}", maskedEmail, adminUser?.Id);
             return NotFound(new { message = "User not found." });
+        }
 
         var currentUser = await userManager.GetUserAsync(User);
         if (currentUser != null && currentUser.Email == email)
+        {
+            logger.LogWarning("User deletion failed: Admin attempted to delete own account. Email={MaskedEmail}, AdminUserId={AdminUserId}", maskedEmail, adminUser?.Id);
             return BadRequest(new { message = "You cannot delete your own account." });
+        }
 
         var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)
+        {
+            logger.LogWarning("User deletion failed: Database operation error. Email={MaskedEmail}, AdminUserId={AdminUserId}", maskedEmail, adminUser?.Id);
             return BadRequest(result.Errors);
+        }
 
+        logger.LogInformation("User deleted successfully. Email={MaskedEmail}, UserId={UserId}, AdminUserId={AdminUserId}", maskedEmail, user.Id, adminUser?.Id);
         return NoContent();
     }
 
@@ -100,16 +115,20 @@ public class AccountManagementController(
         if (user == null)
             return Unauthorized();
 
+        logger.LogInformation("Updating user profile. UserId={UserId}, Email={MaskedEmail}", user.Id, MaskEmail(user.Email ?? ""));
+
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
 
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
         {
+            logger.LogWarning("Profile update failed. UserId={UserId}, Email={MaskedEmail}", user.Id, MaskEmail(user.Email ?? ""));
             var errors = result.Errors.Select(e => e.Description).ToArray();
             return BadRequest(new { Message = "Profile update failed", Errors = errors });
         }
 
+        logger.LogInformation("User profile updated successfully. UserId={UserId}, FirstName={FirstName}, LastName={LastName}", user.Id, dto.FirstName, dto.LastName);
         return Ok(new
         {
             user.FirstName,
@@ -151,8 +170,15 @@ public class AccountManagementController(
         if (user == null)
             return Unauthorized();
 
+        var maskedOldEmail = MaskEmail(user.Email ?? "");
+        var maskedNewEmail = MaskEmail(dto.NewEmail);
+        logger.LogInformation("Email change requested. UserId={UserId}, OldEmail={OldEmail}, NewEmail={NewEmail}", userId, maskedOldEmail, maskedNewEmail);
+
         if (user.Email == dto.NewEmail)
+        {
+            logger.LogWarning("Email change request failed: New email same as current. UserId={UserId}, Email={MaskedEmail}", userId, maskedOldEmail);
             return BadRequest(new { Message = "New email must be different from current email." });
+        }
 
         var token = await userManager.GenerateChangeEmailTokenAsync(user, dto.NewEmail);
 
@@ -165,10 +191,11 @@ public class AccountManagementController(
 
         await emailSender.SendConfirmationLinkAsync(user, dto.NewEmail, confirmationLink);
 
+        logger.LogInformation("Email change confirmation sent. UserId={UserId}, NewEmail={NewEmail}", userId, maskedNewEmail);
         return Ok(new { Message = "Confirmation email sent to new address." });
     }
 
-    
+
     [HttpGet("confirm-email-change")]
     public async Task<IActionResult> ConfirmEmailChange(
         [FromQuery][Required][MaxLength(100)] string userId,
@@ -180,19 +207,29 @@ public class AccountManagementController(
         email = email.Trim();
         token = Uri.UnescapeDataString(token);
 
+        var maskedEmail = MaskEmail(email);
+        logger.LogInformation("Confirming email change. UserId={UserId}, NewEmail={NewEmail}", userId, maskedEmail);
+
         var user = await userManager.FindByIdAsync(userId);
         if (user == null)
+        {
+            logger.LogWarning("Email change confirmation failed: User not found. UserId={UserId}, NewEmail={NewEmail}", userId, maskedEmail);
             return Redirect(failUrl);
+        }
 
         var result = await userManager.ChangeEmailAsync(user, email, token);
         if (!result.Succeeded)
+        {
+            logger.LogWarning("Email change confirmation failed: Token validation error. UserId={UserId}, NewEmail={NewEmail}", userId, maskedEmail);
             return Redirect(failUrl);
+        }
 
         user.UserName = email;
         await userManager.UpdateAsync(user);
 
         await signInManager.SignOutAsync();
 
+        logger.LogInformation("Email changed successfully. UserId={UserId}, NewEmail={NewEmail}", userId, maskedEmail);
         return Redirect($"{frontendBaseUrl}/account/email-confirmed?success=true&logout=true");
     }
 
@@ -239,6 +276,8 @@ public class AccountManagementController(
         if (user == null)
             return Unauthorized();
 
+        logger.LogInformation("Password change requested. UserId={UserId}, Email={MaskedEmail}", user.Id, MaskEmail(user.Email ?? ""));
+
         var result = await userManager.ChangePasswordAsync(
             user,
             dto.CurrentPassword,
@@ -247,15 +286,33 @@ public class AccountManagementController(
 
         if (!result.Succeeded)
         {
+            logger.LogWarning("Password change failed. UserId={UserId}, Email={MaskedEmail}", user.Id, MaskEmail(user.Email ?? ""));
             var errors = result.Errors.Select(e => e.Description).ToArray();
             return BadRequest(new { Message = "Password change failed", Errors = errors });
         }
 
         await signInManager.SignOutAsync();
 
+        logger.LogInformation("Password changed successfully and user signed out. UserId={UserId}, Email={MaskedEmail}", user.Id, MaskEmail(user.Email ?? ""));
         return Ok(new
         {
             Message = "Password changed successfully. Please log in again."
         });
+    }
+
+    private static string MaskEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            return "***";
+
+        var parts = email.Split('@');
+        var localPart = parts[0];
+        var domain = parts[1];
+
+        var maskedLocal = localPart.Length <= 2
+            ? new string('*', localPart.Length)
+            : localPart[0] + new string('*', localPart.Length - 2) + localPart[^1];
+
+        return $"{maskedLocal}@{domain}";
     }
 }
