@@ -4,6 +4,7 @@ using Core.Models;
 using Core.Models.Filters;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Data;
 
@@ -19,7 +20,7 @@ public class MiraclesRepositoryTests
         context.Database.EnsureCreated();
 
         var cache = new DummyCacheService();
-        var repo = new MiraclesRepository(context, cache);
+        var repo = new MiraclesRepository(context, cache, NullLogger<MiraclesRepository>.Instance);
 
         context.Miracles.AddRange(GetSeedData());
         context.SaveChanges();

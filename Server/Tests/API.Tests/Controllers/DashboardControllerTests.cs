@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace API.Tests.Controllers;
@@ -56,7 +57,8 @@ public class DashboardControllerTests
             miraclesRepo.Object,
             prayersRepo.Object,
             activityRepo.Object,
-            userManager
+            userManager,
+            NullLogger<DashboardController>.Instance
         );
     }
 

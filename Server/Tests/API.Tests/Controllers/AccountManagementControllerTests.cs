@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace API.Tests.Controllers;
@@ -38,7 +39,8 @@ public class AccountManagementControllerTests
             _userManager.Object,
             _signInManager.Object,
             _emailSender.Object,
-            _configuration
+            _configuration,
+            NullLogger<AccountManagementController>.Instance
         );
     }
 

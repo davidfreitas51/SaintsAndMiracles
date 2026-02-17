@@ -1,14 +1,15 @@
+using API.Controllers;
 using Core.DTOs;
 using Core.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc.Routing;
-using API.Controllers;
 
 namespace API.Tests.Controllers;
 
@@ -40,7 +41,8 @@ public class AuthenticationControllerTests
 
         _controller = new AuthenticationController(
             _signInManagerMock.Object,
-            _emailSenderMock.Object
+            _emailSenderMock.Object,
+            NullLogger<AuthenticationController>.Instance
         );
 
         _controller.ControllerContext = new ControllerContext

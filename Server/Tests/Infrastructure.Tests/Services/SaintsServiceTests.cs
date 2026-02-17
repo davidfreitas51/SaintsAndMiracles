@@ -5,6 +5,7 @@ using Core.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Infrastructure.Tests.Services;
@@ -39,7 +40,8 @@ public class SaintsServiceTests
             ordersRepo.Object,
             activityRepo.Object,
             userManagerMock.Object,
-            new Mock<IFileStorageService>().Object
+            new Mock<IFileStorageService>().Object,
+            NullLogger<SaintsService>.Instance
         );
     }
 

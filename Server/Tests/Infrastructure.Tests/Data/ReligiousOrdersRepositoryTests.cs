@@ -4,6 +4,7 @@ using Core.Models.Filters;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Data;
 
@@ -38,7 +39,7 @@ public class ReligiousOrdersRepositoryTests
         await SeedData(context);
 
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         var filters = new EntityFilters { Page = 1, PageSize = 10 };
         var result = await repo.GetAllAsync(filters);
@@ -56,7 +57,7 @@ public class ReligiousOrdersRepositoryTests
         await SeedData(context);
 
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         var filters = new EntityFilters { Page = 1, PageSize = 10, Search = "Capuchin" };
         var result = await repo.GetAllAsync(filters);
@@ -72,7 +73,7 @@ public class ReligiousOrdersRepositoryTests
         await SeedData(context);
 
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         var filters = new EntityFilters { Page = 2, PageSize = 2 };
         var result = await repo.GetAllAsync(filters);
@@ -88,7 +89,7 @@ public class ReligiousOrdersRepositoryTests
         await SeedData(context);
 
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         var first = await context.ReligiousOrders.FirstAsync();
         var found = await repo.GetByIdAsync(first.Id);
@@ -102,7 +103,7 @@ public class ReligiousOrdersRepositoryTests
     {
         using var context = CreateContext();
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         int beforeVersion = cacheService.GetNextVersion("religious_order");
 
@@ -123,7 +124,7 @@ public class ReligiousOrdersRepositoryTests
         await SeedData(context);
 
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         var order = await context.ReligiousOrders.FirstAsync();
         order.Name = "Franciscan Reform";
@@ -146,7 +147,7 @@ public class ReligiousOrdersRepositoryTests
         await SeedData(context);
 
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         var order = await context.ReligiousOrders.FirstAsync();
         int beforeVersion = cacheService.GetNextVersion("religious_order");
@@ -165,7 +166,7 @@ public class ReligiousOrdersRepositoryTests
         await SeedData(context);
 
         var cacheService = new DummyCacheService();
-        var repo = new ReligiousOrdersRepository(context, cacheService);
+        var repo = new ReligiousOrdersRepository(context, cacheService, NullLogger<ReligiousOrdersRepository>.Instance);
 
         var countBefore = await context.ReligiousOrders.CountAsync();
         await repo.DeleteAsync(9999);

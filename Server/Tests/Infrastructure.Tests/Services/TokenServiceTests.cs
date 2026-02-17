@@ -1,10 +1,11 @@
 using Infrastructure.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Infrastructure.Tests.Services;
 
 public class TokenServiceTests
 {
-    private readonly TokenService _service = new TokenService();
+    private readonly TokenService _service = new TokenService(NullLogger<TokenService>.Instance);
 
     [Fact]
     public void GenerateClearToken_ShouldReturnNonEmptyString()

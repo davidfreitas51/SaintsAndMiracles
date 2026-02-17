@@ -2,6 +2,7 @@ using Core.Interfaces.Services;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Infrastructure.Tests.Services;
@@ -31,7 +32,7 @@ public class AccountTokensServiceTests
     {
         using var context = CreateContext();
         var tokenService = CreateTokenServiceMock();
-        var service = new AccountTokensService(context, tokenService.Object);
+        var service = new AccountTokensService(context, tokenService.Object, NullLogger<AccountTokensService>.Instance);
 
         var clearToken = await service.GenerateInviteAsync("Admin");
 
@@ -48,7 +49,7 @@ public class AccountTokensServiceTests
     {
         using var context = CreateContext();
         var tokenService = CreateTokenServiceMock();
-        var service = new AccountTokensService(context, tokenService.Object);
+        var service = new AccountTokensService(context, tokenService.Object, NullLogger<AccountTokensService>.Instance);
 
         var token = await service.GenerateInviteAsync("Admin");
 
@@ -62,7 +63,7 @@ public class AccountTokensServiceTests
     {
         using var context = CreateContext();
         var tokenService = CreateTokenServiceMock();
-        var service = new AccountTokensService(context, tokenService.Object);
+        var service = new AccountTokensService(context, tokenService.Object, NullLogger<AccountTokensService>.Instance);
 
         await service.GenerateInviteAsync("Admin");
 
@@ -76,7 +77,7 @@ public class AccountTokensServiceTests
     {
         using var context = CreateContext();
         var tokenService = CreateTokenServiceMock();
-        var service = new AccountTokensService(context, tokenService.Object);
+        var service = new AccountTokensService(context, tokenService.Object, NullLogger<AccountTokensService>.Instance);
 
         var token = await service.GenerateInviteAsync("Admin");
 
@@ -96,7 +97,7 @@ public class AccountTokensServiceTests
     {
         using var context = CreateContext();
         var tokenService = CreateTokenServiceMock();
-        var service = new AccountTokensService(context, tokenService.Object);
+        var service = new AccountTokensService(context, tokenService.Object, NullLogger<AccountTokensService>.Instance);
 
         var token = await service.GenerateInviteAsync("Admin");
 
@@ -112,7 +113,7 @@ public class AccountTokensServiceTests
     {
         using var context = CreateContext();
         var tokenService = CreateTokenServiceMock();
-        var service = new AccountTokensService(context, tokenService.Object);
+        var service = new AccountTokensService(context, tokenService.Object, NullLogger<AccountTokensService>.Instance);
 
         var token = await service.GenerateInviteAsync("Admin");
 
