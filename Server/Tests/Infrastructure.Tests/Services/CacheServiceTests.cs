@@ -6,37 +6,52 @@ namespace Infrastructure.Tests.Services;
 
 public class CacheServiceTests
 {
-    private CacheService CreateService()
+    private static CacheService CreateService()
     {
         var memoryCache = new MemoryCache(new MemoryCacheOptions());
         return new CacheService(memoryCache, NullLogger<CacheService>.Instance);
+    }
+
+    private static async Task<string?> FetchStringAsync(string value, Action onFetch)
+    {
+        onFetch();
+        await Task.Delay(1);
+        return value;
+    }
+
+    private static async Task<int> FetchIntAsync(int value, Action onFetch)
+    {
+        onFetch();
+        await Task.Delay(1);
+        return value;
     }
 
     [Fact]
     public void GetNextVersion_ShouldIncrementAndWrapAround()
     {
         var service = CreateService();
-        string prefix = "test";
+        const string prefix = "test";
 
-        int v1 = service.GetNextVersion(prefix);
-        int v2 = service.GetNextVersion(prefix);
+        var firstVersion = service.GetNextVersion(prefix);
+        var secondVersion = service.GetNextVersion(prefix);
 
-        Assert.Equal(1, v1);
-        Assert.Equal(2, v2);
+        Assert.Equal(1, firstVersion);
+        Assert.Equal(2, secondVersion);
 
-        // Force wrap around by setting version near MaxVersion
         for (int i = 0; i < 2999998; i++)
+        {
             service.GetNextVersion(prefix);
+        }
 
-        int wrap = service.GetNextVersion(prefix);
-        Assert.Equal(1, wrap); // Wrapped
+        var wrappedVersion = service.GetNextVersion(prefix);
+        Assert.Equal(1, wrappedVersion);
     }
 
     [Fact]
     public void GetCurrentVersion_ShouldReturnCorrectVersion()
     {
         var service = CreateService();
-        string prefix = "currentTest";
+        const string prefix = "currentTest";
 
         Assert.Equal(0, service.GetCurrentVersion(prefix));
         service.GetNextVersion(prefix);
@@ -47,77 +62,99 @@ public class CacheServiceTests
     public void BuildKey_ShouldIncludeVersion()
     {
         var service = CreateService();
-        string key = service.BuildKey("main", "part", incrementVersion: true);
+        var key = service.BuildKey("main", "part", incrementVersion: true);
 
         Assert.StartsWith("main_part_v", key);
         Assert.Contains("_v", key);
 
-        string keyNoInc = service.BuildKey("main", "part", incrementVersion: false);
-        Assert.StartsWith("main_part_v", keyNoInc);
+        var keyWithoutIncrement = service.BuildKey("main", "part", incrementVersion: false);
+        Assert.StartsWith("main_part_v", keyWithoutIncrement);
+    }
+
+    [Fact]
+    public void BuildKey_ShouldUseCurrentVersion_WhenIncrementVersionIsFalse()
+    {
+        var service = CreateService();
+
+        var key = service.BuildKey("noinc", "part", incrementVersion: false);
+
+        Assert.Equal("noinc_part_v0", key);
+        Assert.Equal(0, service.GetCurrentVersion("noinc"));
     }
 
     [Fact]
     public async Task GetOrSetAsync_ShouldCacheReferenceType()
     {
         var service = CreateService();
-        string key = "refKey";
+        const string key = "refKey";
 
-        int fetchCount = 0;
-        Func<Task<string?>> fetch = async () =>
-        {
-            fetchCount++;
-            await Task.Delay(1);
-            return "value";
-        };
+        var fetchCount = 0;
+        Task<string?> Fetch() => FetchStringAsync("value", () => fetchCount++);
 
-        var first = await service.GetOrSetAsync(key, fetch);
-        var second = await service.GetOrSetAsync(key, fetch);
+        var first = await service.GetOrSetAsync(key, Fetch);
+        var second = await service.GetOrSetAsync(key, Fetch);
 
         Assert.Equal("value", first);
         Assert.Equal("value", second);
-        Assert.Equal(1, fetchCount); // Cached
+        Assert.Equal(1, fetchCount);
+    }
+
+    [Fact]
+    public async Task GetOrSetAsync_ShouldNotCacheNullValue()
+    {
+        var service = CreateService();
+        const string key = "nullRefKey";
+
+        var fetchCount = 0;
+        async Task<string?> Fetch()
+        {
+            fetchCount++;
+            await Task.Delay(1);
+            return null;
+        }
+
+        var first = await service.GetOrSetAsync(key, Fetch);
+        var second = await service.GetOrSetAsync(key, Fetch);
+
+        Assert.Null(first);
+        Assert.Null(second);
+        Assert.Equal(2, fetchCount);
     }
 
     [Fact]
     public async Task GetOrSetValueAsync_ShouldCacheValueType()
     {
         var service = CreateService();
-        string key = "valKey";
+        const string key = "valKey";
 
-        int fetchCount = 0;
-        Func<Task<int>> fetch = async () =>
-        {
-            fetchCount++;
-            await Task.Delay(1);
-            return 42;
-        };
+        var fetchCount = 0;
+        Task<int> Fetch() => FetchIntAsync(42, () => fetchCount++);
 
-        int first = await service.GetOrSetValueAsync(key, fetch);
-        int second = await service.GetOrSetValueAsync(key, fetch);
+        var first = await service.GetOrSetValueAsync(key, Fetch);
+        var second = await service.GetOrSetValueAsync(key, Fetch);
 
         Assert.Equal(42, first);
         Assert.Equal(42, second);
-        Assert.Equal(1, fetchCount); // Cached
+        Assert.Equal(1, fetchCount);
     }
 
     [Fact]
     public async Task Remove_ShouldEvictCache()
     {
         var service = CreateService();
-        string key = "toRemove";
+        const string key = "toRemove";
 
-        await service.GetOrSetAsync(key, () => Task.FromResult("cached" as string));
+        await service.GetOrSetAsync(key, () => Task.FromResult<string?>("cached"));
         service.Remove(key);
 
-        // Should fetch again after removal
-        int fetchCount = 0;
-        Func<Task<string?>> fetch = () =>
+        var fetchCount = 0;
+        Task<string?> Fetch()
         {
             fetchCount++;
-            return Task.FromResult("newValue" as string);
-        };
+            return Task.FromResult<string?>("newValue");
+        }
 
-        var value = await service.GetOrSetAsync(key, fetch);
+        var value = await service.GetOrSetAsync(key, Fetch);
         Assert.Equal("newValue", value);
         Assert.Equal(1, fetchCount);
     }
