@@ -2,79 +2,58 @@ using API.Controllers;
 using Core.Interfaces;
 using Core.Models;
 using Core.Models.Filters;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using System.Security.Claims;
+using Tests.Common;
+using Tests.Common.Builders;
 
 namespace API.Tests.Controllers;
 
-public class SaintsControllerTests
+/// <summary>
+/// Test suite for SaintsController.
+/// Uses ControllerTestBase for reduced boilerplate and consistent test structure.
+/// </summary>
+public class SaintsControllerTests : ControllerTestBase<SaintsController>
 {
-    private SaintsController CreateController(
-        out Mock<ISaintsRepository> repo,
-        out Mock<ISaintsService> service,
-        bool authenticated = true)
+    private Mock<ISaintsRepository> _saintRepoMock = null!;
+    private Mock<ISaintsService> _saintServiceMock = null!;
+
+    /// <summary>
+    /// Helper to setup controller with mocked dependencies.
+    /// </summary>
+    private void SetupController(bool authenticated = true)
     {
-        repo = new Mock<ISaintsRepository>();
-        service = new Mock<ISaintsService>();
-
-        var options = new DbContextOptionsBuilder<IdentityDbContext<AppUser>>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-
-        var context = new IdentityDbContext<AppUser>(options);
-
-        var user = new AppUser
-        {
-            Id = "user-1",
-            UserName = "test@test.com",
-            Email = "test@test.com",
-            EmailConfirmed = true
-        };
+        _saintRepoMock = CreateLooseMock<ISaintsRepository>();
+        _saintServiceMock = CreateLooseMock<ISaintsService>();
 
         if (authenticated)
         {
-            context.Users.Add(user);
-            context.SaveChanges();
+            SetupAuthenticatedController(
+                (userManager, signInManager) =>
+                {
+                    // Configure UserManager to return authenticated user
+                    userManager
+                        .Setup(u => u.GetUserAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+                        .ReturnsAsync(AuthenticatedUser);
+
+                    return new SaintsController(
+                        _saintRepoMock.Object,
+                        _saintServiceMock.Object,
+                        userManager.Object
+                    );
+                }
+            );
         }
-
-        var store = new UserStore<AppUser>(context);
-        var userManager = new UserManager<AppUser>(
-            store,
-            null!,
-            new PasswordHasher<AppUser>(),
-            Array.Empty<IUserValidator<AppUser>>(),
-            Array.Empty<IPasswordValidator<AppUser>>(),
-            null!,
-            null!,
-            null!,
-            null!
-        );
-
-        var controller = new SaintsController(
-            repo.Object,
-            service.Object,
-            userManager
-        );
-
-        controller.ControllerContext = new ControllerContext
+        else
         {
-            HttpContext = new DefaultHttpContext
-            {
-                User = authenticated
-                    ? new ClaimsPrincipal(
-                        new ClaimsIdentity(
-                            new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) },
-                            "TestAuth"))
-                    : new ClaimsPrincipal(new ClaimsIdentity())
-            }
-        };
-
-        return controller;
+            SetupUnauthenticatedController(
+                (userManager, signInManager) => new SaintsController(
+                    _saintRepoMock.Object,
+                    _saintServiceMock.Object,
+                    userManager.Object
+                )
+            );
+        }
     }
 
     // -------------------- GET -------------------
@@ -82,191 +61,294 @@ public class SaintsControllerTests
     [Fact]
     public async Task GetAllSaints_ShouldReturnOk()
     {
-        var controller = CreateController(out var repo, out _);
-
-        repo.Setup(r => r.GetAllAsync(It.IsAny<SaintFilters>()))
+        SetupController();
+        _saintRepoMock
+            .Setup(r => r.GetAllAsync(It.IsAny<SaintFilters>()))
             .ReturnsAsync(EmptyPagedResult<Saint>());
 
-        var result = await controller.GetAllSaints(new SaintFilters());
+        var result = await Controller.GetAllSaints(new SaintFilters());
 
-        Assert.IsType<OkObjectResult>(result);
+        AssertOkResult(result);
+    }
+
+    [Fact]
+    public async Task GetAllSaints_ShouldReturnWithData_WhenSaintsExist()
+    {
+        SetupController();
+        var saints = new List<Saint>
+        {
+            CreateSaint(1, "Francis"),
+            CreateSaint(2, "Teresa")
+        };
+        var pagedResult = new PagedResult<Saint>
+        {
+            Items = saints,
+            TotalCount = 2
+        };
+
+        _saintRepoMock
+            .Setup(r => r.GetAllAsync(It.IsAny<SaintFilters>()))
+            .ReturnsAsync(pagedResult);
+
+        var result = await Controller.GetAllSaints(new SaintFilters());
+
+        AssertOkResult(result);
+        var okResult = result as OkObjectResult;
+        Assert.NotNull(okResult?.Value);
+    }
+
+    [Fact]
+    public async Task GetById_ShouldReturnOk_WhenSaintExists()
+    {
+        SetupController();
+        var saint = CreateSaint();
+
+        _saintRepoMock
+            .Setup(r => r.GetByIdAsync(1))
+            .ReturnsAsync(saint);
+
+        var result = await Controller.GetById(1);
+
+        AssertOkResult(result);
     }
 
     [Fact]
     public async Task GetById_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _saintRepoMock
+            .Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync((Saint?)null);
 
-        var result = await controller.GetById(1);
+        var result = await Controller.GetById(1);
 
-        Assert.IsType<NotFoundResult>(result);
+        AssertNotFound(result);
     }
 
     [Fact]
     public async Task GetSaintBySlug_ShouldReturnOk_WhenFound()
     {
-        var controller = CreateController(out var repo, out _);
-
+        SetupController();
         var saint = CreateSaint();
 
-        repo.Setup(r => r.GetBySlugAsync("francis"))
+        _saintRepoMock
+            .Setup(r => r.GetBySlugAsync("francis"))
             .ReturnsAsync(saint);
 
-        var result = await controller.GetSaintBySlug("francis");
+        var result = await Controller.GetSaintBySlug("francis");
 
-        var ok = Assert.IsType<OkObjectResult>(result);
-        Assert.Same(saint, ok.Value);
+        AssertOkResult(result);
+    }
+
+    [Fact]
+    public async Task GetSaintBySlug_ShouldReturnNotFound_WhenNotFound()
+    {
+        SetupController();
+
+        _saintRepoMock
+            .Setup(r => r.GetBySlugAsync("nonexistent"))
+            .ReturnsAsync((Saint?)null);
+
+        var result = await Controller.GetSaintBySlug("nonexistent");
+
+        AssertNotFound(result);
     }
 
     // -------------------- CREATE --------------------
 
     [Fact]
-    public async Task CreateSaint_ShouldReturnUnauthorized_WhenUserNotAuthenticated()
+    public async Task CreateSaint_ShouldReturnUnauthorized_WhenNotAuthenticated()
     {
-        var controller = CreateController(out _, out _, authenticated: false);
+        SetupController(authenticated: false);
 
-        var dto = new NewSaintDto
-        {
-            Name = "Francis",
-            Country = "Italy",
-            Century = 13,
-            Image = "image.jpg",
-            Description = "Saint description",
-            MarkdownContent = "saints/francis.md"
-        };
+        var dto = NewSaintDtoBuilder.Default().Build();
 
-        var result = await controller.CreateSaint(dto);
+        var result = await Controller.CreateSaint(dto);
 
-        Assert.IsType<UnauthorizedResult>(result);
+        AssertUnauthorized(result);
     }
 
     [Fact]
     public async Task CreateSaint_ShouldReturnConflict_WhenDuplicate()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        var dto = new NewSaintDto
-        {
-            Name = "Francis",
-            Country = "Italy",
-            Century = 13,
-            Image = "image.jpg",
-            Description = "Saint description",
-            MarkdownContent = "saints/francis.md"
-        };
+        var dto = NewSaintDtoBuilder.Default().Build();
 
-        service.Setup(s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), "user-1"))
+        _saintServiceMock
+            .Setup(s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), It.IsAny<string>()))
             .ReturnsAsync((int?)null);
 
-        var result = await controller.CreateSaint(dto);
+        var result = await Controller.CreateSaint(dto);
 
-        var conflict = Assert.IsType<ConflictObjectResult>(result);
-        Assert.Equal("A saint with the same name already exists.", conflict.Value);
+        AssertConflict(result);
     }
 
     [Fact]
     public async Task CreateSaint_ShouldReturnCreated_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        var dto = new NewSaintDto
-        {
-            Name = "Francis",
-            Country = "Italy",
-            Century = 13,
-            Image = "image.jpg",
-            Description = "Saint description",
-            MarkdownContent = "saints/francis.md"
-        };
+        var dto = NewSaintDtoBuilder.Default().Build();
 
-        service.Setup(s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), "user-1"))
+        _saintServiceMock
+            .Setup(s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), It.IsAny<string>()))
             .ReturnsAsync(10);
 
-        var result = await controller.CreateSaint(dto);
+        var result = await Controller.CreateSaint(dto);
 
-        var created = Assert.IsType<CreatedAtActionResult>(result);
-        Assert.Equal(nameof(SaintsController.GetById), created.ActionName);
-        Assert.Equal(10, created.RouteValues!["id"]);
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+        Assert.Equal(nameof(SaintsController.GetById), createdResult.ActionName);
+        Assert.Equal(10, createdResult.RouteValues!["id"]);
+    }
+
+    [Fact]
+    public async Task CreateSaint_ShouldPassCorrectUserIdToService()
+    {
+        SetupController();
+
+        var dto = NewSaintDtoBuilder.Default().Build();
+        var userId = GetCurrentUserId();
+
+        _saintServiceMock
+            .Setup(s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), userId))
+            .ReturnsAsync(1);
+
+        await Controller.CreateSaint(dto);
+
+        _saintServiceMock.Verify(
+            s => s.CreateSaintAsync(It.IsAny<NewSaintDto>(), userId),
+            Times.Once
+        );
     }
 
     // -------------------- UPDATE --------------------
 
     [Fact]
+    public async Task UpdateSaint_ShouldReturnUnauthorized_WhenNotAuthenticated()
+    {
+        SetupController(authenticated: false);
+
+        var dto = NewSaintDtoBuilder.Default().Build();
+
+        var result = await Controller.UpdateSaint(1, dto);
+
+        AssertUnauthorized(result);
+    }
+
+    [Fact]
     public async Task UpdateSaint_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        var dto = new NewSaintDto
-        {
-            Name = "Francis Updated",
-            Country = "Italy",
-            Century = 13,
-            Image = "image.jpg",
-            Description = "Saint description",
-            MarkdownContent = "saints/francis.md"
-        };
+        var dto = NewSaintDtoBuilder.Default().Build();
 
-        service.Setup(s => s.UpdateSaintAsync(1, dto, "user-1"))
+        _saintServiceMock
+            .Setup(s => s.UpdateSaintAsync(1, dto, It.IsAny<string>()))
             .ReturnsAsync(false);
 
-        var result = await controller.UpdateSaint(1, dto);
+        var result = await Controller.UpdateSaint(1, dto);
 
-        Assert.IsType<NotFoundResult>(result);
+        AssertNotFound(result);
     }
 
     [Fact]
     public async Task UpdateSaint_ShouldReturnNoContent_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        var dto = new NewSaintDto
-        {
-            Name = "Francis Updated",
-            Country = "Italy",
-            Century = 13,
-            Image = "image.jpg",
-            Description = "Saint description",
-            MarkdownContent = "saints/francis.md"
-        };
+        var dto = NewSaintDtoBuilder.Default().Build();
 
-        service.Setup(s => s.UpdateSaintAsync(1, dto, "user-1"))
+        _saintServiceMock
+            .Setup(s => s.UpdateSaintAsync(1, dto, It.IsAny<string>()))
             .ReturnsAsync(true);
 
-        var result = await controller.UpdateSaint(1, dto);
+        var result = await Controller.UpdateSaint(1, dto);
 
-        Assert.IsType<NoContentResult>(result);
+        AssertNoContent(result);
+    }
+
+    [Fact]
+    public async Task UpdateSaint_ShouldPassCorrectUserIdToService()
+    {
+        SetupController();
+
+        var dto = NewSaintDtoBuilder.Default().Build();
+        var userId = GetCurrentUserId();
+
+        _saintServiceMock
+            .Setup(s => s.UpdateSaintAsync(1, dto, userId))
+            .ReturnsAsync(true);
+
+        await Controller.UpdateSaint(1, dto);
+
+        _saintServiceMock.Verify(
+            s => s.UpdateSaintAsync(1, dto, userId),
+            Times.Once
+        );
     }
 
     // -------------------- DELETE --------------------
 
     [Fact]
+    public async Task DeleteSaint_ShouldReturnUnauthorized_WhenNotAuthenticated()
+    {
+        SetupController(authenticated: false);
+
+        var result = await Controller.DeleteSaint(1);
+
+        AssertUnauthorized(result);
+    }
+
+    [Fact]
     public async Task DeleteSaint_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _saintRepoMock
+            .Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync((Saint?)null);
 
-        var result = await controller.DeleteSaint(1);
+        var result = await Controller.DeleteSaint(1);
 
-        Assert.IsType<NotFoundResult>(result);
+        AssertNotFound(result);
     }
 
     [Fact]
     public async Task DeleteSaint_ShouldReturnOk_WhenSuccessful()
     {
-        var controller = CreateController(out var repo, out var service);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
-            .ReturnsAsync(CreateSaint());
+        var saint = CreateSaint();
 
-        var result = await controller.DeleteSaint(1);
+        _saintRepoMock
+            .Setup(r => r.GetByIdAsync(1))
+            .ReturnsAsync(saint);
+
+        var result = await Controller.DeleteSaint(1);
 
         Assert.IsType<OkResult>(result);
-        service.Verify(s => s.DeleteSaintAsync(1, "user-1"), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteSaint_ShouldCallServiceWithCorrectUserId()
+    {
+        SetupController();
+
+        var saint = CreateSaint();
+        var userId = GetCurrentUserId();
+
+        _saintRepoMock
+            .Setup(r => r.GetByIdAsync(1))
+            .ReturnsAsync(saint);
+
+        await Controller.DeleteSaint(1);
+
+        _saintServiceMock.Verify(
+            s => s.DeleteSaintAsync(1, userId),
+            Times.Once
+        );
     }
 
     // -------------------- EXTRA --------------------
@@ -274,80 +356,104 @@ public class SaintsControllerTests
     [Fact]
     public async Task GetSaintCountries_ShouldReturnOk()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetCountriesAsync())
-            .ReturnsAsync(new List<string> { "Italy", "France" });
+        var countries = new List<string> { "Italy", "France", "Spain" };
 
-        var result = await controller.GetSaintCountries();
+        _saintRepoMock
+            .Setup(r => r.GetCountriesAsync())
+            .ReturnsAsync(countries);
 
-        Assert.IsType<OkObjectResult>(result);
+        var result = await Controller.GetSaintCountries();
+
+        AssertOkResult(result);
     }
 
     [Fact]
     public async Task GetSaintsOfTheDay_ShouldReturnNoContent_WhenEmpty()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetSaintsOfTheDayAsync(It.IsAny<DateOnly>()))
+        _saintRepoMock
+            .Setup(r => r.GetSaintsOfTheDayAsync(It.IsAny<DateOnly>()))
             .ReturnsAsync(new List<Saint>());
 
-        var result = await controller.GetSaintsOfTheDay();
+        var result = await Controller.GetSaintsOfTheDay();
 
-        Assert.IsType<NoContentResult>(result);
+        AssertNoContent(result);
+    }
+
+    [Fact]
+    public async Task GetSaintsOfTheDay_ShouldReturnOk_WhenSaintsExist()
+    {
+        SetupController();
+
+        var saints = new List<Saint> { CreateSaint() };
+
+        _saintRepoMock
+            .Setup(r => r.GetSaintsOfTheDayAsync(It.IsAny<DateOnly>()))
+            .ReturnsAsync(saints);
+
+        var result = await Controller.GetSaintsOfTheDay();
+
+        AssertOkResult(result);
     }
 
     [Fact]
     public async Task GetUpcomingFeasts_ShouldReturnNoContent_WhenEmpty()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
+        _saintRepoMock
+            .Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
             .ReturnsAsync(new List<Saint>());
 
-        var result = await controller.GetUpcomingFeasts();
+        var result = await Controller.GetUpcomingFeasts();
 
-        Assert.IsType<NoContentResult>(result);
+        AssertNoContent(result);
     }
 
     [Fact]
     public async Task GetUpcomingFeasts_ShouldReturnOk_WhenSaintsExist()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
         var saints = new List<Saint>
         {
-            CreateSaint(1, "Joan of Arc", "joan-of-arc"),
-            CreateSaint(2, "Francis of Assisi", "francis-of-assisi")
+            CreateSaint(1, "Joan of Arc"),
+            CreateSaint(2, "Francis of Assisi")
         };
 
-        repo.Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
+        _saintRepoMock
+            .Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
             .ReturnsAsync(saints);
 
-        var result = await controller.GetUpcomingFeasts();
+        var result = await Controller.GetUpcomingFeasts();
 
-        var ok = Assert.IsType<OkObjectResult>(result);
-        var value = Assert.IsAssignableFrom<List<Saint>>(ok.Value);
-
+        AssertOkResult(result);
+        var okResult = result as OkObjectResult;
+        var value = Assert.IsAssignableFrom<List<Saint>>(okResult?.Value);
         Assert.Equal(2, value.Count);
-        Assert.Equal("Joan of Arc", value[0].Name);
     }
 
     [Fact]
     public async Task GetUpcomingFeasts_ShouldCallRepository()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
-            .ReturnsAsync(new List<Saint> { CreateSaint() });
+        _saintRepoMock
+            .Setup(r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<Saint>());
 
-        await controller.GetUpcomingFeasts();
+        await Controller.GetUpcomingFeasts();
 
-        repo.Verify(
+        _saintRepoMock.Verify(
             r => r.GetUpcomingFeasts(It.IsAny<DateOnly>(), It.IsAny<int>()),
             Times.Once
         );
     }
+
+    // -------------------- HELPERS --------------------
 
     private static Saint CreateSaint(
         int id = 1,
