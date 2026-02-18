@@ -1,91 +1,41 @@
-using System.Security.Claims;
 using API.Controllers;
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Moq;
+using Tests.Common;
 
 namespace API.Tests.Controllers;
 
-public class ReligiousOrdersControllerTests
+public class ReligiousOrdersControllerTests : ControllerTestBase<ReligiousOrdersController>
 {
-    private ReligiousOrdersController CreateController(
-        out Mock<IReligiousOrdersRepository> ordersRepo,
-        out Mock<IReligiousOrdersService> ordersService,
-        bool authenticated = true
-    )
+    private Mock<IReligiousOrdersRepository> _ordersRepoMock = null!;
+    private Mock<IReligiousOrdersService> _ordersServiceMock = null!;
+
+    private void SetupController(bool authenticated = true)
     {
-        ordersRepo = new Mock<IReligiousOrdersRepository>();
-        ordersService = new Mock<IReligiousOrdersService>();
-
-        var options = new DbContextOptionsBuilder<IdentityDbContext<AppUser>>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-
-        var context = new IdentityDbContext<AppUser>(options);
-
-        var user = new AppUser
-        {
-            Id = "user-1",
-            Email = "user@test.com",
-            UserName = "user@test.com",
-            EmailConfirmed = true
-        };
+        _ordersRepoMock = CreateLooseMock<IReligiousOrdersRepository>();
+        _ordersServiceMock = CreateLooseMock<IReligiousOrdersService>();
 
         if (authenticated)
         {
-            context.Users.Add(user);
-            context.SaveChanges();
+            SetupAuthenticatedController((userManager, signInManager) =>
+                new ReligiousOrdersController(_ordersRepoMock.Object, _ordersServiceMock.Object, userManager.Object));
         }
-
-        var store = new UserStore<AppUser>(context);
-        var userManager = new UserManager<AppUser>(
-            store,
-            null!,
-            new PasswordHasher<AppUser>(),
-            [],
-            [],
-            null!,
-            null!,
-            null!,
-            null!
-        );
-
-        var controller = new ReligiousOrdersController(
-            ordersRepo.Object,
-            ordersService.Object,
-            userManager
-        );
-
-        controller.ControllerContext = new ControllerContext
+        else
         {
-            HttpContext = new DefaultHttpContext
-            {
-                User = authenticated
-                    ? new ClaimsPrincipal(
-                        new ClaimsIdentity(
-                            new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) },
-                            "TestAuth"
-                        )
-                    )
-                    : new ClaimsPrincipal(new ClaimsIdentity())
-            }
-        };
-
-        return controller;
+            SetupUnauthenticatedController((userManager, signInManager) =>
+                new ReligiousOrdersController(_ordersRepoMock.Object, _ordersServiceMock.Object, userManager.Object));
+        }
     }
 
     [Fact]
     public async Task GetAll_ShouldReturnPagedOrders()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
         var filters = new EntityFilters();
 
@@ -103,10 +53,10 @@ public class ReligiousOrdersControllerTests
             PageSize = 10
         };
 
-        repo.Setup(r => r.GetAllAsync(filters))
+        _ordersRepoMock.Setup(r => r.GetAllAsync(filters))
             .ReturnsAsync(pagedResult);
 
-        var result = await controller.GetAll(filters);
+        var result = await Controller.GetAll(filters);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Same(pagedResult, ok.Value);
@@ -115,7 +65,7 @@ public class ReligiousOrdersControllerTests
     [Fact]
     public async Task GetById_ShouldReturnOrder_WhenExists()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
         var order = new ReligiousOrder
         {
@@ -123,10 +73,10 @@ public class ReligiousOrdersControllerTests
             Name = "Dominican Order"
         };
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _ordersRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync(order);
 
-        var result = await controller.GetById(1);
+        var result = await Controller.GetById(1);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Same(order, ok.Value);
@@ -135,12 +85,12 @@ public class ReligiousOrdersControllerTests
     [Fact]
     public async Task GetById_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out var repo, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _ordersRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync((ReligiousOrder?)null);
 
-        var result = await controller.GetById(1);
+        var result = await Controller.GetById(1);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -148,7 +98,7 @@ public class ReligiousOrdersControllerTests
     [Fact]
     public async Task Create_ShouldReturnCreated_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
         var dto = new NewReligiousOrderDto
         {
@@ -161,10 +111,10 @@ public class ReligiousOrdersControllerTests
             Name = dto.Name
         };
 
-        service.Setup(s => s.CreateReligiousOrderAsync(dto, "user-1"))
+        _ordersServiceMock.Setup(s => s.CreateReligiousOrderAsync(dto, GetCurrentUserId()))
             .ReturnsAsync(created);
 
-        var result = await controller.Create(dto);
+        var result = await Controller.Create(dto);
 
         var createdAt = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(nameof(ReligiousOrdersController.GetById), createdAt.ActionName);
@@ -174,17 +124,17 @@ public class ReligiousOrdersControllerTests
     [Fact]
     public async Task Create_ShouldReturnBadRequest_WhenServiceFails()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
         var dto = new NewReligiousOrderDto
         {
             Name = "Benedictine Order"
         };
 
-        service.Setup(s => s.CreateReligiousOrderAsync(dto, "user-1"))
+        _ordersServiceMock.Setup(s => s.CreateReligiousOrderAsync(dto, GetCurrentUserId()))
             .ReturnsAsync((ReligiousOrder?)null);
 
-        var result = await controller.Create(dto);
+        var result = await Controller.Create(dto);
 
         Assert.IsType<BadRequestResult>(result);
     }
@@ -192,28 +142,28 @@ public class ReligiousOrdersControllerTests
     [Fact]
     public async Task Create_ShouldReturnUnauthorized_WhenUserNotAuthenticated()
     {
-        var controller = CreateController(out _, out _, authenticated: false);
+        SetupController(authenticated: false);
 
         var dto = new NewReligiousOrderDto
         {
             Name = "Benedictine Order"
         };
 
-        var result = await controller.Create(dto);
+        var result = await Controller.Create(dto);
 
-        Assert.IsType<UnauthorizedResult>(result);
+        AssertUnauthorized(result);
     }
 
     [Fact]
     public async Task Update_ShouldReturnNoContent_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        service.Setup(s =>
+        _ordersServiceMock.Setup(s =>
                 s.UpdateReligiousOrderAsync(
                     1,
                     It.IsAny<NewReligiousOrderDto>(),
-                    "user-1"
+                    GetCurrentUserId()
                 ))
             .ReturnsAsync(true);
 
@@ -222,21 +172,21 @@ public class ReligiousOrdersControllerTests
             Name = "Carmelite Order"
         };
 
-        var result = await controller.Update(1, dto);
+        var result = await Controller.Update(1, dto);
 
-        Assert.IsType<NoContentResult>(result);
+        AssertNoContent(result);
     }
 
     [Fact]
     public async Task Update_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        service.Setup(s =>
+        _ordersServiceMock.Setup(s =>
                 s.UpdateReligiousOrderAsync(
                     1,
                     It.IsAny<NewReligiousOrderDto>(),
-                    "user-1"
+                    GetCurrentUserId()
                 ))
             .ReturnsAsync(false);
 
@@ -245,7 +195,7 @@ public class ReligiousOrdersControllerTests
             Name = "Carmelite Order"
         };
 
-        var result = await controller.Update(1, dto);
+        var result = await Controller.Update(1, dto);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -253,12 +203,12 @@ public class ReligiousOrdersControllerTests
     [Fact]
     public async Task Delete_ShouldReturnOk_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        service.Setup(s => s.DeleteReligiousOrderAsync(1, "user-1"))
+        _ordersServiceMock.Setup(s => s.DeleteReligiousOrderAsync(1, GetCurrentUserId()))
             .ReturnsAsync(true);
 
-        var result = await controller.Delete(1);
+        var result = await Controller.Delete(1);
 
         Assert.IsType<OkResult>(result);
     }
@@ -266,12 +216,12 @@ public class ReligiousOrdersControllerTests
     [Fact]
     public async Task Delete_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out _, out var service);
+        SetupController();
 
-        service.Setup(s => s.DeleteReligiousOrderAsync(1, "user-1"))
+        _ordersServiceMock.Setup(s => s.DeleteReligiousOrderAsync(1, GetCurrentUserId()))
             .ReturnsAsync(false);
 
-        var result = await controller.Delete(1);
+        var result = await Controller.Delete(1);
 
         Assert.IsType<NotFoundResult>(result);
     }

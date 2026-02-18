@@ -1,7 +1,7 @@
-namespace Common;
+namespace Tests.Common;
 
-using Core.Interfaces.Services;
 using System.Collections.Concurrent;
+using Core.Interfaces.Services;
 
 public class DummyCacheService : ICacheService
 {

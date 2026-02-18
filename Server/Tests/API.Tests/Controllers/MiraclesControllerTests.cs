@@ -1,77 +1,45 @@
 using API.Controllers;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Security.Claims;
+using Tests.Common;
+using Tests.Common.Builders;
 
 namespace API.Tests.Controllers;
 
-public class MiraclesControllerTests
+public class MiraclesControllerTests : ControllerTestBase<MiraclesController>
 {
-    #region Setup
+    private Mock<IMiraclesRepository> _miracleRepoMock = null!;
+    private Mock<IMiraclesService> _miracleServiceMock = null!;
 
-    private static MiraclesController CreateController(
-        out Mock<IMiraclesRepository> repo,
-        out Mock<IMiraclesService> service,
-        out Mock<UserManager<AppUser>> userManagerMock,
-        bool authenticated = true)
+    // =========================
+    // Setup
+    // =========================
+
+    private void SetupController(bool authenticated = true)
     {
-        repo = new Mock<IMiraclesRepository>();
-        service = new Mock<IMiraclesService>();
-
-        var store = new Mock<IUserStore<AppUser>>();
-        userManagerMock = new Mock<UserManager<AppUser>>(
-            store.Object, null!, null!, null!, null!, null!, null!, null!, null!
-        );
-
-        var controller = new MiraclesController(
-            repo.Object,
-            service.Object,
-            userManagerMock.Object
-        );
+        _miracleRepoMock = CreateLooseMock<IMiraclesRepository>();
+        _miracleServiceMock = CreateLooseMock<IMiraclesService>();
 
         if (authenticated)
         {
-            var user = new AppUser { Id = "user-1" };
-
-            userManagerMock
-                .Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
-                .ReturnsAsync(user);
-
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext
-                {
-                    User = new ClaimsPrincipal(
-                        new ClaimsIdentity(
-                            new[] { new Claim(ClaimTypes.NameIdentifier, user.Id) },
-                            "TestAuth"))
-                }
-            };
+            SetupAuthenticatedController((userManager, signInManager) =>
+                new MiraclesController(_miracleRepoMock.Object, _miracleServiceMock.Object, userManager.Object));
         }
         else
         {
-            userManagerMock
-                .Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
-                .ReturnsAsync((AppUser?)null);
-
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext()
-            };
+            SetupUnauthenticatedController((userManager, signInManager) =>
+                new MiraclesController(_miracleRepoMock.Object, _miracleServiceMock.Object, userManager.Object));
         }
-
-        return controller;
     }
 
-    #endregion
-
-    #region Factories
+    // =========================
+    // Factories
+    // =========================
 
     private static Miracle CreateMiracle(
         int id = 1,
@@ -91,56 +59,36 @@ public class MiraclesControllerTests
         };
     }
 
-    private static NewMiracleDto CreateNewMiracleDto(
-        string? title = null,
-        string? description = null,
-        string? markdownContent = null,
-        string? country = null,
-        string? image = null,
-        int century = 0)
-    {
-        return new NewMiracleDto
-        {
-            Title = title ?? "New Miracle",
-            Country = country ?? "Italy",
-            Century = century,
-            Image = image ?? "miracle.jpg",
-            Description = description ?? "Miracle description",
-            MarkdownContent = markdownContent ?? "miracle.md"
-        };
-    }
-
-
-    #endregion
-
-    #region GET
+    // =========================
+    // GET
+    // =========================
 
     [Fact]
     public async Task GetAllMiracles_ShouldReturnOk()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetAllAsync(It.IsAny<MiracleFilters>()))
+        _miracleRepoMock.Setup(r => r.GetAllAsync(It.IsAny<MiracleFilters>()))
             .ReturnsAsync(new PagedResult<Miracle>
             {
                 Items = [],
                 TotalCount = 0
             });
 
-        var result = await controller.GetAllMiracles(new MiracleFilters());
+        var result = await Controller.GetAllMiracles(new MiracleFilters());
 
-        Assert.IsType<OkObjectResult>(result);
+        AssertOkResult(result);
     }
 
     [Fact]
     public async Task GetById_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _miracleRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync((Miracle?)null);
 
-        var result = await controller.GetById(1);
+        var result = await Controller.GetById(1);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -148,83 +96,109 @@ public class MiraclesControllerTests
     [Fact]
     public async Task GetById_ShouldReturnOk_WhenFound()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _miracleRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync(CreateMiracle());
 
-        var result = await controller.GetById(1);
+        var result = await Controller.GetById(1);
 
-        Assert.IsType<OkObjectResult>(result);
+        AssertOkResult(result);
     }
 
     [Fact]
     public async Task GetMiracleBySlug_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetBySlugAsync("slug"))
+        _miracleRepoMock.Setup(r => r.GetBySlugAsync("slug"))
             .ReturnsAsync((Miracle?)null);
 
-        var result = await controller.GetMiracleBySlug("slug");
+        var result = await Controller.GetMiracleBySlug("slug");
 
         Assert.IsType<NotFoundResult>(result);
     }
 
-    #endregion
-
-    #region CREATE
+    // =========================
+    // CREATE
+    // =========================
 
     [Fact]
     public async Task CreateMiracle_ShouldReturnUnauthorized_WhenUserNotAuthenticated()
     {
-        var controller = CreateController(out _, out _, out _, authenticated: false);
+        SetupController(authenticated: false);
 
-        var result = await controller.CreateMiracle(CreateNewMiracleDto());
+        var result = await Controller.CreateMiracle(NewMiracleDtoBuilder.Default().Build());
 
-        Assert.IsType<UnauthorizedResult>(result);
+        AssertUnauthorized(result);
     }
 
     [Fact]
     public async Task CreateMiracle_ShouldReturnConflict_WhenDuplicate()
     {
-        var controller = CreateController(out _, out var service, out _);
+        SetupController();
 
-        service.Setup(s => s.CreateMiracleAsync(It.IsAny<NewMiracleDto>(), "user-1"))
+        _miracleServiceMock.Setup(s => s.CreateMiracleAsync(It.IsAny<NewMiracleDto>(), GetCurrentUserId()))
             .ReturnsAsync((int?)null);
 
-        var result = await controller.CreateMiracle(CreateNewMiracleDto());
+        var result = await Controller.CreateMiracle(NewMiracleDtoBuilder.Default().Build());
 
-        Assert.IsType<ConflictObjectResult>(result);
+        AssertConflict(result);
     }
 
     [Fact]
     public async Task CreateMiracle_ShouldReturnCreated_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service, out _);
+        SetupController();
 
-        service.Setup(s => s.CreateMiracleAsync(It.IsAny<NewMiracleDto>(), "user-1"))
+        _miracleServiceMock.Setup(s => s.CreateMiracleAsync(It.IsAny<NewMiracleDto>(), GetCurrentUserId()))
             .ReturnsAsync(10);
 
-        var result = await controller.CreateMiracle(CreateNewMiracleDto());
+        var result = await Controller.CreateMiracle(NewMiracleDtoBuilder.Default().Build());
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(nameof(MiraclesController.GetById), created.ActionName);
     }
 
-    #endregion
+    [Fact]
+    public async Task CreateMiracle_ShouldPassCorrectUserIdToService()
+    {
+        SetupController();
 
-    #region UPDATE
+        var dto = NewMiracleDtoBuilder.Default().Build();
+
+        _miracleServiceMock.Setup(s => s.CreateMiracleAsync(It.IsAny<NewMiracleDto>(), GetCurrentUserId()))
+            .ReturnsAsync(10)
+            .Verifiable();
+
+        await Controller.CreateMiracle(dto);
+
+        _miracleServiceMock.Verify(s => s.CreateMiracleAsync(It.IsAny<NewMiracleDto>(), GetCurrentUserId()), Times.Once);
+    }
+
+    // =========================
+    // UPDATE
+    // =========================
+
+    [Fact]
+    public async Task UpdateMiracle_ShouldReturnUnauthorized_WhenNotAuthenticated()
+    {
+        SetupController(authenticated: false);
+
+        var result = await Controller.UpdateMiracle(1, NewMiracleDtoBuilder.Default().Build());
+
+        AssertUnauthorized(result);
+    }
 
     [Fact]
     public async Task UpdateMiracle_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out _, out var service, out _);
+        SetupController();
 
-        service.Setup(s => s.UpdateMiracleAsync(1, It.IsAny<NewMiracleDto>(), "user-1"))
+        _miracleServiceMock.Setup(s => s.UpdateMiracleAsync(1, It.IsAny<NewMiracleDto>(), GetCurrentUserId()))
             .ReturnsAsync(false);
 
-        var result = await controller.UpdateMiracle(1, CreateNewMiracleDto());
+        var result = await Controller.UpdateMiracle(1, NewMiracleDtoBuilder.Default().Build());
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -232,29 +206,55 @@ public class MiraclesControllerTests
     [Fact]
     public async Task UpdateMiracle_ShouldReturnNoContent_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service, out _);
+        SetupController();
 
-        service.Setup(s => s.UpdateMiracleAsync(1, It.IsAny<NewMiracleDto>(), "user-1"))
+        _miracleServiceMock.Setup(s => s.UpdateMiracleAsync(1, It.IsAny<NewMiracleDto>(), GetCurrentUserId()))
             .ReturnsAsync(true);
 
-        var result = await controller.UpdateMiracle(1, CreateNewMiracleDto());
+        var result = await Controller.UpdateMiracle(1, NewMiracleDtoBuilder.Default().Build());
 
-        Assert.IsType<NoContentResult>(result);
+        AssertNoContent(result);
     }
 
-    #endregion
+    [Fact]
+    public async Task UpdateMiracle_ShouldPassCorrectUserIdToService()
+    {
+        SetupController();
 
-    #region DELETE
+        var dto = NewMiracleDtoBuilder.Default().Build();
+
+        _miracleServiceMock.Setup(s => s.UpdateMiracleAsync(1, It.IsAny<NewMiracleDto>(), GetCurrentUserId()))
+            .ReturnsAsync(true)
+            .Verifiable();
+
+        await Controller.UpdateMiracle(1, dto);
+
+        _miracleServiceMock.Verify(s => s.UpdateMiracleAsync(1, It.IsAny<NewMiracleDto>(), GetCurrentUserId()), Times.Once);
+    }
+
+    // =========================
+    // DELETE
+    // =========================
+
+    [Fact]
+    public async Task DeleteMiracle_ShouldReturnUnauthorized_WhenNotAuthenticated()
+    {
+        SetupController(authenticated: false);
+
+        var result = await Controller.DeleteMiracle(1);
+
+        AssertUnauthorized(result);
+    }
 
     [Fact]
     public async Task DeleteMiracle_ShouldReturnNotFound_WhenMissing()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _miracleRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync((Miracle?)null);
 
-        var result = await controller.DeleteMiracle(1);
+        var result = await Controller.DeleteMiracle(1);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -262,37 +262,54 @@ public class MiraclesControllerTests
     [Fact]
     public async Task DeleteMiracle_ShouldReturnNoContent_WhenSuccessful()
     {
-        var controller = CreateController(out var repo, out var service, out _);
+        SetupController();
 
         var miracle = CreateMiracle(slug: "miracle-slug");
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _miracleRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync(miracle);
 
-        service.Setup(s => s.DeleteMiracleAsync(miracle.Slug, "user-1"))
+        _miracleServiceMock.Setup(s => s.DeleteMiracleAsync(miracle.Slug, GetCurrentUserId()))
             .Returns(Task.CompletedTask);
 
-        var result = await controller.DeleteMiracle(1);
+        var result = await Controller.DeleteMiracle(1);
 
-        Assert.IsType<NoContentResult>(result);
+        AssertNoContent(result);
     }
 
-    #endregion
+    [Fact]
+    public async Task DeleteMiracle_ShouldCallServiceWithCorrectUserId()
+    {
+        SetupController();
 
-    #region COUNTRIES
+        var miracle = CreateMiracle(slug: "miracle-slug");
+
+        _miracleRepoMock.Setup(r => r.GetByIdAsync(1))
+            .ReturnsAsync(miracle);
+
+        _miracleServiceMock.Setup(s => s.DeleteMiracleAsync(miracle.Slug, GetCurrentUserId()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        await Controller.DeleteMiracle(1);
+
+        _miracleServiceMock.Verify(s => s.DeleteMiracleAsync(miracle.Slug, GetCurrentUserId()), Times.Once);
+    }
+
+    // =========================
+    // COUNTRIES
+    // =========================
 
     [Fact]
     public async Task GetMiracleCountries_ShouldReturnOk()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetCountriesAsync())
+        _miracleRepoMock.Setup(r => r.GetCountriesAsync())
             .ReturnsAsync(["Italy", "France"]);
 
-        var result = await controller.GetMiracleCountries();
+        var result = await Controller.GetMiracleCountries();
 
-        Assert.IsType<OkObjectResult>(result);
+        AssertOkResult(result);
     }
-
-    #endregion
 }

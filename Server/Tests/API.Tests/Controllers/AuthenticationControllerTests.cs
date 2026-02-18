@@ -1,106 +1,206 @@
 using API.Controllers;
 using Core.DTOs;
 using Core.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Moq;
+using Tests.Common;
+using Tests.Common.Builders;
 
 namespace API.Tests.Controllers;
 
-public class AuthenticationControllerTests
+/// <summary>
+/// Test suite for AuthenticationController.
+/// Tests login, logout, and password reset functionality.
+/// </summary>
+public class AuthenticationControllerTests : ControllerTestBase<AuthenticationController>
 {
-    private readonly Mock<UserManager<AppUser>> _userManagerMock;
-    private readonly Mock<SignInManager<AppUser>> _signInManagerMock;
-    private readonly Mock<IEmailSender<AppUser>> _emailSenderMock;
-    private readonly AuthenticationController _controller;
+    private Mock<IEmailSender<AppUser>> _emailSenderMock = null!;
 
-    public AuthenticationControllerTests()
+    /// <summary>
+    /// Helper to setup controller with mocked dependencies.
+    /// </summary>
+    private void SetupController()
     {
-        var userStoreMock = new Mock<IUserStore<AppUser>>();
-        _userManagerMock = new Mock<UserManager<AppUser>>(
-            userStoreMock.Object,
-            null, null, null, null, null, null, null, null);
+        _emailSenderMock = CreateLooseMock<IEmailSender<AppUser>>();
 
-        _signInManagerMock = new Mock<SignInManager<AppUser>>(
-            _userManagerMock.Object,
-            new HttpContextAccessor(),
-            new Mock<IUserClaimsPrincipalFactory<AppUser>>().Object,
-            Options.Create(new IdentityOptions()),
-            new Mock<ILogger<SignInManager<AppUser>>>().Object,
-            new Mock<IAuthenticationSchemeProvider>().Object,
-            new Mock<IUserConfirmation<AppUser>>().Object
+        SetupAuthenticatedController(
+            (userManager, signInManager) =>
+            {
+                return new AuthenticationController(
+                    signInManager.Object,
+                    _emailSenderMock.Object,
+                    GetNullLogger<AuthenticationController>()
+                );
+            }
         );
-
-        _emailSenderMock = new Mock<IEmailSender<AppUser>>();
-
-        _controller = new AuthenticationController(
-            _signInManagerMock.Object,
-            _emailSenderMock.Object,
-            NullLogger<AuthenticationController>.Instance
-        );
-
-        _controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext()
-        };
-
-        // minimal UrlHelper to avoid null
-        var urlHelperMock = new Mock<IUrlHelper>();
-        urlHelperMock.Setup(x => x.Action(It.IsAny<UrlActionContext>())).Returns("https://fake-link");
-        _controller.Url = urlHelperMock.Object;
     }
+
+    // -------------------- LOGIN --------------------
 
     [Fact]
     public async Task Login_InvalidEmail_ReturnsUnauthorized()
     {
-        var dto = new LoginDto { Email = "notfound@test.com", Password = "123" };
-        _userManagerMock.Setup(x => x.FindByEmailAsync(dto.Email)).ReturnsAsync((AppUser)null);
+        SetupController();
 
-        var result = await _controller.Login(dto);
+        var dto = LoginDtoBuilder.Default().Build();
 
-        Assert.IsType<UnauthorizedObjectResult>(result);
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync((AppUser?)null);
+
+        var result = await Controller.Login(dto);
+
+        AssertUnauthorized(result);
+    }
+
+    [Fact]
+    public async Task Login_ValidCredentials_ReturnsOk()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateDefaultUser();
+        var dto = LoginDtoBuilder.Default()
+            .WithEmail(user.Email!)
+            .Build();
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.IsEmailConfirmedAsync(user))
+            .ReturnsAsync(true);
+
+        SignInManagerMock
+            .Setup(s => s.PasswordSignInAsync(user, dto.Password, dto.RememberMe, false))
+            .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
+
+        var result = await Controller.Login(dto);
+
+        AssertOkResult(result);
     }
 
     [Fact]
     public async Task Login_EmailNotConfirmed_ReturnsUnauthorized_AndSendsEmail()
     {
-        var user = new AppUser { Id = "1", Email = "user@test.com" };
-        var dto = new LoginDto { Email = user.Email, Password = "123" };
+        SetupController();
 
-        _userManagerMock.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(user);
-        _userManagerMock.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(false);
-        _userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(user)).ReturnsAsync("token");
+        var user = TestDataFactory.CreateUnconfirmedUser();
+        var dto = LoginDtoBuilder.Default()
+            .WithEmail(user.Email!)
+            .Build();
 
-        var result = await _controller.Login(dto);
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(user.Email))
+            .ReturnsAsync(user);
 
-        _emailSenderMock.Verify(x => x.SendConfirmationLinkAsync(user, user.Email, "https://fake-link"), Times.Once);
-        Assert.IsType<UnauthorizedObjectResult>(result);
+        UserManagerMock
+            .Setup(x => x.IsEmailConfirmedAsync(user))
+            .ReturnsAsync(false);
+
+        UserManagerMock
+            .Setup(x => x.GenerateEmailConfirmationTokenAsync(user))
+            .ReturnsAsync("confirmation-token");
+
+        var result = await Controller.Login(dto);
+
+        AssertUnauthorized(result);
+        _emailSenderMock.Verify(
+            x => x.SendConfirmationLinkAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Once
+        );
     }
+
+    [Fact]
+    public async Task Login_LockedOutUser_ReturnsUnauthorized()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateLockedOutUser();
+        var dto = LoginDtoBuilder.Default()
+            .WithEmail(user.Email!)
+            .Build();
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.IsEmailConfirmedAsync(user))
+            .ReturnsAsync(true);
+
+        // PasswordSignInAsync should return LockedOut for locked-out users
+        SignInManagerMock
+            .Setup(s => s.PasswordSignInAsync(user, dto.Password, dto.RememberMe, false))
+            .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.LockedOut);
+
+        var result = await Controller.Login(dto);
+
+        AssertUnauthorized(result);
+    }
+
+    // -------------------- LOGOUT --------------------
 
     [Fact]
     public async Task Logout_CallsSignOut_ReturnsNoContent()
     {
-        var result = await _controller.Logout();
+        SetupController();
 
-        _signInManagerMock.Verify(x => x.SignOutAsync(), Times.Once);
-        Assert.IsType<NoContentResult>(result);
+        var result = await Controller.Logout();
+
+        AssertNoContent(result);
+        SignInManagerMock.Verify(x => x.SignOutAsync(), Times.Once);
+    }
+
+    // -------------------- FORGOT PASSWORD --------------------
+
+    [Fact]
+    public async Task ForgotPassword_UserDoesNotExist_ReturnsOk()
+    {
+        SetupController();
+
+        var dto = new ForgotPasswordDto { Email = "nonexistent@test.com" };
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync((AppUser?)null);
+
+        var result = await Controller.ForgotPassword(dto);
+
+        AssertOkResult(result);
+        _emailSenderMock.Verify(
+            x => x.SendPasswordResetLinkAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never
+        );
     }
 
     [Fact]
-    public async Task ForgotPassword_UserDoesNotExist_ReturnsOkWithoutSendingEmail()
+    public async Task ForgotPassword_ValidEmail_SendsResetEmail()
     {
-        var dto = new ForgotPasswordDto { Email = "notfound@test.com" };
-        _userManagerMock.Setup(x => x.FindByEmailAsync(dto.Email)).ReturnsAsync((AppUser)null);
+        SetupController();
 
-        var result = await _controller.ForgotPassword(dto);
+        var user = TestDataFactory.CreateDefaultUser();
+        var dto = new ForgotPasswordDto { Email = user.Email! };
 
-        _emailSenderMock.Verify(x => x.SendPasswordResetLinkAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-        Assert.IsType<OkObjectResult>(result);
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.IsEmailConfirmedAsync(user))
+            .ReturnsAsync(true);
+
+        UserManagerMock
+            .Setup(x => x.GeneratePasswordResetTokenAsync(user))
+            .ReturnsAsync("reset-token");
+
+        var result = await Controller.ForgotPassword(dto);
+
+        AssertOkResult(result);
+        _emailSenderMock.Verify(
+            x => x.SendPasswordResetLinkAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Once
+        );
     }
 }
