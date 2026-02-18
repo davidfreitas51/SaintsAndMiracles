@@ -1,9 +1,9 @@
-using Common;
 using Core.Enums;
 using Core.Models;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Tests.Common;
 
 namespace Infrastructure.Tests.Data;
 

@@ -1,17 +1,25 @@
-using Microsoft.EntityFrameworkCore;
+using Core.Enums;
 using Core.Models;
 using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Tests.Data;
 
 public class SeedDataTests
 {
-    private DataContext CreateContext()
+    private static DataContext CreateContext([System.Runtime.CompilerServices.CallerMemberName] string testName = "")
     {
         var options = new DbContextOptionsBuilder<DataContext>()
-            .UseInMemoryDatabase($"SeedTest_{System.Guid.NewGuid()}")
+            .UseInMemoryDatabase($"SeedDataTests_{testName}_{Guid.NewGuid()}")
             .Options;
+
         return new DataContext(options);
+    }
+
+    private static async Task AddTagAsync(DataContext context, string name, TagType tagType)
+    {
+        context.Tags.Add(new Tag { Name = name, TagType = tagType });
+        await context.SaveChangesAsync();
     }
 
     [Fact]
@@ -19,13 +27,28 @@ public class SeedDataTests
     {
         using var context = CreateContext();
 
-        // Garantir que não existe tag inicial
         Assert.Empty(context.Tags);
 
         await SeedData.SeedTags(context);
 
         Assert.NotEmpty(context.Tags);
-        Assert.All(context.Tags, t => Assert.False(string.IsNullOrWhiteSpace(t.Name)));
+        Assert.All(context.Tags, tag => Assert.False(string.IsNullOrWhiteSpace(tag.Name)));
+    }
+
+    [Fact]
+    public async Task SeedTags_ShouldNotDuplicateExistingCaseInsensitiveTags()
+    {
+        using var context = CreateContext();
+
+        context.Tags.Add(new Tag { Name = "FOUNDER", TagType = TagType.Saint });
+        await context.SaveChangesAsync();
+
+        await SeedData.SeedTags(context);
+
+        var founderSaintCount = await context.Tags
+            .CountAsync(t => t.TagType == TagType.Saint && t.Name.ToLower() == "founder");
+
+        Assert.Equal(1, founderSaintCount);
     }
 
     [Fact]
@@ -33,12 +56,10 @@ public class SeedDataTests
     {
         using var context = CreateContext();
 
-        // Criar tags fictícias
-        context.Tags.AddRange(new List<Tag>
-        {
-            new() { Name = "Founder", TagType = Core.Enums.TagType.Saint },
-            new() { Name = "Mystic", TagType = Core.Enums.TagType.Saint }
-        });
+        context.Tags.AddRange(
+            new Tag { Name = "Founder", TagType = TagType.Saint },
+            new Tag { Name = "Mystic", TagType = TagType.Saint }
+        );
         await context.SaveChangesAsync();
 
         await SeedData.SeedSaints(context);
@@ -46,7 +67,30 @@ public class SeedDataTests
         Assert.NotEmpty(context.Saints);
         var saint = context.Saints.Include(s => s.Tags).First();
         Assert.NotNull(saint.Tags);
-        Assert.All(saint.Tags, t => Assert.Contains(t, context.Tags));
+        Assert.All(saint.Tags, tag =>
+            Assert.Contains(context.Tags, persistedTag => persistedTag.Id == tag.Id));
+    }
+
+    [Fact]
+    public async Task SeedSaints_ShouldNotAddMore_WhenSaintsAlreadyExist()
+    {
+        using var context = CreateContext();
+
+        context.Saints.Add(new Saint
+        {
+            Name = "Existing Saint",
+            Slug = "existing-saint",
+            Country = "Italy",
+            Century = 13,
+            Image = "existing.webp",
+            Description = "Existing seeded saint",
+            MarkdownPath = "existing-saint.md"
+        });
+        await context.SaveChangesAsync();
+
+        await SeedData.SeedSaints(context);
+
+        Assert.Equal(1, await context.Saints.CountAsync());
     }
 
     [Fact]
@@ -54,15 +98,15 @@ public class SeedDataTests
     {
         using var context = CreateContext();
 
-        context.Tags.Add(new Tag { Name = "Healing", TagType = Core.Enums.TagType.Miracle });
-        await context.SaveChangesAsync();
+        await AddTagAsync(context, "Healing", TagType.Miracle);
 
         await SeedData.SeedMiracles(context);
 
         Assert.NotEmpty(context.Miracles);
         var miracle = context.Miracles.Include(m => m.Tags).First();
         Assert.NotNull(miracle.Tags);
-        Assert.All(miracle.Tags, t => Assert.Contains(t, context.Tags));
+        Assert.All(miracle.Tags, tag =>
+            Assert.Contains(context.Tags, persistedTag => persistedTag.Id == tag.Id));
     }
 
     [Fact]
@@ -70,14 +114,14 @@ public class SeedDataTests
     {
         using var context = CreateContext();
 
-        context.Tags.Add(new Tag { Name = "Marian", TagType = Core.Enums.TagType.Prayer });
-        await context.SaveChangesAsync();
+        await AddTagAsync(context, "Marian", TagType.Prayer);
 
         await SeedData.SeedPrayers(context);
 
         Assert.NotEmpty(context.Prayers);
         var prayer = context.Prayers.Include(p => p.Tags).First();
         Assert.NotNull(prayer.Tags);
-        Assert.All(prayer.Tags, t => Assert.Contains(t, context.Tags));
+        Assert.All(prayer.Tags, tag =>
+            Assert.Contains(context.Tags, persistedTag => persistedTag.Id == tag.Id));
     }
 }
