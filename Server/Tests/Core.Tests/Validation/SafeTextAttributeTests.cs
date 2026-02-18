@@ -3,9 +3,13 @@ using Xunit;
 
 namespace Core.Tests.Validation;
 
-public class SafeTextAttributeTests
+/// <summary>
+/// Tests for SafeTextAttribute validation.
+/// Ensures text content is safe from HTML injection and XSS attacks.
+/// </summary>
+public class SafeTextAttributeTests : ValidationTestBase
 {
-    private class TestDto
+    private class TestModel
     {
         [SafeText]
         public string? Text { get; set; }
@@ -17,70 +21,142 @@ public class SafeTextAttributeTests
         public object? NotAString { get; set; }
     }
 
+    // ==================== VALID TEXT ====================
+
     [Fact]
-    public void Should_Pass_When_Value_IsNull()
+    public void Should_Pass_Null()
     {
-        var dto = new TestDto { Text = null };
+        var model = new TestModel { Text = null };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Empty(results);
+        AssertValid(results);
+    }
+
+    [Theory]
+    [InlineData("Just a normal text")]
+    [InlineData("Text with 123 numbers")]
+    [InlineData("Text with punctuation! How are you?")]
+    [InlineData("Multiple\nLines\nOf\nText")]
+    [InlineData("Unicode characters: 日本語, العربية, Ελληνικά")]
+    [InlineData("Email-like text: contact at example.com")]
+    [InlineData("URL mentions: example.com (no protocol)")]
+    public void Should_Pass_SafeText(string safeText)
+    {
+        var model = new TestModel { Text = safeText };
+
+        var results = Validate(model);
+
+        AssertValid(results);
+    }
+
+    // ==================== HTML TAGS ====================
+
+    [Theory]
+    [InlineData("<b>bold</b>")]
+    [InlineData("<script>alert('xss')</script>")]
+    [InlineData("<img src=x>")]
+    [InlineData("<div>content</div>")]
+    [InlineData("Text before <span>tag</span> text after")]
+    [InlineData("<a href='malicious'>click</a>")]
+    [InlineData("</br>")]
+    [InlineData("<style>body{display:none}</style>")]
+    [InlineData("<!-- comment -->")]
+    public void Should_Fail_HtmlTags(string textWithHtml)
+    {
+        var model = new TestModel { Text = textWithHtml };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Text), "invalid format");
+    }
+
+    // ==================== HTML ENTITIES ====================
+
+    [Theory]
+    [InlineData("Hello &amp; World")]
+    [InlineData("Copyright &copy; 2024")]
+    [InlineData("Less than &lt; and greater than &gt;")]
+    [InlineData("Non-breaking&nbsp;space")]
+    [InlineData("Quote&quot;marks")]
+    [InlineData("&apos;apostrophe")]
+    public void Should_Fail_HtmlEntities(string textWithEntities)
+    {
+        var model = new TestModel { Text = textWithEntities };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Text), "invalid format");
+    }
+
+    // ==================== EDGE CASES ====================
+
+    [Fact]
+    public void Should_Pass_EmptyString()
+    {
+        var model = new TestModel { Text = "" };
+
+        var results = Validate(model);
+
+        AssertValid(results);
     }
 
     [Fact]
-    public void Should_Pass_When_Text_Is_Valid()
+    public void Should_Pass_WhitespaceOnly()
     {
-        var dto = new TestDto { Text = "Just a normal text" };
+        var model = new TestModel { Text = "   \t\n  " };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Empty(results);
+        AssertValid(results);
     }
 
-    [Fact]
-    public void Should_Fail_When_Text_Contains_HtmlTags()
+    [Theory]
+    [InlineData("Text with < but no closing")]
+    [InlineData("Text with > but no opening")]
+    public void Should_Pass_IsolatedBrackets(string textWithBrackets)
     {
-        var dto = new TestDto { Text = "<b>bold</b>" };
+        var model = new TestModel { Text = textWithBrackets };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
+
+        AssertValid(results);
+    }
+
+    // Note: "Math: 5 < 10 > 3" looks like a tag "< 10 >" to the HTML regex
+    [Fact]
+    public void Should_Fail_MathExpressionLookingLikeTag()
+    {
+        var model = new TestModel { Text = "Math: 5 < 10 > 3" };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Text), "invalid format");
+    }
+
+    // ==================== CUSTOM ERROR MESSAGE ====================
+
+    [Fact]
+    public void Should_UseCustomErrorMessage()
+    {
+        var model = new TestModel { CustomText = "<i>test</i>" };
+
+        var results = Validate(model);
 
         Assert.Single(results);
-        Assert.Contains(nameof(dto.Text), results[0].MemberNames);
-        Assert.Contains("invalid format", results[0].ErrorMessage);
-    }
-
-    [Fact]
-    public void Should_Fail_When_Text_Contains_HtmlEntities()
-    {
-        var dto = new TestDto { Text = "Hello &amp; World" };
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.Text), results[0].MemberNames);
-        Assert.Contains("invalid format", results[0].ErrorMessage);
-    }
-
-    [Fact]
-    public void Should_Use_Custom_ErrorMessage_When_Provided()
-    {
-        var dto = new TestDto { CustomText = "<i>test</i>" };
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.CustomText), results[0].MemberNames);
+        Assert.Contains(nameof(TestModel.CustomText), results[0].MemberNames);
         Assert.Equal("Custom error message", results[0].ErrorMessage);
     }
 
+    // ==================== TYPE VALIDATION ====================
+
     [Fact]
-    public void Should_Fail_When_Value_IsNotString()
+    public void Should_Fail_NonStringType()
     {
-        var dto = new TestDto { NotAString = 123 };
+        var model = new TestModel { NotAString = 123 };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Single(results);
-        Assert.Contains("SafeText can only be applied to string fields", results[0].ErrorMessage);
+        AssertInvalid(results, null, "SafeText can only be applied to string fields");
     }
 }
