@@ -4,77 +4,168 @@ using Xunit;
 
 namespace Core.Tests.Validation;
 
-public class PersonNameAttributeTests
+/// <summary>
+/// Tests for PersonNameAttribute validation.
+/// Ensures person names meet length and character requirements.
+/// </summary>
+public class PersonNameAttributeTests : ValidationTestBase
 {
-    private class TestDto
+    private class TestModel
     {
         [PersonName]
         public string? Name { get; set; }
     }
 
+    // ==================== VALID NAMES ====================
 
-    [Fact]
-    public void Should_Pass_When_Name_IsValid()
+    [Theory]
+    [InlineData("John")]
+    [InlineData("José da Silva")]
+    [InlineData("Mary Jane")]
+    [InlineData("François Müller")]
+    [InlineData("María José")]
+    [InlineData("O'Brien")]
+    [InlineData("Jean-Pierre")]
+    [InlineData("Anne-Marie")]
+    [InlineData("João Paulo II")]
+    [InlineData("Nuño")]
+    public void Should_Pass_ValidNames(string validName)
     {
-        var dto = new TestDto { Name = "José da Silva" };
+        var model = new TestModel { Name = validName };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Empty(results);
+        AssertValid(results);
     }
 
     [Fact]
-    public void Should_Pass_When_Name_IsNull()
+    public void Should_Pass_Null()
     {
-        var dto = new TestDto { Name = null };
+        var model = new TestModel { Name = null };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Empty(results);
+        AssertValid(results);
+    }
+
+    // ==================== LENGTH VALIDATION ====================
+
+    [Theory]
+    [InlineData("J")]
+    [InlineData("A")]
+    public void Should_Fail_TooShort(string shortName)
+    {
+        var model = new TestModel { Name = shortName };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Name), "between");
     }
 
     [Fact]
-    public void Should_Fail_When_Name_IsTooShort()
+    public void Should_Pass_MinLength()
     {
-        var dto = new TestDto { Name = "J" };
+        var model = new TestModel { Name = "Jo" }; // Exactly 2 chars
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.Name), results[0].MemberNames);
-        Assert.Contains("between", results[0].ErrorMessage);
+        AssertValid(results);
     }
 
     [Fact]
-    public void Should_Fail_When_Name_IsTooLong()
+    public void Should_Fail_TooLong()
     {
-        var dto = new TestDto { Name = new string('A', 101) };
+        var model = new TestModel { Name = new string('A', 101) };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.Name), results[0].MemberNames);
-        Assert.Contains("between", results[0].ErrorMessage);
+        AssertInvalid(results, nameof(TestModel.Name), "between");
     }
+
+    [Fact]
+    public void Should_Pass_MaxLength()
+    {
+        var model = new TestModel { Name = new string('A', 100) }; // Exactly 100 chars
+
+        var results = Validate(model);
+
+        AssertValid(results);
+    }
+
+    // ==================== INVALID CHARACTERS ====================
 
     [Theory]
     [InlineData("John123")]
     [InlineData("Mary@Doe")]
     [InlineData("!Invalid")]
     [InlineData("Peter#Smith")]
-    public void Should_Fail_When_Name_Has_InvalidCharacters(string invalidName)
+    [InlineData("User$Name")]
+    [InlineData("Test%Name")]
+    [InlineData("Name&Name")]
+    [InlineData("Name*Name")]
+    [InlineData("Name(Test)")]
+    [InlineData("Name=Value")]
+    [InlineData("Name+Sign")]
+    [InlineData("Name[bracket]")]
+    [InlineData("Name{brace}")]
+    [InlineData("Name|Pipe")]
+    [InlineData("Name\\Backslash")]
+    [InlineData("Name/Slash")]
+    [InlineData("Name<Less")]
+    [InlineData("Name>Greater")]
+    public void Should_Fail_InvalidCharacters(string invalidName)
     {
-        var dto = new TestDto { Name = invalidName };
+        var model = new TestModel { Name = invalidName };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(model);
 
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.Name), results[0].MemberNames);
-        Assert.Contains("invalid format", results[0].ErrorMessage);
+        AssertInvalid(results, nameof(TestModel.Name), "invalid format");
     }
 
+    [Theory]
+    [InlineData("Name\tTab")]
+    [InlineData("Name\nNewline")]
+    [InlineData("Name\rReturn")]
+    [InlineData("Name\u0001Control")]
+    public void Should_Fail_ControlCharacters(string nameWithControl)
+    {
+        var model = new TestModel { Name = nameWithControl };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Name), "invalid format");
+    }
+
+    // ==================== EDGE CASES ====================
+
+    [Theory]
+    [InlineData("Name  Double  Space")]
+    [InlineData("Name   Triple   Space")]
+    public void Should_Pass_MultipleSpaces(string nameWithSpaces)
+    {
+        var model = new TestModel { Name = nameWithSpaces };
+
+        var results = Validate(model);
+
+        AssertValid(results);
+    }
+
+    [Theory]
+    [InlineData(" LeadingSpace")]
+    [InlineData("TrailingSpace ")]
+    public void Should_Pass_LeadingOrTrailingSpaces(string nameWithSpaces)
+    {
+        var model = new TestModel { Name = nameWithSpaces };
+
+        var results = Validate(model);
+
+        AssertValid(results);
+    }
+
+    // ==================== TYPE VALIDATION ====================
+
     [Fact]
-    public void Should_Fail_When_Value_IsNotString()
+    public void Should_Fail_NonStringType()
     {
         var attr = new PersonNameAttribute();
         var context = new ValidationContext(new { }) { MemberName = "TestField" };
