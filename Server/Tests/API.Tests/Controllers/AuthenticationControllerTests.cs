@@ -203,4 +203,79 @@ public class AuthenticationControllerTests : ControllerTestBase<AuthenticationCo
             Times.Once
         );
     }
+
+    // -------------------- RESET PASSWORD --------------------
+
+    [Fact]
+    public async Task ResetPassword_ValidToken_ReturnsOk()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateDefaultUser();
+        var dto = new ResetPasswordDto
+        {
+            Email = user.Email!,
+            Token = "valid-reset-token",
+            NewPassword = "NewPassword123!"
+        };
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.ResetPasswordAsync(user, dto.Token, dto.NewPassword))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var result = await Controller.ResetPassword(dto);
+
+        AssertOkResult(result);
+    }
+
+    [Fact]
+    public async Task ResetPassword_UserNotFound_ReturnsBadRequest()
+    {
+        SetupController();
+
+        var dto = new ResetPasswordDto
+        {
+            Email = "nonexistent@test.com",
+            Token = "token",
+            NewPassword = "NewPassword123!"
+        };
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync((AppUser?)null);
+
+        var result = await Controller.ResetPassword(dto);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ResetPassword_InvalidToken_ReturnsBadRequest()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateDefaultUser();
+        var dto = new ResetPasswordDto
+        {
+            Email = user.Email!,
+            Token = "invalid-token",
+            NewPassword = "NewPassword123!"
+        };
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.ResetPasswordAsync(user, dto.Token, dto.NewPassword))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid token" }));
+
+        var result = await Controller.ResetPassword(dto);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
 }

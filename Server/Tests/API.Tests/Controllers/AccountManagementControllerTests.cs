@@ -154,4 +154,129 @@ public class AccountManagementControllerTests : ControllerTestBase<AccountManage
 
         AssertOkResult(result);
     }
+
+    // ===================== EMAIL CHANGE =====================
+
+    [Fact]
+    public async Task RequestEmailChange_ShouldReturnOk_WhenValid()
+    {
+        SetupController();
+
+        var user = new AppUser
+        {
+            Id = AuthenticatedUser.Id,
+            Email = "old@test.com"
+        };
+
+        UserManagerMock
+            .Setup(u => u.FindByIdAsync(AuthenticatedUser.Id))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(u => u.GenerateChangeEmailTokenAsync(user, It.IsAny<string>()))
+            .ReturnsAsync("change-email-token");
+
+        var dto = new ChangeEmailRequestDto { NewEmail = "new@test.com" };
+
+        var result = await Controller.RequestEmailChange(dto);
+
+        AssertOkResult(result);
+        _emailSenderMock.Verify(
+            x => x.SendConfirmationLinkAsync(user, dto.NewEmail, It.IsAny<string>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task RequestEmailChange_ShouldReturnBadRequest_WhenSameEmail()
+    {
+        SetupController();
+
+        var user = new AppUser
+        {
+            Id = AuthenticatedUser.Id,
+            Email = "test@test.com"
+        };
+
+        UserManagerMock
+            .Setup(u => u.FindByIdAsync(AuthenticatedUser.Id))
+            .ReturnsAsync(user);
+
+        var dto = new ChangeEmailRequestDto { NewEmail = user.Email };
+
+        var result = await Controller.RequestEmailChange(dto);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ConfirmEmailChange_ShouldRedirectToSuccess_WhenValid()
+    {
+        SetupController();
+
+        var user = new AppUser
+        {
+            Id = AuthenticatedUser.Id,
+            Email = "old@test.com",
+            UserName = "old@test.com"
+        };
+
+        UserManagerMock
+            .Setup(u => u.FindByIdAsync(user.Id))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(u => u.ChangeEmailAsync(user, "new@test.com", "valid-token"))
+            .ReturnsAsync(IdentityResult.Success);
+
+        UserManagerMock
+            .Setup(u => u.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var result = await Controller.ConfirmEmailChange(user.Id, "new@test.com", "valid-token");
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Contains("success=true", redirect.Url);
+        Assert.Contains("logout=true", redirect.Url);
+    }
+
+    [Fact]
+    public async Task ConfirmEmailChange_ShouldRedirectToFailure_WhenUserNotFound()
+    {
+        SetupController();
+
+        UserManagerMock
+            .Setup(u => u.FindByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync((AppUser?)null);
+
+        var result = await Controller.ConfirmEmailChange("invalid-id", "new@test.com", "token");
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Contains("success=false", redirect.Url);
+    }
+
+    [Fact]
+    public async Task ConfirmEmailChange_ShouldRedirectToFailure_WhenTokenInvalid()
+    {
+        SetupController();
+
+        var user = new AppUser
+        {
+            Id = AuthenticatedUser.Id,
+            Email = "old@test.com"
+        };
+
+        UserManagerMock
+            .Setup(u => u.FindByIdAsync(user.Id))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(u => u.ChangeEmailAsync(user, "new@test.com", "invalid-token"))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid token" }));
+
+        var result = await Controller.ConfirmEmailChange(user.Id, "new@test.com", "invalid-token");
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Contains("success=false", redirect.Url);
+    }
 }

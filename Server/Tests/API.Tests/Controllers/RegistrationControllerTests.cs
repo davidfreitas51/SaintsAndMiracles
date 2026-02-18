@@ -120,4 +120,150 @@ public class RegistrationControllerTests : ControllerTestBase<RegistrationContro
 
         Assert.IsType<CreatedResult>(result);
     }
+
+    // -------------------- EMAIL CONFIRMATION --------------------
+
+    [Fact]
+    public async Task ConfirmEmail_ShouldRedirectToSuccess_WhenValid()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateDefaultUser();
+        var token = "valid-token";
+
+        var envMock = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+        envMock.SetupGet(e => e.EnvironmentName).Returns("Production");
+
+        var configMock = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+        configMock.Setup(c => c["Frontend:BaseUrl"]).Returns("http://test-frontend");
+
+        UserManagerMock
+            .Setup(x => x.FindByIdAsync(user.Id))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.ConfirmEmailAsync(user, token))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var result = await Controller.ConfirmEmail(user.Id, token, envMock.Object, configMock.Object);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Contains("success=true", redirect.Url);
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_ShouldRedirectToFailure_WhenUserNotFound()
+    {
+        SetupController();
+
+        var envMock = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+        envMock.SetupGet(e => e.EnvironmentName).Returns("Production");
+
+        var configMock = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+        configMock.Setup(c => c["Frontend:BaseUrl"]).Returns("http://test-frontend");
+
+        UserManagerMock
+            .Setup(x => x.FindByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync((AppUser?)null);
+
+        var result = await Controller.ConfirmEmail("invalid-id", "token", envMock.Object, configMock.Object);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Contains("success=false", redirect.Url);
+    }
+
+    [Fact]
+    public async Task ConfirmEmail_ShouldRedirectToFailure_WhenTokenInvalid()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateDefaultUser();
+
+        var envMock = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+        envMock.SetupGet(e => e.EnvironmentName).Returns("Production");
+
+        var configMock = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+        configMock.Setup(c => c["Frontend:BaseUrl"]).Returns("http://test-frontend");
+
+        UserManagerMock
+            .Setup(x => x.FindByIdAsync(user.Id))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.ConfirmEmailAsync(user, It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid token" }));
+
+        var result = await Controller.ConfirmEmail(user.Id, "invalid-token", envMock.Object, configMock.Object);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Contains("success=false", redirect.Url);
+    }
+
+    // -------------------- RESEND CONFIRMATION --------------------
+
+    [Fact]
+    public async Task ResendConfirmation_ShouldReturnOk_WhenValid()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateDefaultUser();
+        var dto = new ResendConfirmationDto { Email = user.Email! };
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.IsEmailConfirmedAsync(user))
+            .ReturnsAsync(false);
+
+        UserManagerMock
+            .Setup(x => x.GenerateEmailConfirmationTokenAsync(user))
+            .ReturnsAsync("confirmation-token");
+
+        var result = await Controller.ResendConfirmation(dto);
+
+        AssertOkResult(result);
+        _emailSenderMock.Verify(
+            x => x.SendConfirmationLinkAsync(user, user.Email, It.IsAny<string>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task ResendConfirmation_ShouldReturnNotFound_WhenUserDoesNotExist()
+    {
+        SetupController();
+
+        var dto = new ResendConfirmationDto { Email = "nonexistent@test.com" };
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync((AppUser?)null);
+
+        var result = await Controller.ResendConfirmation(dto);
+
+        Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ResendConfirmation_ShouldReturnBadRequest_WhenEmailAlreadyConfirmed()
+    {
+        SetupController();
+
+        var user = TestDataFactory.CreateDefaultUser();
+        var dto = new ResendConfirmationDto { Email = user.Email! };
+
+        UserManagerMock
+            .Setup(x => x.FindByEmailAsync(dto.Email))
+            .ReturnsAsync(user);
+
+        UserManagerMock
+            .Setup(x => x.IsEmailConfirmedAsync(user))
+            .ReturnsAsync(true);
+
+        var result = await Controller.ResendConfirmation(dto);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
 }
