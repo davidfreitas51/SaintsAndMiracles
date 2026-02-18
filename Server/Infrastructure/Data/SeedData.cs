@@ -13,7 +13,10 @@ using Microsoft.Extensions.Logging;
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
 public static class SeedData
 {
-    internal static string basePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data/SeedData");
+    internal static string basePath = Path.Combine(
+        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? AppContext.BaseDirectory,
+        "Data/SeedData"
+    );
     internal static JsonSerializerOptions jsonOptions = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
@@ -25,12 +28,26 @@ public static class SeedData
         RoleManager<IdentityRole> roleManager,
         UserManager<AppUser> userManager,
         ITokenService tokenService,
-        ILogger logger
-    ){
+        ILogger logger,
+        bool bootstrapEnabled,
+        int bootstrapTokenTtlHours,
+        bool logPlainTokenToPersistentLogs,
+        bool writePlainTokenToConsole
+    )
+    {
         await context.Database.MigrateAsync();
 
         await SeedRoles(roleManager);
-        await SeedBootstrapToken(context, userManager, tokenService, logger);
+        await SeedBootstrapToken(
+            context,
+            userManager,
+            tokenService,
+            logger,
+            bootstrapEnabled,
+            bootstrapTokenTtlHours,
+            logPlainTokenToPersistentLogs,
+            writePlainTokenToConsole
+        );
         await SeedTags(context);
         await SeedSaints(context);
         await SeedMiracles(context);
@@ -55,9 +72,41 @@ public static class SeedData
         }
     }
 
-    private static async Task SeedBootstrapToken(DataContext context, UserManager<AppUser> userManager, ITokenService tokenService, ILogger logger)
+    private static async Task SeedBootstrapToken(
+        DataContext context,
+        UserManager<AppUser> userManager,
+        ITokenService tokenService,
+        ILogger logger,
+        bool bootstrapEnabled,
+        int bootstrapTokenTtlHours,
+        bool logPlainTokenToPersistentLogs,
+        bool writePlainTokenToConsole)
     {
-        if ((await userManager.GetUsersInRoleAsync("SuperAdmin")).Any()) return;
+        if ((await userManager.GetUsersInRoleAsync("SuperAdmin")).Any())
+        {
+            return;
+        }
+
+        if (!bootstrapEnabled)
+        {
+            logger.LogWarning("No SuperAdmin user found. Bootstrap token creation is disabled by configuration.");
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var effectiveTtlHours = Math.Max(1, bootstrapTokenTtlHours);
+
+        var hasActiveBootstrapToken = await context.AccountTokens.AnyAsync(t =>
+            t.Role == "SuperAdmin" &&
+            t.Purpose == "InitialAdminBootstrap" &&
+            !t.IsUsed &&
+            t.ExpiresAtUtc > now);
+
+        if (hasActiveBootstrapToken)
+        {
+            logger.LogWarning("No SuperAdmin user found. An active bootstrap token already exists.");
+            return;
+        }
 
         var clearToken = tokenService.GenerateClearToken();
         var hash = tokenService.HashTokenBase64(clearToken);
@@ -66,8 +115,8 @@ public static class SeedData
         {
             Hash = hash,
             Role = "SuperAdmin",
-            CreatedAtUtc = DateTimeOffset.UtcNow,
-            ExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(1),
+            CreatedAtUtc = now,
+            ExpiresAtUtc = now.AddHours(effectiveTtlHours),
             Purpose = "InitialAdminBootstrap",
             IssuedTo = "System"
         };
@@ -75,7 +124,9 @@ public static class SeedData
         context.AccountTokens.Add(bootstrapToken);
         await context.SaveChangesAsync();
 
-        logger.LogWarning("""
+        if (logPlainTokenToPersistentLogs)
+        {
+            logger.LogWarning("""
         =================================================
         NO SUPER-ADMIN USERS FOUND
         Use this bootstrap token to create the first super admin account:
@@ -83,6 +134,29 @@ public static class SeedData
         This token will expire at: {Expiration}
         =================================================
         """, clearToken, bootstrapToken.ExpiresAtUtc);
+        }
+        else
+        {
+            logger.LogWarning(
+                "No SuperAdmin users found. Bootstrap token created and expires at {Expiration}. Plain token output to persistent logs is disabled.",
+                bootstrapToken.ExpiresAtUtc
+            );
+        }
+
+        if (writePlainTokenToConsole)
+        {
+            var originalForegroundColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("""
+        =================================================
+        NO SUPER-ADMIN USERS FOUND
+        Use this bootstrap token to create the first super admin account:
+        {0}
+        This token will expire at: {1:O}
+        =================================================
+        """, clearToken, bootstrapToken.ExpiresAtUtc);
+            Console.ForegroundColor = originalForegroundColor;
+        }
     }
 
     internal static async Task SeedTags(DataContext context)

@@ -20,7 +20,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
 builder.Services.AddApiControllers();
 
 // Infrastructure
-builder.Services.AddCorsPolicy();
+builder.Services.AddCorsPolicy(builder.Environment);
 builder.Services.AddRateLimiting();
 builder.Services.AddApplicationCookieConfig();
 
