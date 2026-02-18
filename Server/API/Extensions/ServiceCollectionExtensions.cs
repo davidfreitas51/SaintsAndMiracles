@@ -28,18 +28,21 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
+    public static IServiceCollection AddCorsPolicy(this IServiceCollection services, IHostEnvironment env)
     {
-        services.AddCors(options =>
+        if (env.IsDevelopment())
         {
-            options.AddDefaultPolicy(policy =>
+            services.AddCors(options =>
             {
-                policy.AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .WithOrigins("http://localhost:4200")
-                      .AllowCredentials();
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .WithOrigins("http://localhost:4200")
+                          .AllowCredentials();
+                });
             });
-        });
+        }
 
         return services;
     }
