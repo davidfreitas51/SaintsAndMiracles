@@ -33,7 +33,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_Null()
     {
         var model = new TestModel { Numbers = null };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -45,7 +45,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_EmptyList()
     {
         var model = new TestModel { Numbers = new List<int>() };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -55,7 +55,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_EmptyArray()
     {
         var model = new TestModel { Array = Array.Empty<int>() };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -65,7 +65,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_EmptyHashSet()
     {
         var model = new TestModel { HashSet = new HashSet<string>() };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -77,7 +77,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_ExactlyAtLimit()
     {
         var model = new TestModel { Numbers = new List<int> { 1, 2, 3 } };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -87,7 +87,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_BelowLimit()
     {
         var model = new TestModel { Numbers = new List<int> { 1, 2 } };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -97,7 +97,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_SingleItem()
     {
         var model = new TestModel { Numbers = new List<int> { 1 } };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -107,7 +107,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_Array_WithinLimit()
     {
         var model = new TestModel { Array = new[] { 1, 2 } };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -117,7 +117,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_HashSet_WithinLimit()
     {
         var model = new TestModel { HashSet = new HashSet<string> { "one" } };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -129,7 +129,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Fail_ExceedsLimit()
     {
         var model = new TestModel { Numbers = new List<int> { 1, 2, 3, 4 } };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Numbers), "must contain at most 3 items");
@@ -139,7 +139,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Fail_Array_ExceedsLimit()
     {
         var model = new TestModel { Array = new[] { 1, 2, 3 } };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Array), "must contain at most 2 items");
@@ -149,7 +149,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Fail_HashSet_ExceedsLimit()
     {
         var model = new TestModel { HashSet = new HashSet<string> { "one", "two" } };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.HashSet), "must contain at most 1");
@@ -159,7 +159,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Fail_ManyItems()
     {
         var model = new TestModel { Strings = Enumerable.Range(1, 10).Select(i => i.ToString()).ToList() };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Strings), "must contain at most 5 items");
@@ -171,7 +171,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Fail_NonCollectionType()
     {
         var model = new TestModel { NotACollection = new object() };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.NotACollection), "must be a collection");
@@ -182,7 +182,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Pass_StringAsCollection()
     {
         var model = new TestModel { NotACollection = "a" }; // 1 char, under limit of 2
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -192,7 +192,7 @@ public class MaxItemsAttributeTests : ValidationTestBase
     public void Should_Fail_IntegerAsCollection()
     {
         var model = new TestModel { NotACollection = 123 };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.NotACollection), "must be a collection");

@@ -63,7 +63,7 @@ public class ImageSourceAttributeTests : ValidationTestBase
     public void Should_Pass_LongBase64Image()
     {
         var longBase64 = "data:image/png;base64," + new string('A', 10000);
-        
+
         var result = Validate(longBase64);
 
         AssertValidationSuccess(result);
@@ -190,7 +190,7 @@ public class ImageSourceAttributeTests : ValidationTestBase
     }
 
     // ==================== INVALID CHARACTERS ====================
-    
+
     // Note: Path.GetInvalidPathChars() varies by OS
     // On Linux, fewer characters are invalid than on Windows
 }

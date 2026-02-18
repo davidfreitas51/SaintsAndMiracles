@@ -28,7 +28,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Pass_ValidSlugs(string validSlug)
     {
         var model = new TestModel { Slug = validSlug };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -38,7 +38,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Pass_VeryLongSlug()
     {
         var model = new TestModel { Slug = new string('a', 150) };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -48,7 +48,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Pass_Null()
     {
         var model = new TestModel { Slug = null };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -60,7 +60,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_Empty()
     {
         var model = new TestModel { Slug = "" };
-        
+
         var results = Validate(model);
 
         // Empty string triggers "cannot be empty" check first
@@ -74,7 +74,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_Whitespace(string whitespaceSlug)
     {
         var model = new TestModel { Slug = whitespaceSlug };
-        
+
         var results = Validate(model);
 
         // Whitespace triggers "cannot be empty" check after trimming
@@ -90,7 +90,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_StartsWithDash(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");
@@ -102,7 +102,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_EndsWithDash(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");
@@ -116,7 +116,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_ConsecutiveDashes(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");
@@ -135,7 +135,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_Uppercase(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");
@@ -170,7 +170,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_SpecialCharacters(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");
@@ -185,7 +185,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_Spaces(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");
@@ -199,7 +199,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_ControlCharacters(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");
@@ -247,7 +247,7 @@ public class SafeSlugAttributeTests : ValidationTestBase
     public void Should_Fail_UnicodeCharacters(string invalidSlug)
     {
         var model = new TestModel { Slug = invalidSlug };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Slug), "invalid format");

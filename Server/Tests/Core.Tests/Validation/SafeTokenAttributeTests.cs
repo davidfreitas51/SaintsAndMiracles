@@ -22,7 +22,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Pass_Null()
     {
         var model = new TestModel { Token = null };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -34,7 +34,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Fail_Empty()
     {
         var model = new TestModel { Token = "" };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Token), "invalid format");
@@ -48,7 +48,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Fail_Whitespace(string whitespace)
     {
         var model = new TestModel { Token = whitespace };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Token), "invalid format");
@@ -64,7 +64,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Pass_ValidTokens(string validToken)
     {
         var model = new TestModel { Token = validToken };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -74,7 +74,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Pass_ExactlyMinLength()
     {
         var model = new TestModel { Token = new string('A', 32) };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -115,7 +115,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Fail_SpecialCharacters(string invalidToken)
     {
         var model = new TestModel { Token = invalidToken };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Token), "invalid format");
@@ -129,7 +129,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Fail_Spaces(string invalidToken)
     {
         var model = new TestModel { Token = invalidToken };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Token), "invalid format");
@@ -144,7 +144,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Fail_ControlCharacters(string invalidToken)
     {
         var model = new TestModel { Token = invalidToken };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Token), "invalid format");
@@ -156,7 +156,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Fail_TooShort()
     {
         var model = new TestModel { Token = "abc" };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Token), "invalid format");
@@ -166,7 +166,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Pass_LongToken()
     {
         var model = new TestModel { Token = new string('A', 100) };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -176,7 +176,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     public void Should_Fail_TooLong()
     {
         var model = new TestModel { Token = new string('A', 129) };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Token), "invalid format");
@@ -189,7 +189,7 @@ public class SafeTokenAttributeTests : ValidationTestBase
     {
         var attr = new SafeTokenAttribute();
         var context = new ValidationContext(new object()) { MemberName = "Token" };
-        
+
         var result = attr.GetValidationResult(123, context);
 
         AssertValidationFailure(result, "invalid format");

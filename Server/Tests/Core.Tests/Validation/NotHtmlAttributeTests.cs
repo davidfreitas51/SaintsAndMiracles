@@ -27,7 +27,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Pass_Null()
     {
         var model = new TestModel { Text = null };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -45,7 +45,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Pass_PlainText(string validText)
     {
         var model = new TestModel { Text = validText };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -58,7 +58,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Pass_EmptyOrWhitespace(string emptyText)
     {
         var model = new TestModel { Text = emptyText };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -83,7 +83,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Fail_HtmlTags(string htmlText)
     {
         var model = new TestModel { Text = htmlText };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Text), "invalid format");
@@ -127,7 +127,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Pass_IsolatedBrackets(string safeText)
     {
         var model = new TestModel { Text = safeText };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -141,7 +141,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Pass_IncompleteTags(string safeText)
     {
         var model = new TestModel { Text = safeText };
-        
+
         var results = Validate(model);
 
         AssertValid(results);
@@ -153,7 +153,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Fail_MixedContent(string htmlText)
     {
         var model = new TestModel { Text = htmlText };
-        
+
         var results = Validate(model);
 
         AssertInvalid(results, nameof(TestModel.Text), "invalid format");
@@ -165,7 +165,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Use_CustomErrorMessage()
     {
         var model = new TestModel { CustomText = "<i>test</i>" };
-        
+
         var results = Validate(model);
 
         Assert.Single(results);
@@ -179,7 +179,7 @@ public class NotHtmlAttributeTests : ValidationTestBase
     public void Should_Fail_NonStringType()
     {
         var model = new TestModel { NotAString = 123 };
-        
+
         var results = Validate(model);
 
         Assert.Single(results);

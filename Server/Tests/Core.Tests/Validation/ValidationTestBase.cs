@@ -43,12 +43,12 @@ public abstract class ValidationTestBase
     protected static void AssertInvalid(IList<ValidationResult> results, string? memberName = null, string? errorMessageFragment = null)
     {
         Assert.Single(results);
-        
+
         if (memberName != null)
         {
             Assert.Contains(memberName, results[0].MemberNames);
         }
-        
+
         if (errorMessageFragment != null)
         {
             Assert.Contains(errorMessageFragment, results[0].ErrorMessage);
@@ -69,7 +69,7 @@ public abstract class ValidationTestBase
     protected static void AssertValidationFailure(ValidationResult? result, string? errorMessageFragment = null)
     {
         Assert.NotNull(result);
-        
+
         if (errorMessageFragment != null)
         {
             Assert.Contains(errorMessageFragment, result!.ErrorMessage);
