@@ -4,116 +4,192 @@ using Xunit;
 
 namespace Core.Tests.DTOs;
 
-public class CurrentUserDtoTests
+/// <summary>
+/// Tests for CurrentUserDto validation.
+/// Ensures user profile data (names and email) are properly validated.
+/// </summary>
+public class CurrentUserDtoTests : DtoTestBase
 {
-    [Fact]
-    public void Should_Pass_When_AllFieldsAreValid()
+    private static CurrentUserDto CreateValidDto() => new()
     {
-        var dto = new CurrentUserDto
-        {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john.doe@test.com"
-        };
+        FirstName = "John",
+        LastName = "Doe",
+        Email = "john.doe@example.com"
+    };
 
-        var results = ModelValidationHelper.Validate(dto);
+    // ==================== VALID DTO ====================
 
-        Assert.Empty(results);
+    [Fact]
+    public void Should_Pass_ValidDto()
+    {
+        var dto = CreateValidDto();
+
+        var results = Validate(dto);
+
+        AssertValid(results);
     }
 
     [Fact]
-    public void Should_Fail_When_FirstName_IsMissing()
+    public void Should_Pass_WithUnicodeNames()
+    {
+        var dto = new CurrentUserDto
+        {
+            FirstName = "José",
+            LastName = "García",
+            Email = "jose@example.com"
+        };
+
+        var results = Validate(dto);
+
+        AssertValid(results);
+    }
+
+    // ==================== FIRST NAME VALIDATION ====================
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void Should_Fail_EmptyFirstName(string? invalidFirstName)
+    {
+        var dto = CreateValidDto();
+        dto.FirstName = invalidFirstName!;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(CurrentUserDto.FirstName));
+    }
+
+    [Theory]
+    [InlineData("J")] // Too short
+    [InlineData("John123")] // Numbers
+    [InlineData("John@")]
+    public void Should_Fail_InvalidFirstName(string invalidFirstName)
+    {
+        var dto = CreateValidDto();
+        dto.FirstName = invalidFirstName;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(CurrentUserDto.FirstName));
+    }
+
+    // ==================== LAST NAME VALIDATION ====================
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void Should_Fail_EmptyLastName(string? invalidLastName)
+    {
+        var dto = CreateValidDto();
+        dto.LastName = invalidLastName!;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(CurrentUserDto.LastName));
+    }
+
+    [Theory]
+    [InlineData("D")] // Too short
+    [InlineData("Doe123")] // Numbers
+    [InlineData("Doe!")]
+    public void Should_Fail_InvalidLastName(string invalidLastName)
+    {
+        var dto = CreateValidDto();
+        dto.LastName = invalidLastName;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(CurrentUserDto.LastName));
+    }
+
+    // ==================== EMAIL VALIDATION ====================
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void Should_Fail_EmptyEmail(string? invalidEmail)
+    {
+        var dto = CreateValidDto();
+        dto.Email = invalidEmail!;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(CurrentUserDto.Email));
+    }
+
+    [Theory]
+    [InlineData("not-an-email")]
+    [InlineData("bad@domain")]
+    [InlineData("double@@test.com")]
+    public void Should_Fail_InvalidEmailFormat(string invalidEmail)
+    {
+        var dto = CreateValidDto();
+        dto.Email = invalidEmail;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(CurrentUserDto.Email));
+    }
+
+    [Theory]
+    [InlineData("john@test.com&evil")]
+    [InlineData("<script>@test.com")]
+    public void Should_Fail_UnsafeEmail(string unsafeEmail)
+    {
+        var dto = CreateValidDto();
+        dto.Email = unsafeEmail;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(CurrentUserDto.Email));
+    }
+
+    // ==================== MULTIPLE ERRORS ====================
+
+    [Fact]
+    public void Should_Fail_AllFieldsMissing()
     {
         var dto = new CurrentUserDto
         {
             FirstName = "",
-            LastName = "Doe",
-            Email = "john.doe@test.com"
-        };
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.Contains(
-            results,
-            r => r.ErrorMessage!.Contains(nameof(CurrentUserDto.FirstName))
-        );
-    }
-
-    [Fact]
-    public void Should_Fail_When_LastName_IsMissing()
-    {
-        var dto = new CurrentUserDto
-        {
-            FirstName = "John",
             LastName = "",
-            Email = "john.doe@test.com"
-        };
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.Contains(
-            results,
-            r => r.ErrorMessage!.Contains(nameof(CurrentUserDto.LastName))
-        );
-    }
-
-    [Fact]
-    public void Should_Fail_When_Email_IsMissing()
-    {
-        var dto = new CurrentUserDto
-        {
-            FirstName = "John",
-            LastName = "Doe",
             Email = ""
         };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(dto);
 
-        Assert.Contains(
-            results,
-            r => r.ErrorMessage!.Contains(nameof(CurrentUserDto.Email))
-        );
+        AssertInvalid(results);
+        AssertErrorCount(results, 3);
+    }
+
+    // ==================== EDGE CASES ====================
+
+    [Fact]
+    public void Should_Pass_EmailWithSubdomains()
+    {
+        var dto = CreateValidDto();
+        dto.Email = "john.doe@mail.example.co.uk";
+
+        var results = Validate(dto);
+
+        AssertValid(results);
     }
 
     [Fact]
-    public void Should_Fail_When_Email_IsInvalid()
+    public void Should_Pass_NameWithHyphenApostrophe()
     {
         var dto = new CurrentUserDto
         {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "not-an-email"
+            FirstName = "Mary-Jane",
+            LastName = "O'Brien",
+            Email = "mary.jane@example.com"
         };
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(dto);
 
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(CurrentUserDto.Email))
-        );
+        AssertValid(results);
     }
-
-    [Fact]
-    public void SafeEmail_Should_Fail_When_Unsafe_Characters_Are_Present()
-    {
-        var dto = new SafeEmailOnlyDto
-        {
-            Email = "john@test.com&evil"
-        };
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(SafeEmailOnlyDto.Email))
-        );
-    }
-
-
-    private class SafeEmailOnlyDto
-    {
-        [SafeEmail]
-        public string Email { get; set; } = string.Empty;
-    }
-
 }

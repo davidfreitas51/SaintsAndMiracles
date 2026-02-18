@@ -3,63 +3,121 @@ using Xunit;
 
 namespace Core.Tests.DTOs;
 
-public class ChangeEmailRequestDtoTests
+/// <summary>
+/// Tests for ChangeEmailRequestDto validation.
+/// Ensures new email addresses are valid and safe for user account changes.
+/// </summary>
+public class ChangeEmailRequestDtoTests : DtoTestBase
 {
-    [Fact]
-    public void Should_BeValid_WhenEmailIsCorrect()
+    private static ChangeEmailRequestDto CreateValidDto() => new()
     {
-        var dto = new ChangeEmailRequestDto
-        {
-            NewEmail = "new@email.com"
-        };
+        NewEmail = "newemail@example.com"
+    };
 
-        var results = ModelValidationHelper.Validate(dto);
+    // ==================== VALID DTO ====================
 
-        Assert.Empty(results);
+    [Fact]
+    public void Should_Pass_ValidDto()
+    {
+        var dto = CreateValidDto();
+
+        var results = Validate(dto);
+
+        AssertValid(results);
+    }
+
+    [Theory]
+    [InlineData("user.name@domain.com")]
+    [InlineData("simple@test.co.uk")]
+    [InlineData("with+tag@example.com")]
+    public void Should_Pass_ValidEmails(string validEmail)
+    {
+        var dto = CreateValidDto();
+        dto.NewEmail = validEmail;
+
+        var results = Validate(dto);
+
+        AssertValid(results);
+    }
+
+    // ==================== EMAIL VALIDATION ====================
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void Should_Fail_EmptyEmail(string? invalidEmail)
+    {
+        var dto = CreateValidDto();
+        dto.NewEmail = invalidEmail!;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(ChangeEmailRequestDto.NewEmail));
+    }
+
+    [Theory]
+    [InlineData("not-an-email")]
+    [InlineData("missing-domain@")]
+    [InlineData("@no-local.com")]
+    [InlineData("double@@domain.com")]
+    public void Should_Fail_InvalidEmailFormat(string invalidEmail)
+    {
+        var dto = CreateValidDto();
+        dto.NewEmail = invalidEmail;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(ChangeEmailRequestDto.NewEmail));
+    }
+
+    [Theory]
+    [InlineData("<script>@test.com")]
+    [InlineData("user'@domain.com")]
+    [InlineData("test&inject@example.com")]
+    public void Should_Fail_UnsafeEmail(string unsafeEmail)
+    {
+        var dto = CreateValidDto();
+        dto.NewEmail = unsafeEmail;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(ChangeEmailRequestDto.NewEmail));
     }
 
     [Fact]
-    public void Should_Fail_WhenEmailIsMissing()
+    public void Should_Fail_EmailTooLong()
     {
-        var dto = new ChangeEmailRequestDto
-        {
-            NewEmail = null!
-        };
+        var dto = CreateValidDto();
+        var longLocalPart = new string('a', 250);
+        dto.NewEmail = $"{longLocalPart}@domain.com";
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(dto);
 
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(ChangeEmailRequestDto.NewEmail))
-        );
+        AssertInvalidProperty(results, nameof(ChangeEmailRequestDto.NewEmail));
+    }
+
+    // ==================== EDGE CASES ====================
+
+    [Fact]
+    public void Should_Pass_EmailWithSubdomains()
+    {
+        var dto = CreateValidDto();
+        dto.NewEmail = "user@mail.example.co.uk";
+
+        var results = Validate(dto);
+
+        AssertValid(results);
     }
 
     [Fact]
-    public void Should_Fail_WhenEmailIsInvalidFormat()
+    public void Should_Pass_MixedCaseEmail()
     {
-        var dto = new ChangeEmailRequestDto
-        {
-            NewEmail = "not-an-email"
-        };
+        var dto = CreateValidDto();
+        dto.NewEmail = "User.Name@Example.COM";
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(dto);
 
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(ChangeEmailRequestDto.NewEmail))
-        );
-    }
-
-    [Fact]
-    public void Should_Fail_WhenEmailIsUnsafe()
-    {
-        var dto = new ChangeEmailRequestDto
-        {
-            NewEmail = "<script>@test.com"
-        };
-
-        var results = ModelValidationHelper.Validate(dto);
-
-        Assert.NotEmpty(results);
+        AssertValid(results);
     }
 }

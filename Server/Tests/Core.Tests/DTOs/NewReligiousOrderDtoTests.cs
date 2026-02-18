@@ -3,48 +3,118 @@ using Xunit;
 
 namespace Core.Tests.DTOs;
 
-public class NewReligiousOrderDtoTests
+/// <summary>
+/// Tests for NewReligiousOrderDto validation.
+/// Ensures religious order names are safe and properly formatted.
+/// </summary>
+public class NewReligiousOrderDtoTests : DtoTestBase
 {
     private static NewReligiousOrderDto CreateValidDto() => new()
     {
         Name = "Franciscan Order"
     };
 
+    // ==================== VALID DTO ====================
+
     [Fact]
-    public void Should_Pass_When_Dto_Is_Valid()
+    public void Should_Pass_ValidDto()
     {
         var dto = CreateValidDto();
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(dto);
 
-        Assert.Empty(results);
+        AssertValid(results);
+    }
+
+    [Theory]
+    [InlineData("Benedictine")]
+    [InlineData("Dominican Order")]
+    [InlineData("Jesuit Society")]
+    public void Should_Pass_ValidOrderNames(string validName)
+    {
+        var dto = CreateValidDto();
+        dto.Name = validName;
+
+        var results = Validate(dto);
+
+        AssertValid(results);
+    }
+
+    // ==================== NAME VALIDATION ====================
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void Should_Fail_EmptyName(string? invalidName)
+    {
+        var dto = CreateValidDto();
+        dto.Name = invalidName!;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(NewReligiousOrderDto.Name));
+    }
+
+    [Theory]
+    [InlineData("AB")] // Too short (< 3 chars)
+    [InlineData("A")]
+    public void Should_Fail_NameTooShort(string shortName)
+    {
+        var dto = CreateValidDto();
+        dto.Name = shortName;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(NewReligiousOrderDto.Name));
+    }
+
+    [Theory]
+    [InlineData("<script>alert(1)</script>")]
+    [InlineData("<b>Order</b>")]
+    [InlineData("Order&amp;Name")]
+    public void Should_Fail_UnsafeName(string unsafeName)
+    {
+        var dto = CreateValidDto();
+        dto.Name = unsafeName;
+
+        var results = Validate(dto);
+
+        AssertInvalidProperty(results, nameof(NewReligiousOrderDto.Name));
     }
 
     [Fact]
-    public void Should_Fail_When_Name_Is_Missing()
+    public void Should_Fail_NameTooLong()
     {
         var dto = CreateValidDto();
-        dto.Name = "";
+        dto.Name = new string('A', 101); // Over 100 chars
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(dto);
 
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(NewReligiousOrderDto.Name))
-        );
+        AssertInvalidProperty(results, nameof(NewReligiousOrderDto.Name));
+    }
+
+    // ==================== EDGE CASES ====================
+
+    [Fact]
+    public void Should_Pass_NameExactlyMinLength()
+    {
+        var dto = CreateValidDto();
+        dto.Name = "OSB"; // Exactly 3 chars
+
+        var results = Validate(dto);
+
+        AssertValidProperty(results, nameof(NewReligiousOrderDto.Name));
     }
 
     [Fact]
-    public void Should_Fail_When_Name_Contains_Html()
+    public void Should_Pass_NameWithSpecialCharacters()
     {
         var dto = CreateValidDto();
-        dto.Name = "<script>alert(1)</script>";
+        dto.Name = "Order of St. James";
 
-        var results = ModelValidationHelper.Validate(dto);
+        var results = Validate(dto);
 
-        Assert.Contains(
-            results,
-            r => r.MemberNames.Contains(nameof(NewReligiousOrderDto.Name))
-        );
+        AssertValid(results);
     }
 }
