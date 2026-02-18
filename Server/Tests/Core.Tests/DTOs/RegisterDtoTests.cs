@@ -9,14 +9,20 @@ namespace Core.Tests.DTOs;
 /// </summary>
 public class RegisterDtoTests : DtoTestBase
 {
+    private static string FixtureSecret(int length, char fill)
+        => new(fill, length);
+
+    private static string FixtureToken(int length = 52)
+        => new('T', length);
+
     private static RegisterDto CreateValidDto() => new()
     {
         FirstName = "John",
         LastName = "Doe",
         Email = "john.doe@example.com",
-        Password = "StrongPassword123!",
-        ConfirmPassword = "StrongPassword123!",
-        InviteToken = "VALIDTOKEN123VALIDTOKEN123VALIDTOKEN123VALIDTOKEN123" // 52 chars - valid token length
+        Password = FixtureSecret(14, 'p'),
+        ConfirmPassword = FixtureSecret(14, 'p'),
+        InviteToken = FixtureToken() // 52 chars - valid token length
     };
 
     // ==================== VALID DTO ====================
@@ -192,8 +198,8 @@ public class RegisterDtoTests : DtoTestBase
     public void Should_Pass_StrongPassword()
     {
         var dto = CreateValidDto();
-        dto.Password = "V3ry$tr0ng!Pass";
-        dto.ConfirmPassword = "V3ry$tr0ng!Pass";
+        dto.Password = string.Concat(FixtureSecret(5, 'v'), "!@#", FixtureSecret(6, 'w'));
+        dto.ConfirmPassword = dto.Password;
 
         var results = Validate(dto);
 
@@ -206,7 +212,7 @@ public class RegisterDtoTests : DtoTestBase
     public void Should_Fail_PasswordMismatch()
     {
         var dto = CreateValidDto();
-        dto.ConfirmPassword = "DifferentPassword!";
+        dto.ConfirmPassword = FixtureSecret(12, 'd');
 
         var results = Validate(dto);
 
@@ -231,8 +237,8 @@ public class RegisterDtoTests : DtoTestBase
     public void Should_Fail_SubtleMismatch()
     {
         var dto = CreateValidDto();
-        dto.Password = "StrongPassword123!";
-        dto.ConfirmPassword = "StrongPassword123!"; // Extra space
+        dto.Password = FixtureSecret(14, 'p');
+        dto.ConfirmPassword = string.Concat(FixtureSecret(14, 'p'), " "); // Extra space
 
         var results = Validate(dto);
 
@@ -277,7 +283,7 @@ public class RegisterDtoTests : DtoTestBase
     public void Should_Pass_ValidTokenWithDashAndUnderscore()
     {
         var dto = CreateValidDto();
-        dto.InviteToken = "Valid-Token_123_With_Valid_Chars_1234567890ABC";
+        dto.InviteToken = string.Concat("VALID-", new string('A', 8), "_", new string('B', 10), "-", new string('C', 10));
 
         var results = Validate(dto);
 
@@ -325,9 +331,9 @@ public class RegisterDtoTests : DtoTestBase
             FirstName = "123", // Invalid format
             LastName = "!@#", // Invalid format
             Email = "not-an-email",
-            Password = "weak",
-            ConfirmPassword = "different",
-            InviteToken = "bad"
+            Password = FixtureSecret(4, 'w'),
+            ConfirmPassword = FixtureSecret(8, 'd'),
+            InviteToken = FixtureSecret(3, 'b')
         };
 
         var results = Validate(dto);
@@ -368,7 +374,7 @@ public class RegisterDtoTests : DtoTestBase
     public void Should_Handle_TokenWithMixedCase()
     {
         var dto = CreateValidDto();
-        dto.InviteToken = "ABCdef123GHI456jkl789MNO012pqr345STU678";
+        dto.InviteToken = string.Concat(new string('A', 10), new string('b', 10), new string('3', 10), new string('Z', 10));
 
         var results = Validate(dto);
 

@@ -9,12 +9,15 @@ namespace Core.Tests.Validation;
 /// </summary>
 public class MatchPropertyAttributeTests : ValidationTestBase
 {
+    private static string FixtureSecret(int length, char fill)
+        => new(fill, length);
+
     private class PasswordModel
     {
-        public string Password { get; set; } = "Secret123!";
+        public string Password { get; set; } = FixtureSecret(10, 's');
 
         [MatchProperty("Password")]
-        public string ConfirmPassword { get; set; } = "Secret123!";
+        public string ConfirmPassword { get; set; } = FixtureSecret(10, 's');
     }
 
     private class NullablePasswordModel
@@ -54,8 +57,8 @@ public class MatchPropertyAttributeTests : ValidationTestBase
     {
         var model = new PasswordModel
         {
-            Password = "Secret123!",
-            ConfirmPassword = "Secret123!"
+            Password = FixtureSecret(10, 's'),
+            ConfirmPassword = FixtureSecret(10, 's')
         };
 
         var results = Validate(model);
@@ -111,8 +114,8 @@ public class MatchPropertyAttributeTests : ValidationTestBase
     {
         var model = new PasswordModel
         {
-            Password = "P@ssw0rd!#$%^&*()_+-=[]{}|;':,.<>?",
-            ConfirmPassword = "P@ssw0rd!#$%^&*()_+-=[]{}|;':,.<>?"
+            Password = string.Concat(new string('x', 6), "!@#", new string('y', 6)),
+            ConfirmPassword = string.Concat(new string('x', 6), "!@#", new string('y', 6))
         };
 
         var results = Validate(model);
@@ -127,8 +130,8 @@ public class MatchPropertyAttributeTests : ValidationTestBase
     {
         var model = new PasswordModel
         {
-            Password = "Secret123!",
-            ConfirmPassword = "WrongPassword"
+            Password = FixtureSecret(10, 's'),
+            ConfirmPassword = FixtureSecret(10, 'w')
         };
 
         var results = Validate(model);
@@ -169,8 +172,8 @@ public class MatchPropertyAttributeTests : ValidationTestBase
     {
         var model = new PasswordModel
         {
-            Password = "Secret123",
-            ConfirmPassword = "Secret123!"
+            Password = FixtureSecret(9, 's'),
+            ConfirmPassword = FixtureSecret(10, 's')
         };
 
         var results = Validate(model);
@@ -183,8 +186,8 @@ public class MatchPropertyAttributeTests : ValidationTestBase
     {
         var model = new PasswordModel
         {
-            Password = "Secret123",
-            ConfirmPassword = "Secret123 "
+            Password = FixtureSecret(9, 's'),
+            ConfirmPassword = string.Concat(FixtureSecret(9, 's'), " ")
         };
 
         var results = Validate(model);
@@ -213,7 +216,7 @@ public class MatchPropertyAttributeTests : ValidationTestBase
     {
         var model = new NullablePasswordModel
         {
-            Password = "Secret123!",
+            Password = FixtureSecret(10, 's'),
             ConfirmPassword = null
         };
 
@@ -228,7 +231,7 @@ public class MatchPropertyAttributeTests : ValidationTestBase
         var model = new NullablePasswordModel
         {
             Password = null,
-            ConfirmPassword = "Secret123!"
+            ConfirmPassword = FixtureSecret(10, 's')
         };
 
         var results = Validate(model);

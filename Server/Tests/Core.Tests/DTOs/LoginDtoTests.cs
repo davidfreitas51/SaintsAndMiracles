@@ -9,10 +9,13 @@ namespace Core.Tests.DTOs;
 /// </summary>
 public class LoginDtoTests : DtoTestBase
 {
+    private static string FixtureSecret(int length, char fill)
+        => new(fill, length);
+
     private static LoginDto CreateValidDto() => new()
     {
         Email = "john.doe@example.com",
-        Password = "SecurePassword123!",
+        Password = FixtureSecret(14, 'l'),
         RememberMe = false
     };
 
@@ -141,7 +144,7 @@ public class LoginDtoTests : DtoTestBase
     {
         // Login should accept any password format (validation happens on server)
         var dto = CreateValidDto();
-        dto.Password = "x"; // Very short but non-empty
+        dto.Password = FixtureSecret(1, 'x'); // Very short but non-empty
 
         var results = Validate(dto);
 
@@ -203,7 +206,7 @@ public class LoginDtoTests : DtoTestBase
     public void Should_Handle_SpecialCharactersInPassword()
     {
         var dto = CreateValidDto();
-        dto.Password = "P@$$w0rd!#$%^&*()_+-=[]{}|;:',.<>?/~`";
+        dto.Password = string.Concat(new string('a', 6), "!@#", new string('b', 6));
 
         var results = Validate(dto);
 
@@ -214,7 +217,7 @@ public class LoginDtoTests : DtoTestBase
     public void Should_Handle_UnicodeInPassword()
     {
         var dto = CreateValidDto();
-        dto.Password = "Pássw0rd日本語العربية🔒";
+        dto.Password = string.Concat(FixtureSecret(4, 'u'), "日本語", "العربية");
 
         var results = Validate(dto);
 

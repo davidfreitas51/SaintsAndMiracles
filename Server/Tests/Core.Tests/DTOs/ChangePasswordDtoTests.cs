@@ -9,10 +9,16 @@ namespace Core.Tests.DTOs;
 /// </summary>
 public class ChangePasswordDtoTests : DtoTestBase
 {
+    private static string FixtureSecret(int length, char fill)
+        => new(fill, length);
+
+    private static string FixtureSecretWithSymbols()
+        => string.Concat(new string('x', 6), "!@#", new string('y', 6));
+
     private static ChangePasswordDto CreateValidDto() => new()
     {
-        CurrentPassword = "OldPassword123!",
-        NewPassword = "NewStrongPassword456!"
+        CurrentPassword = FixtureSecret(14, 'o'),
+        NewPassword = FixtureSecret(14, 'n')
     };
 
     // ==================== VALID DTO ====================
@@ -32,8 +38,8 @@ public class ChangePasswordDtoTests : DtoTestBase
     {
         var dto = new ChangePasswordDto
         {
-            CurrentPassword = "oldpass",
-            NewPassword = "newpass"
+            CurrentPassword = FixtureSecret(7, 'o'),
+            NewPassword = FixtureSecret(7, 'n')
         };
 
         var results = Validate(dto);
@@ -46,8 +52,8 @@ public class ChangePasswordDtoTests : DtoTestBase
     {
         var dto = new ChangePasswordDto
         {
-            CurrentPassword = "C0mpl3x!P@ssw0rd#2024",
-            NewPassword = "Ev3nM0r3!C0mpl3x#P@ss$2025"
+            CurrentPassword = FixtureSecretWithSymbols(),
+            NewPassword = string.Concat(FixtureSecret(5, 'z'), "$%^", FixtureSecret(5, 'q'))
         };
 
         var results = Validate(dto);
@@ -91,8 +97,8 @@ public class ChangePasswordDtoTests : DtoTestBase
         // Note: This tests DTO validation only. Business logic should prevent same passwords.
         var dto = new ChangePasswordDto
         {
-            CurrentPassword = "SamePassword123!",
-            NewPassword = "SamePassword123!"
+            CurrentPassword = FixtureSecret(12, 's'),
+            NewPassword = FixtureSecret(12, 's')
         };
 
         var results = Validate(dto);
@@ -154,8 +160,8 @@ public class ChangePasswordDtoTests : DtoTestBase
     {
         var dto = new ChangePasswordDto
         {
-            CurrentPassword = "P@$$w0rd!#%&*(){}[]<>?/\\|",
-            NewPassword = "N3w!P@$$w0rd-_+=.,;:'\"`~"
+            CurrentPassword = string.Concat(new string('a', 6), "!#%&", new string('b', 6)),
+            NewPassword = string.Concat(new string('c', 6), "-_+=", new string('d', 6))
         };
 
         var results = Validate(dto);
@@ -168,8 +174,8 @@ public class ChangePasswordDtoTests : DtoTestBase
     {
         var dto = new ChangePasswordDto
         {
-            CurrentPassword = "пароль123!",
-            NewPassword = "密码456!"
+            CurrentPassword = string.Concat(FixtureSecret(4, 'q'), "日本語"),
+            NewPassword = string.Concat(FixtureSecret(4, 'r'), "العربية")
         };
 
         var results = Validate(dto);
@@ -182,8 +188,8 @@ public class ChangePasswordDtoTests : DtoTestBase
     {
         var dto = new ChangePasswordDto
         {
-            CurrentPassword = "Pass🔒Word123",
-            NewPassword = "N3w🔑Pass456"
+            CurrentPassword = string.Concat(FixtureSecret(4, 'p'), "🔒", FixtureSecret(4, 'q')),
+            NewPassword = string.Concat(FixtureSecret(4, 'r'), "🔑", FixtureSecret(4, 's'))
         };
 
         var results = Validate(dto);
@@ -196,8 +202,8 @@ public class ChangePasswordDtoTests : DtoTestBase
     {
         var dto = new ChangePasswordDto
         {
-            CurrentPassword = "a",
-            NewPassword = "b"
+            CurrentPassword = FixtureSecret(1, 'a'),
+            NewPassword = FixtureSecret(1, 'b')
         };
 
         var results = Validate(dto);

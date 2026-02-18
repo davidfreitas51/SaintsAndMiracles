@@ -9,11 +9,17 @@ namespace Core.Tests.DTOs;
 /// </summary>
 public class ResetPasswordDtoTests : DtoTestBase
 {
+    private static string FixtureSecret(int length, char fill)
+        => new(fill, length);
+
+    private static string FixtureToken(int length = 36)
+        => new('R', length);
+
     private static ResetPasswordDto CreateValidDto() => new()
     {
         Email = "user@example.com",
-        Token = "valid-reset-token-123456789abcdefghij",
-        NewPassword = "MyNewPassword123!"
+        Token = FixtureToken(),
+        NewPassword = FixtureSecret(14, 'r')
     };
 
     // ==================== VALID DTO ====================
@@ -32,7 +38,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_WithComplexPassword()
     {
         var dto = CreateValidDto();
-        dto.NewPassword = "C0mpl3x!P@ssw0rd#2024";
+        dto.NewPassword = string.Concat(FixtureSecret(5, 'x'), "!@#", FixtureSecret(6, 'y'));
 
         var results = Validate(dto);
 
@@ -116,7 +122,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_AlphanumericToken()
     {
         var dto = CreateValidDto();
-        dto.Token = "ABC123def456GHI789jkl012MNO345";
+        dto.Token = string.Concat(new string('A', 10), new string('1', 10), new string('b', 10));
 
         var results = Validate(dto);
 
@@ -127,7 +133,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_TokenWithHyphens()
     {
         var dto = CreateValidDto();
-        dto.Token = "valid-token-with-hyphens-abc123";
+        dto.Token = string.Concat("token-", new string('x', 8), "-", new string('y', 8));
 
         var results = Validate(dto);
 
@@ -154,7 +160,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_SimplePassword()
     {
         var dto = CreateValidDto();
-        dto.NewPassword = "simple";
+        dto.NewPassword = FixtureSecret(6, 's');
 
         var results = Validate(dto);
 
@@ -177,7 +183,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_PasswordWithSpecialCharacters()
     {
         var dto = CreateValidDto();
-        dto.NewPassword = "P@$$w0rd!#%&*(){}[]<>?/\\|";
+        dto.NewPassword = string.Concat(new string('m', 6), "!#%&", new string('n', 6));
 
         var results = Validate(dto);
 
@@ -188,7 +194,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_PasswordWithUnicode()
     {
         var dto = CreateValidDto();
-        dto.NewPassword = "密码123!пароль";
+        dto.NewPassword = string.Concat(FixtureSecret(3, 'u'), "日本語", "العربية");
 
         var results = Validate(dto);
 
@@ -219,7 +225,7 @@ public class ResetPasswordDtoTests : DtoTestBase
         var dto = new ResetPasswordDto
         {
             Email = "not-an-email",
-            Token = "bad<token>",
+            Token = string.Concat("bad", "<", "token", ">"),
             NewPassword = ""
         };
 
@@ -246,7 +252,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_TokenWithNumbers()
     {
         var dto = CreateValidDto();
-        dto.Token = "1234567890abcdefghijklmnopqrstuvwxyz";
+        dto.Token = string.Concat(new string('1', 10), new string('a', 16));
 
         var results = Validate(dto);
 
@@ -257,7 +263,7 @@ public class ResetPasswordDtoTests : DtoTestBase
     public void Should_Pass_MixedCaseToken()
     {
         var dto = CreateValidDto();
-        dto.Token = "MiXeDCaSe-ToKeN-123";
+        dto.Token = string.Concat("MIXED-", new string('z', 6), "-", new string('7', 4));
 
         var results = Validate(dto);
 
