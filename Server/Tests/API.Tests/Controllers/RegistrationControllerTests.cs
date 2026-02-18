@@ -1,94 +1,43 @@
-using System.Security.Claims;
 using API.Controllers;
 using Core.DTOs;
 using Core.Interfaces.Services;
 using Core.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Tests.Common;
 
 namespace API.Tests.Controllers;
 
-public class RegistrationControllerTests
+public class RegistrationControllerTests : ControllerTestBase<RegistrationController>
 {
-    #region Setup
+    private Mock<IAccountTokensService> _tokensServiceMock = null!;
+    private Mock<IEmailSender<AppUser>> _emailSenderMock = null!;
 
-    private static RegistrationController CreateController(
-        out Mock<UserManager<AppUser>> userManagerMock,
-        out Mock<SignInManager<AppUser>> signInManagerMock,
-        out Mock<IAccountTokensService> tokensServiceMock,
-        out Mock<IEmailSender<AppUser>> emailSenderMock,
-        bool authenticated = false,
-        bool isSuperAdmin = false)
+    private void SetupController(bool authenticated = false)
     {
-        var store = new Mock<IUserStore<AppUser>>();
-
-        userManagerMock = new Mock<UserManager<AppUser>>(
-            store.Object, null!, null!, null!, null!, null!, null!, null!, null!
-        );
-
-        signInManagerMock = new Mock<SignInManager<AppUser>>(
-            userManagerMock.Object,
-            new Mock<IHttpContextAccessor>().Object,
-            new Mock<IUserClaimsPrincipalFactory<AppUser>>().Object,
-            null!, null!, null!, null!
-        );
-
-        tokensServiceMock = new Mock<IAccountTokensService>();
-        emailSenderMock = new Mock<IEmailSender<AppUser>>();
-
-        var controller = new RegistrationController(
-            signInManagerMock.Object,
-            tokensServiceMock.Object,
-            emailSenderMock.Object,
-            NullLogger<RegistrationController>.Instance
-        );
-
-        var claims = new List<Claim>();
+        _tokensServiceMock = CreateLooseMock<IAccountTokensService>();
+        _emailSenderMock = CreateLooseMock<IEmailSender<AppUser>>();
 
         if (authenticated)
         {
-            claims.Add(new Claim(ClaimTypes.NameIdentifier, "user-1"));
-            claims.Add(new Claim(ClaimTypes.Name, "user@test.com"));
-
-            if (isSuperAdmin)
-                claims.Add(new Claim(ClaimTypes.Role, "SuperAdmin"));
+            SetupAuthenticatedController((userManager, signInManager) =>
+                new RegistrationController(
+                    signInManager.Object,
+                    _tokensServiceMock.Object,
+                    _emailSenderMock.Object,
+                    GetNullLogger<RegistrationController>()));
         }
-
-        var httpContext = new DefaultHttpContext
+        else
         {
-            User = new ClaimsPrincipal(
-                new ClaimsIdentity(claims, authenticated ? "TestAuth" : null)
-            ),
-            Request =
-            {
-                Scheme = "http",
-                Host = new HostString("localhost")
-            }
-        };
-
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-
-        // ✅ Mock de IUrlHelper (sem UrlHelper concreto)
-        var urlHelperMock = new Mock<IUrlHelper>();
-        urlHelperMock
-            .Setup(u => u.Action(It.IsAny<UrlActionContext>()))
-            .Returns("http://localhost/confirm");
-
-        controller.Url = urlHelperMock.Object;
-
-        return controller;
+            SetupUnauthenticatedController((userManager, signInManager) =>
+                new RegistrationController(
+                    signInManager.Object,
+                    _tokensServiceMock.Object,
+                    _emailSenderMock.Object,
+                    GetNullLogger<RegistrationController>()));
+        }
     }
-
-    #endregion
-
-    #region Factories
 
     private static RegisterDto CreateRegisterDto() => new()
     {
@@ -100,27 +49,15 @@ public class RegistrationControllerTests
         InviteToken = "invite-token"
     };
 
-
-    private static ResendConfirmationDto CreateResendDto() => new()
-    {
-        Email = "john@test.com"
-    };
-
-    #endregion
-
-    #region REGISTER
-
     [Fact]
     public async Task Register_ShouldReturnBadRequest_WhenTokenInvalid()
     {
-        var controller = CreateController(
-            out _, out _, out var tokens, out _
-        );
+        SetupController();
 
-        tokens.Setup(t => t.GetValidTokenAsync(It.IsAny<string>()))
+        _tokensServiceMock.Setup(t => t.GetValidTokenAsync(It.IsAny<string>()))
             .ReturnsAsync((AccountToken?)null);
 
-        var result = await controller.Register(CreateRegisterDto());
+        var result = await Controller.Register(CreateRegisterDto());
 
         Assert.IsType<BadRequestObjectResult>(result);
     }
@@ -128,23 +65,20 @@ public class RegistrationControllerTests
     [Fact]
     public async Task Register_ShouldReturnBadRequest_WhenEmailExists()
     {
-        // Arrange
-        var controller = CreateController(out var userManager, out _, out var tokens, out _);
+        SetupController();
 
-        tokens.Setup(t => t.GetValidTokenAsync(It.IsAny<string>()))
+        _tokensServiceMock.Setup(t => t.GetValidTokenAsync(It.IsAny<string>()))
             .ReturnsAsync(new AccountToken { Role = "Admin" });
 
-        userManager.Setup(u => u.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()))
+        UserManagerMock.Setup(u => u.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Failed(
                 new IdentityError { Code = "DuplicateEmail", Description = "Email already exists" }
             ));
 
         var dto = CreateRegisterDto();
 
-        // Act
-        var result = await controller.Register(dto);
+        var result = await Controller.Register(dto);
 
-        // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
         var apiError = Assert.IsType<ApiErrorResponse>(badRequest.Value);
         Assert.Contains("Email already exists", apiError.Details);
@@ -154,32 +88,27 @@ public class RegistrationControllerTests
     [Fact]
     public async Task Register_ShouldReturnCreated_WhenSuccessful()
     {
-        var controller = CreateController(
-            out var userManager,
-            out _,
-            out var tokens,
-            out var emailSender
-        );
+        SetupController();
 
-        tokens.Setup(t => t.GetValidTokenAsync(It.IsAny<string>()))
+        _tokensServiceMock.Setup(t => t.GetValidTokenAsync(It.IsAny<string>()))
             .ReturnsAsync(new AccountToken { Role = "Admin" });
 
-        userManager.Setup(u => u.FindByEmailAsync(It.IsAny<string>()))
+        UserManagerMock.Setup(u => u.FindByEmailAsync(It.IsAny<string>()))
             .ReturnsAsync((AppUser?)null);
 
-        userManager.Setup(u => u.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()))
+        UserManagerMock.Setup(u => u.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
 
-        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<AppUser>(), "Admin"))
+        UserManagerMock.Setup(u => u.AddToRoleAsync(It.IsAny<AppUser>(), "Admin"))
             .ReturnsAsync(IdentityResult.Success);
 
-        userManager.Setup(u => u.GenerateEmailConfirmationTokenAsync(It.IsAny<AppUser>()))
+        UserManagerMock.Setup(u => u.GenerateEmailConfirmationTokenAsync(It.IsAny<AppUser>()))
             .ReturnsAsync("email-token");
 
-        tokens.Setup(t => t.ConsumeAsync(It.IsAny<string>()))
-            .ReturnsAsync(true); // ✅ Task<bool>
+        _tokensServiceMock.Setup(t => t.ConsumeAsync(It.IsAny<string>()))
+            .ReturnsAsync(true);
 
-        emailSender.Setup(e =>
+        _emailSenderMock.Setup(e =>
             e.SendConfirmationLinkAsync(
                 It.IsAny<AppUser>(),
                 It.IsAny<string>(),
@@ -187,10 +116,8 @@ public class RegistrationControllerTests
             ))
             .Returns(Task.CompletedTask);
 
-        var result = await controller.Register(CreateRegisterDto());
+        var result = await Controller.Register(CreateRegisterDto());
 
         Assert.IsType<CreatedResult>(result);
     }
-
-    #endregion
 }

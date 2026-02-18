@@ -48,4 +48,5 @@ jobs:
       - name: Run .NET tests
         run: |
           dotnet test ./Server/Tests/API.Tests/API.Tests.csproj --framework net9.0 --verbosity normal
+          dotnet test ./Server/Tests/Core.Tests/Core.Tests.csproj --framework net9.0 --verbosity normal
           dotnet test ./Server/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj --framework net9.0 --verbosity normal

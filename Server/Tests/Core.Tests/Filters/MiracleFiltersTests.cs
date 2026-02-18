@@ -4,18 +4,16 @@ using Xunit;
 namespace Core.Tests.Models.Filters;
 
 /// <summary>
-/// Tests for SaintFilters validation.
-/// Ensures search, filtering by country/century/feast, and pagination work correctly.
+/// Tests for MiracleFilters validation.
+/// Ensures search, country/century filtering, and pagination work correctly.
 /// </summary>
-public class SaintFiltersTests
+public class MiracleFiltersTests
 {
-    private static SaintFilters CreateValidFilters() => new()
+    private static MiracleFilters CreateValidFilters() => new()
     {
         Country = "France",
-        Century = "16",
-        Search = "Saint Peter",
-        FeastMonth = "July",
-        ReligiousOrderId = "1",
+        Century = "19",
+        Search = "Miracle of Lourdes",
         TagIds = new List<int> { 1, 2, 3 },
         PageNumber = 1,
         PageSize = 25
@@ -36,7 +34,7 @@ public class SaintFiltersTests
     [Fact]
     public void Should_Pass_WithDefaultValues()
     {
-        var filters = new SaintFilters();
+        var filters = new MiracleFilters();
 
         var results = ModelValidationHelper.Validate(filters);
 
@@ -46,14 +44,23 @@ public class SaintFiltersTests
     [Fact]
     public void Should_Pass_WithEmptyStringFields()
     {
-        var filters = new SaintFilters
+        var filters = new MiracleFilters
         {
             Country = "",
             Century = "",
-            Search = "",
-            FeastMonth = "",
-            ReligiousOrderId = ""
+            Search = ""
         };
+
+        var results = ModelValidationHelper.Validate(filters);
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
+    public void Should_Pass_WithNullTagIds()
+    {
+        var filters = CreateValidFilters();
+        filters.TagIds = null;
 
         var results = ModelValidationHelper.Validate(filters);
 
@@ -62,13 +69,22 @@ public class SaintFiltersTests
 
     // ==================== COUNTRY VALIDATION ====================
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Should_Pass_EmptyCountry(string emptyCountry)
+    [Fact]
+    public void Should_Pass_EmptyCountry()
     {
         var filters = CreateValidFilters();
-        filters.Country = emptyCountry;
+        filters.Country = "";
+
+        var results = ModelValidationHelper.Validate(filters);
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
+    public void Should_Pass_CountryWithSpaces()
+    {
+        var filters = CreateValidFilters();
+        filters.Country = "   ";
 
         var results = ModelValidationHelper.Validate(filters);
 
@@ -79,7 +95,7 @@ public class SaintFiltersTests
     [InlineData("France")]
     [InlineData("Italy")]
     [InlineData("Spain")]
-    [InlineData("Deutschland")]
+    [InlineData("Germany")]
     public void Should_Pass_ValidCountry(string validCountry)
     {
         var filters = CreateValidFilters();
@@ -110,7 +126,7 @@ public class SaintFiltersTests
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("Country must be at most 50 characters", results[0].ErrorMessage!);
+        Assert.Contains("50", results[0].ErrorMessage!);
     }
 
     [Theory]
@@ -142,25 +158,34 @@ public class SaintFiltersTests
 
     // ==================== CENTURY VALIDATION ====================
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Should_Pass_EmptyCentury(string emptyCentury)
+    [Fact]
+    public void Should_Pass_EmptyCentury()
     {
         var filters = CreateValidFilters();
-        filters.Century = emptyCentury;
+        filters.Century = "";
 
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Empty(results);
     }
 
+    [Fact]
+    public void Should_Fail_CenturyWithOnlySpaces()
+    {
+        var filters = CreateValidFilters();
+        filters.Century = "   ";
+
+        var results = ModelValidationHelper.Validate(filters);
+
+        Assert.Single(results);
+        Assert.Contains("Century must be up to 2 digits", results[0].ErrorMessage!);
+    }
+
     [Theory]
-    [InlineData("16")]
-    [InlineData("18")]
-    [InlineData("20")]
-    [InlineData("1600")]
-    public void Should_Pass_ValidCentury(string validCentury)
+    [InlineData("1")]
+    [InlineData("5")]
+    [InlineData("9")]
+    public void Should_Pass_SingleDigitCentury(string validCentury)
     {
         var filters = CreateValidFilters();
         filters.Century = validCentury;
@@ -170,38 +195,85 @@ public class SaintFiltersTests
         Assert.Empty(results);
     }
 
-    [Fact]
-    public void Should_Pass_CenturyAtMaxLength()
+    [Theory]
+    [InlineData("10")]
+    [InlineData("15")]
+    [InlineData("19")]
+    [InlineData("20")]
+    [InlineData("99")]
+    public void Should_Pass_TwoDigitCentury(string validCentury)
     {
         var filters = CreateValidFilters();
-        filters.Century = new string('1', 20); // Exactly 20 chars
+        filters.Century = validCentury;
 
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Empty(results);
     }
 
-    [Fact]
-    public void Should_Fail_CenturyExceedsMaxLength()
+    [Theory]
+    [InlineData("100")] // 3 digits
+    [InlineData("999")]
+    [InlineData("1234")]
+    public void Should_Fail_CenturyTooManyDigits(string invalidCentury)
     {
         var filters = CreateValidFilters();
-        filters.Century = new string('1', 21); // Over 20 chars
+        filters.Century = invalidCentury;
 
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("Century must be at most 20 characters", results[0].ErrorMessage!);
+        Assert.Contains("Century must be up to 2 digits", results[0].ErrorMessage!);
+    }
+
+    [Theory]
+    [InlineData("12a")] // Contains letters
+    [InlineData("a12")]
+    [InlineData("1a")]
+    public void Should_Fail_CenturyWithLetters(string invalidCentury)
+    {
+        var filters = CreateValidFilters();
+        filters.Century = invalidCentury;
+
+        var results = ModelValidationHelper.Validate(filters);
+
+        Assert.Single(results);
+        Assert.Contains("Century must be up to 2 digits", results[0].ErrorMessage!);
+    }
+
+    [Theory]
+    [InlineData("1-2")] // Special characters
+    [InlineData("1.2")]
+    [InlineData("1 2")] // Space
+    public void Should_Fail_CenturyWithNonDigitCharacters(string invalidCentury)
+    {
+        var filters = CreateValidFilters();
+        filters.Century = invalidCentury;
+
+        var results = ModelValidationHelper.Validate(filters);
+
+        Assert.Single(results);
+        Assert.Contains("Century must be up to 2 digits", results[0].ErrorMessage!);
     }
 
     // ==================== SEARCH VALIDATION ====================
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Should_Pass_EmptySearch(string emptySearch)
+    [Fact]
+    public void Should_Pass_EmptySearch()
     {
         var filters = CreateValidFilters();
-        filters.Search = emptySearch;
+        filters.Search = "";
+
+        var results = ModelValidationHelper.Validate(filters);
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
+    public void Should_Pass_SearchWithSpaces()
+    {
+        var filters = CreateValidFilters();
+        filters.Search = "   ";
 
         var results = ModelValidationHelper.Validate(filters);
 
@@ -209,9 +281,9 @@ public class SaintFiltersTests
     }
 
     [Theory]
-    [InlineData("Saint")]
-    [InlineData("Saint Peter")]
-    [InlineData("Search for saint")]
+    [InlineData("Miracle")]
+    [InlineData("Miracle of Lourdes")]
+    [InlineData("Search for miracles")]
     public void Should_Pass_ValidSearch(string validSearch)
     {
         var filters = CreateValidFilters();
@@ -242,11 +314,11 @@ public class SaintFiltersTests
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("Search must be at most 100 characters", results[0].ErrorMessage!);
+        Assert.Contains("100", results[0].ErrorMessage!);
     }
 
     [Theory]
-    [InlineData("Saint<script>")]
+    [InlineData("Miracle<script>")]
     [InlineData("Search&nbsp;Text")]
     [InlineData("Query&amp;Result")]
     public void Should_Fail_UnsafeSearch(string unsafeSearch)
@@ -259,111 +331,17 @@ public class SaintFiltersTests
         Assert.Single(results);
     }
 
-    // ==================== FEAST MONTH VALIDATION ====================
-
     [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Should_Pass_EmptyFeastMonth(string emptyFeastMonth)
+    [InlineData("Search & Find")]
+    [InlineData("Miracle with 123 numbers")]
+    public void Should_Pass_SearchWithSpecialCharacters(string validSearch)
     {
         var filters = CreateValidFilters();
-        filters.FeastMonth = emptyFeastMonth;
+        filters.Search = validSearch;
 
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Empty(results);
-    }
-
-    [Theory]
-    [InlineData("January")]
-    [InlineData("July")]
-    [InlineData("December")]
-    [InlineData("1")]
-    [InlineData("7")]
-    public void Should_Pass_ValidFeastMonth(string validFeastMonth)
-    {
-        var filters = CreateValidFilters();
-        filters.FeastMonth = validFeastMonth;
-
-        var results = ModelValidationHelper.Validate(filters);
-
-        Assert.Empty(results);
-    }
-
-    [Fact]
-    public void Should_Pass_FeastMonthAtMaxLength()
-    {
-        var filters = CreateValidFilters();
-        filters.FeastMonth = new string('A', 20); // Exactly 20 chars
-
-        var results = ModelValidationHelper.Validate(filters);
-
-        Assert.Empty(results);
-    }
-
-    [Fact]
-    public void Should_Fail_FeastMonthExceedsMaxLength()
-    {
-        var filters = CreateValidFilters();
-        filters.FeastMonth = new string('A', 21); // Over 20 chars
-
-        var results = ModelValidationHelper.Validate(filters);
-
-        Assert.Single(results);
-        Assert.Contains("FeastMonth must be at most 20 characters", results[0].ErrorMessage!);
-    }
-
-    // ==================== RELIGIOUS ORDER ID VALIDATION ====================
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Should_Pass_EmptyReligiousOrderId(string emptyOrderId)
-    {
-        var filters = CreateValidFilters();
-        filters.ReligiousOrderId = emptyOrderId;
-
-        var results = ModelValidationHelper.Validate(filters);
-
-        Assert.Empty(results);
-    }
-
-    [Theory]
-    [InlineData("1")]
-    [InlineData("123")]
-    [InlineData("Benedictine")]
-    [InlineData("O.F.M.")]
-    public void Should_Pass_ValidReligiousOrderId(string validOrderId)
-    {
-        var filters = CreateValidFilters();
-        filters.ReligiousOrderId = validOrderId;
-
-        var results = ModelValidationHelper.Validate(filters);
-
-        Assert.Empty(results);
-    }
-
-    [Fact]
-    public void Should_Pass_ReligiousOrderIdAtMaxLength()
-    {
-        var filters = CreateValidFilters();
-        filters.ReligiousOrderId = new string('A', 20); // Exactly 20 chars
-
-        var results = ModelValidationHelper.Validate(filters);
-
-        Assert.Empty(results);
-    }
-
-    [Fact]
-    public void Should_Fail_ReligiousOrderIdExceedsMaxLength()
-    {
-        var filters = CreateValidFilters();
-        filters.ReligiousOrderId = new string('A', 21); // Over 20 chars
-
-        var results = ModelValidationHelper.Validate(filters);
-
-        Assert.Single(results);
-        Assert.Contains("ReligiousOrderId must be at most 20 characters", results[0].ErrorMessage!);
     }
 
     // ==================== TAG IDS VALIDATION ====================
@@ -410,7 +388,7 @@ public class SaintFiltersTests
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("TagIds can contain at most 10 items", results[0].ErrorMessage!);
+        Assert.Contains("10", results[0].ErrorMessage!);
     }
 
     [Fact]
@@ -453,7 +431,7 @@ public class SaintFiltersTests
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("PageNumber must be between 1 and 1000", results[0].ErrorMessage!);
+        Assert.Contains("between 1 and 1000", results[0].ErrorMessage!);
     }
 
     [Theory]
@@ -468,7 +446,7 @@ public class SaintFiltersTests
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("PageNumber must be between 1 and 1000", results[0].ErrorMessage!);
+        Assert.Contains("between 1 and 1000", results[0].ErrorMessage!);
     }
 
     // ==================== PAGE SIZE VALIDATION ====================
@@ -501,7 +479,7 @@ public class SaintFiltersTests
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("PageSize must be between 1 and 100", results[0].ErrorMessage!);
+        Assert.Contains("between 1 and 100", results[0].ErrorMessage!);
     }
 
     [Theory]
@@ -516,7 +494,7 @@ public class SaintFiltersTests
         var results = ModelValidationHelper.Validate(filters);
 
         Assert.Single(results);
-        Assert.Contains("PageSize must be between 1 and 100", results[0].ErrorMessage!);
+        Assert.Contains("between 1 and 100", results[0].ErrorMessage!);
     }
 
     // ==================== MULTIPLE ERRORS ====================
@@ -524,13 +502,11 @@ public class SaintFiltersTests
     [Fact]
     public void Should_Fail_MultipleFieldsInvalid()
     {
-        var filters = new SaintFilters
+        var filters = new MiracleFilters
         {
             Country = new string('A', 51),
-            Century = new string('B', 21),
-            Search = new string('C', 101),
-            FeastMonth = new string('D', 21),
-            ReligiousOrderId = new string('E', 21),
+            Century = "999",
+            Search = new string('B', 101),
             PageNumber = 0,
             PageSize = 101,
             TagIds = Enumerable.Range(1, 11).ToList()
@@ -538,7 +514,7 @@ public class SaintFiltersTests
 
         var results = ModelValidationHelper.Validate(filters);
 
-        Assert.Equal(8, results.Count);
+        Assert.Equal(6, results.Count);
     }
 
     // ==================== EDGE CASES ====================
@@ -546,13 +522,11 @@ public class SaintFiltersTests
     [Fact]
     public void Should_Pass_AllFieldsAtBoundaries()
     {
-        var filters = new SaintFilters
+        var filters = new MiracleFilters
         {
             Country = new string('A', 50),
-            Century = new string('B', 20),
-            Search = new string('C', 100),
-            FeastMonth = new string('D', 20),
-            ReligiousOrderId = new string('E', 20),
+            Century = "99",
+            Search = new string('B', 100),
             PageNumber = 1,
             PageSize = 100,
             TagIds = Enumerable.Range(1, 10).ToList()
@@ -566,12 +540,22 @@ public class SaintFiltersTests
     [Fact]
     public void Should_Pass_WithUnicodeCharacters()
     {
-        var filters = new SaintFilters
+        var filters = new MiracleFilters
         {
             Country = "日本 Italia España",
-            Search = "Saint José María Niño",
-            FeastMonth = "Décembre"
+            Search = "Miracolo José María"
         };
+
+        var results = ModelValidationHelper.Validate(filters);
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
+    public void Should_Pass_CenturyZero()
+    {
+        var filters = CreateValidFilters();
+        filters.Century = "0";
 
         var results = ModelValidationHelper.Validate(filters);
 
@@ -582,7 +566,7 @@ public class SaintFiltersTests
     public void Should_Pass_OrderByPropertyIgnored()
     {
         var filters = CreateValidFilters();
-        filters.OrderBy = SaintOrderBy.Century; // Test OrderBy enum
+        filters.OrderBy = MiracleOrderBy.CenturyDesc; // Test OrderBy enum
 
         var results = ModelValidationHelper.Validate(filters);
 

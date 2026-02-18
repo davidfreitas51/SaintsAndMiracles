@@ -1,18 +1,42 @@
 using API.Controllers;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Models;
 using Core.Models.Filters;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Security.Claims;
+using Tests.Common;
+using Tests.Common.Builders;
 
 namespace API.Tests.Controllers;
 
-public class PrayersControllerTests
+public class PrayersControllerTests : ControllerTestBase<PrayersController>
 {
+    private Mock<IPrayersRepository> _prayerRepoMock = null!;
+    private Mock<IPrayersService> _prayerServiceMock = null!;
+
+    // =========================
+    // Setup
+    // =========================
+
+    private void SetupController(bool authenticated = true)
+    {
+        _prayerRepoMock = CreateLooseMock<IPrayersRepository>();
+        _prayerServiceMock = CreateLooseMock<IPrayersService>();
+
+        if (authenticated)
+        {
+            SetupAuthenticatedController((userManager, signInManager) =>
+                new PrayersController(_prayerRepoMock.Object, _prayerServiceMock.Object, userManager.Object));
+        }
+        else
+        {
+            SetupUnauthenticatedController((userManager, signInManager) =>
+                new PrayersController(_prayerRepoMock.Object, _prayerServiceMock.Object, userManager.Object));
+        }
+    }
+
     // =========================
     // Factories
     // =========================
@@ -36,56 +60,6 @@ public class PrayersControllerTests
         };
     }
 
-    private static NewPrayerDto CreateNewPrayerDto(
-    string? title = null,
-    string? description = null,
-    string? markdownContent = null)
-    {
-        return new NewPrayerDto
-        {
-            Title = title ?? "Prayer title",
-            Description = description ?? "Prayer description",
-            MarkdownContent = markdownContent ?? "prayer.md",
-            Image = "image.webp"
-        };
-    }
-
-
-    private static PrayersController CreateController(
-        out Mock<IPrayersRepository> repo,
-        out Mock<IPrayersService> service,
-        out Mock<UserManager<AppUser>> userManager)
-    {
-        repo = new Mock<IPrayersRepository>();
-        service = new Mock<IPrayersService>();
-
-        var store = new Mock<IUserStore<AppUser>>();
-        userManager = new Mock<UserManager<AppUser>>(
-            store.Object, null, null, null, null, null, null, null, null
-        );
-
-        var controller = new PrayersController(
-            repo.Object,
-            service.Object,
-            userManager.Object
-        );
-
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext
-            {
-                User = new ClaimsPrincipal(
-                    new ClaimsIdentity(
-                        [new Claim(ClaimTypes.NameIdentifier, "user-1")],
-                        "TestAuth"
-                    )
-                )
-            }
-        };
-
-        return controller;
-    }
-
     // =========================
     // GET
     // =========================
@@ -93,30 +67,30 @@ public class PrayersControllerTests
     [Fact]
     public async Task GetAllPrayers_ShouldReturnOk()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetAllAsync(It.IsAny<PrayerFilters>()))
+        _prayerRepoMock.Setup(r => r.GetAllAsync(It.IsAny<PrayerFilters>()))
             .ReturnsAsync(new PagedResult<Prayer>
             {
                 Items = [],
                 TotalCount = 0
             });
 
-        var result = await controller.GetAllPrayers(new PrayerFilters());
+        var result = await Controller.GetAllPrayers(new PrayerFilters());
 
-        Assert.IsType<OkObjectResult>(result);
+        AssertOkResult(result);
     }
 
     [Fact]
     public async Task GetById_ShouldReturnOk_WhenPrayerExists()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
         var prayer = CreatePrayer();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _prayerRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync(prayer);
 
-        var result = await controller.GetById(1);
+        var result = await Controller.GetById(1);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Same(prayer, ok.Value);
@@ -125,12 +99,12 @@ public class PrayersControllerTests
     [Fact]
     public async Task GetById_ShouldReturnNotFound_WhenPrayerDoesNotExist()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetByIdAsync(1))
+        _prayerRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync((Prayer?)null);
 
-        var result = await controller.GetById(1);
+        var result = await Controller.GetById(1);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -138,13 +112,13 @@ public class PrayersControllerTests
     [Fact]
     public async Task GetPrayerBySlug_ShouldReturnOk_WhenExists()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
         var prayer = CreatePrayer();
 
-        repo.Setup(r => r.GetBySlugAsync("slug"))
+        _prayerRepoMock.Setup(r => r.GetBySlugAsync("slug"))
             .ReturnsAsync(prayer);
 
-        var result = await controller.GetPrayerBySlug("slug");
+        var result = await Controller.GetPrayerBySlug("slug");
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Same(prayer, ok.Value);
@@ -157,17 +131,14 @@ public class PrayersControllerTests
     [Fact]
     public async Task CreatePrayer_ShouldReturnCreated_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service, out var userManager);
+        SetupController();
 
-        var dto = CreateNewPrayerDto();
+        var dto = NewPrayerDtoBuilder.Default().Build();
 
-        userManager.Setup(u => u.GetUserId(It.IsAny<ClaimsPrincipal>()))
-            .Returns("user-1");
-
-        service.Setup(s => s.CreatePrayerAsync(dto, "user-1"))
+        _prayerServiceMock.Setup(s => s.CreatePrayerAsync(dto, GetCurrentUserId()))
             .ReturnsAsync(10);
 
-        var result = await controller.CreatePrayer(dto);
+        var result = await Controller.CreatePrayer(dto);
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(nameof(PrayersController.GetById), created.ActionName);
@@ -176,19 +147,32 @@ public class PrayersControllerTests
     [Fact]
     public async Task CreatePrayer_ShouldReturnConflict_WhenDuplicate()
     {
-        var controller = CreateController(out _, out var service, out var userManager);
+        SetupController();
 
-        var dto = CreateNewPrayerDto();
+        var dto = NewPrayerDtoBuilder.Default().Build();
 
-        userManager.Setup(u => u.GetUserId(It.IsAny<ClaimsPrincipal>()))
-            .Returns("user-1");
-
-        service.Setup(s => s.CreatePrayerAsync(dto, "user-1"))
+        _prayerServiceMock.Setup(s => s.CreatePrayerAsync(dto, GetCurrentUserId()))
             .ReturnsAsync((int?)null);
 
-        var result = await controller.CreatePrayer(dto);
+        var result = await Controller.CreatePrayer(dto);
 
-        Assert.IsType<ConflictObjectResult>(result);
+        AssertConflict(result);
+    }
+
+    [Fact]
+    public async Task CreatePrayer_ShouldPassCorrectUserIdToService()
+    {
+        SetupController();
+
+        var dto = NewPrayerDtoBuilder.Default().Build();
+
+        _prayerServiceMock.Setup(s => s.CreatePrayerAsync(It.IsAny<NewPrayerDto>(), GetCurrentUserId()))
+            .ReturnsAsync(10)
+            .Verifiable();
+
+        await Controller.CreatePrayer(dto);
+
+        _prayerServiceMock.Verify(s => s.CreatePrayerAsync(It.IsAny<NewPrayerDto>(), GetCurrentUserId()), Times.Once);
     }
 
     // =========================
@@ -198,37 +182,47 @@ public class PrayersControllerTests
     [Fact]
     public async Task UpdatePrayer_ShouldReturnNoContent_WhenSuccessful()
     {
-        var controller = CreateController(out _, out var service, out var userManager);
+        SetupController();
 
-        var dto = CreateNewPrayerDto();
+        var dto = NewPrayerDtoBuilder.Default().Build();
 
-        userManager.Setup(u => u.GetUserId(It.IsAny<ClaimsPrincipal>()))
-            .Returns("user-1");
-
-        service.Setup(s => s.UpdatePrayerAsync(1, dto, "user-1"))
+        _prayerServiceMock.Setup(s => s.UpdatePrayerAsync(1, dto, GetCurrentUserId()))
             .ReturnsAsync(true);
 
-        var result = await controller.UpdatePrayer(1, dto);
+        var result = await Controller.UpdatePrayer(1, dto);
 
-        Assert.IsType<NoContentResult>(result);
+        AssertNoContent(result);
     }
 
     [Fact]
     public async Task UpdatePrayer_ShouldReturnNotFound_WhenPrayerDoesNotExist()
     {
-        var controller = CreateController(out _, out var service, out var userManager);
+        SetupController();
 
-        var dto = CreateNewPrayerDto();
+        var dto = NewPrayerDtoBuilder.Default().Build();
 
-        userManager.Setup(u => u.GetUserId(It.IsAny<ClaimsPrincipal>()))
-            .Returns("user-1");
-
-        service.Setup(s => s.UpdatePrayerAsync(1, dto, "user-1"))
+        _prayerServiceMock.Setup(s => s.UpdatePrayerAsync(1, dto, GetCurrentUserId()))
             .ReturnsAsync(false);
 
-        var result = await controller.UpdatePrayer(1, dto);
+        var result = await Controller.UpdatePrayer(1, dto);
 
         Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task UpdatePrayer_ShouldPassCorrectUserIdToService()
+    {
+        SetupController();
+
+        var dto = NewPrayerDtoBuilder.Default().Build();
+
+        _prayerServiceMock.Setup(s => s.UpdatePrayerAsync(1, It.IsAny<NewPrayerDto>(), GetCurrentUserId()))
+            .ReturnsAsync(true)
+            .Verifiable();
+
+        await Controller.UpdatePrayer(1, dto);
+
+        _prayerServiceMock.Verify(s => s.UpdatePrayerAsync(1, It.IsAny<NewPrayerDto>(), GetCurrentUserId()), Times.Once);
     }
 
     // =========================
@@ -238,16 +232,13 @@ public class PrayersControllerTests
     [Fact]
     public async Task DeletePrayer_ShouldReturnOk_WhenExists()
     {
-        var controller = CreateController(out var repo, out var service, out var userManager);
+        SetupController();
         var prayer = CreatePrayer();
 
-        userManager.Setup(u => u.GetUserId(It.IsAny<ClaimsPrincipal>()))
-            .Returns("user-1");
-
-        repo.Setup(r => r.GetByIdAsync(1))
+        _prayerRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync(prayer);
 
-        var result = await controller.DeletePrayer(1);
+        var result = await Controller.DeletePrayer(1);
 
         Assert.IsType<OkResult>(result);
     }
@@ -255,17 +246,32 @@ public class PrayersControllerTests
     [Fact]
     public async Task DeletePrayer_ShouldReturnNotFound_WhenPrayerDoesNotExist()
     {
-        var controller = CreateController(out var repo, out _, out var userManager);
+        SetupController();
 
-        userManager.Setup(u => u.GetUserId(It.IsAny<ClaimsPrincipal>()))
-            .Returns("user-1");
-
-        repo.Setup(r => r.GetByIdAsync(1))
+        _prayerRepoMock.Setup(r => r.GetByIdAsync(1))
             .ReturnsAsync((Prayer?)null);
 
-        var result = await controller.DeletePrayer(1);
+        var result = await Controller.DeletePrayer(1);
 
         Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task DeletePrayer_ShouldCallServiceWithCorrectUserId()
+    {
+        SetupController();
+        var prayer = CreatePrayer(slug: "prayer-slug");
+
+        _prayerRepoMock.Setup(r => r.GetByIdAsync(1))
+            .ReturnsAsync(prayer);
+
+        _prayerServiceMock.Setup(s => s.DeletePrayerAsync(prayer.Slug, GetCurrentUserId()))
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        await Controller.DeletePrayer(1);
+
+        _prayerServiceMock.Verify(s => s.DeletePrayerAsync(prayer.Slug, GetCurrentUserId()), Times.Once);
     }
 
     // =========================
@@ -275,13 +281,13 @@ public class PrayersControllerTests
     [Fact]
     public async Task GetPrayerTags_ShouldReturnOk()
     {
-        var controller = CreateController(out var repo, out _, out _);
+        SetupController();
 
-        repo.Setup(r => r.GetTagsAsync())
+        _prayerRepoMock.Setup(r => r.GetTagsAsync())
             .ReturnsAsync([]);
 
-        var result = await controller.GetPrayerTags();
+        var result = await Controller.GetPrayerTags();
 
-        Assert.IsType<OkObjectResult>(result);
+        AssertOkResult(result);
     }
 }

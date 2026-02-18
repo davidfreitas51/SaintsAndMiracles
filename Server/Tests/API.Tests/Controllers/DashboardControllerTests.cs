@@ -9,23 +9,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Tests.Common;
 
 namespace API.Tests.Controllers;
 
-public class DashboardControllerTests
+public class DashboardControllerTests : UnitTestBase
 {
-    private DashboardController CreateController(
-        out Mock<ISaintsRepository> saintsRepo,
-        out Mock<IMiraclesRepository> miraclesRepo,
-        out Mock<IPrayersRepository> prayersRepo,
-        out Mock<IRecentActivityRepository> activityRepo)
-    {
-        saintsRepo = new Mock<ISaintsRepository>();
-        miraclesRepo = new Mock<IMiraclesRepository>();
-        prayersRepo = new Mock<IPrayersRepository>();
-        activityRepo = new Mock<IRecentActivityRepository>();
+    private Mock<ISaintsRepository> _saintsRepoMock = null!;
+    private Mock<IMiraclesRepository> _miraclesRepoMock = null!;
+    private Mock<IPrayersRepository> _prayersRepoMock = null!;
+    private Mock<IRecentActivityRepository> _activityRepoMock = null!;
+    private DashboardController _controller = null!;
 
-        // 🔹 EF Core InMemory for UserManager
+    private void SetupController()
+    {
+        _saintsRepoMock = CreateLooseMock<ISaintsRepository>();
+        _miraclesRepoMock = CreateLooseMock<IMiraclesRepository>();
+        _prayersRepoMock = CreateLooseMock<IPrayersRepository>();
+        _activityRepoMock = CreateLooseMock<IRecentActivityRepository>();
+
+        // DashboardController needs real UserManager for Users.CountAsync()
         var options = new DbContextOptionsBuilder<IdentityDbContext<AppUser>>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
@@ -52,30 +55,25 @@ public class DashboardControllerTests
             null!
         );
 
-        return new DashboardController(
-            saintsRepo.Object,
-            miraclesRepo.Object,
-            prayersRepo.Object,
-            activityRepo.Object,
+        _controller = new DashboardController(
+            _saintsRepoMock.Object,
+            _miraclesRepoMock.Object,
+            _prayersRepoMock.Object,
+            _activityRepoMock.Object,
             userManager,
-            NullLogger<DashboardController>.Instance
-        );
+            NullLogger<DashboardController>.Instance);
     }
 
     [Fact]
     public async Task GetSummary_ShouldReturnDashboardSummary()
     {
-        var controller = CreateController(
-            out var saintsRepo,
-            out var miraclesRepo,
-            out var prayersRepo,
-            out _);
+        SetupController();
 
-        saintsRepo.Setup(r => r.GetTotalSaintsAsync()).ReturnsAsync(10);
-        miraclesRepo.Setup(r => r.GetTotalMiraclesAsync()).ReturnsAsync(5);
-        prayersRepo.Setup(r => r.GetTotalPrayersAsync()).ReturnsAsync(20);
+        _saintsRepoMock.Setup(r => r.GetTotalSaintsAsync()).ReturnsAsync(10);
+        _miraclesRepoMock.Setup(r => r.GetTotalMiraclesAsync()).ReturnsAsync(5);
+        _prayersRepoMock.Setup(r => r.GetTotalPrayersAsync()).ReturnsAsync(20);
 
-        var result = await controller.GetSummary();
+        var result = await _controller.GetSummary();
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var summary = Assert.IsType<DashboardSummaryDto>(ok.Value);

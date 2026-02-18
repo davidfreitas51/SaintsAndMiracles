@@ -4,74 +4,194 @@ using Xunit;
 
 namespace Core.Tests.Validation;
 
-public class SafeTokenAttributeTests
+/// <summary>
+/// Tests for SafeTokenAttribute validation.
+/// Ensures tokens contain only safe characters (typically alphanumeric).
+/// </summary>
+public class SafeTokenAttributeTests : ValidationTestBase
 {
-    private class TestDto
+    private class TestModel
     {
         [SafeToken]
         public string? Token { get; set; }
     }
 
+    // ==================== NULL VALUES ====================
+
     [Fact]
-    public void Should_Pass_When_Value_IsNull()
+    public void Should_Pass_Null()
     {
-        var dto = new TestDto { Token = null };
-        var results = ModelValidationHelper.Validate(dto);
-        Assert.Empty(results);
+        var model = new TestModel { Token = null };
+
+        var results = Validate(model);
+
+        AssertValid(results);
+    }
+
+    // ==================== EMPTY/WHITESPACE ====================
+
+    [Fact]
+    public void Should_Fail_Empty()
+    {
+        var model = new TestModel { Token = "" };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Token), "invalid format");
+    }
+
+    [Theory]
+    [InlineData("   ")]
+    [InlineData("\\t")]
+    [InlineData("\\n")]
+    [InlineData("\\r\\n")]
+    public void Should_Fail_Whitespace(string whitespace)
+    {
+        var model = new TestModel { Token = whitespace };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Token), "invalid format");
+    }
+
+    // ==================== VALID TOKENS ====================
+
+    [Theory]
+    [InlineData("ABCDEFGHIJKLMNOPQRSTUVWXYZ012345")] // 32 chars
+    [InlineData("abcdefghijklmnopqrstuvwxyz012345")] // 32 chars
+    [InlineData("ABC123def456GHI789jkl012MNO34567")] // 32 chars
+    [InlineData("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")] // 32 A's
+    public void Should_Pass_ValidTokens(string validToken)
+    {
+        var model = new TestModel { Token = validToken };
+
+        var results = Validate(model);
+
+        AssertValid(results);
     }
 
     [Fact]
-    public void Should_Fail_When_Value_IsEmpty()
+    public void Should_Pass_ExactlyMinLength()
     {
-        var dto = new TestDto { Token = "" };
-        var results = ModelValidationHelper.Validate(dto);
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.Token), results[0].MemberNames);
-        Assert.Contains("invalid format", results[0].ErrorMessage);
+        var model = new TestModel { Token = new string('A', 32) };
+
+        var results = Validate(model);
+
+        AssertValid(results);
     }
 
-    [Fact]
-    public void Should_Pass_When_Value_IsValid()
-    {
-        string token = "ABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
-        var dto = new TestDto { Token = token };
-        var results = ModelValidationHelper.Validate(dto);
-        Assert.Empty(results);
-    }
+    // ==================== INVALID CHARACTERS ====================
 
     [Theory]
     [InlineData("Invalid$TokenWith32CharsLongHere!!")]
     [InlineData("TokenWith@SignAnd32CharsExactlyAAA")]
-    public void Should_Fail_When_Value_HasInvalidCharacters(string token)
+    [InlineData("Token#Hash")]
+    [InlineData("Token%Percent")]
+    [InlineData("Token&Ampersand")]
+    [InlineData("Token*Asterisk")]
+    [InlineData("Token+Plus")]
+    [InlineData("Token=Equals")]
+    [InlineData("Token-Dash")]
+    [InlineData("Token_Underscore")]
+    [InlineData("Token.Dot")]
+    [InlineData("Token,Comma")]
+    [InlineData("Token;Semicolon")]
+    [InlineData("Token:Colon")]
+    [InlineData("Token!Exclamation")]
+    [InlineData("Token?Question")]
+    [InlineData("Token/Slash")]
+    [InlineData("Token\\\\Backslash")]
+    [InlineData("Token|Pipe")]
+    [InlineData("Token<Less")]
+    [InlineData("Token>Greater")]
+    [InlineData("Token[Bracket")]
+    [InlineData("Token]Bracket")]
+    [InlineData("Token{Brace")]
+    [InlineData("Token}Brace")]
+    [InlineData("Token(Paren")]
+    [InlineData("Token)Paren")]
+    [InlineData("Token'Quote")]
+    [InlineData("Token\\\"DoubleQuote")]
+    public void Should_Fail_SpecialCharacters(string invalidToken)
     {
-        var dto = new TestDto { Token = token };
-        var results = ModelValidationHelper.Validate(dto);
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.Token), results[0].MemberNames);
-        Assert.Contains("invalid format", results[0].ErrorMessage);
+        var model = new TestModel { Token = invalidToken };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Token), "invalid format");
     }
 
     [Theory]
     [InlineData("TokenWith SpaceInsideAndValidLength1234")]
-    [InlineData("TokenWith\tTabCharacterAndValidLengthAB")]
-    [InlineData("TokenWith\nNewlineCharacterAndValidLen")]
-    public void Should_Fail_When_Value_HasWhitespaceOrControl(string token)
+    [InlineData("Token Has Spaces")]
+    [InlineData("  LeadingSpaces")]
+    [InlineData("TrailingSpaces  ")]
+    public void Should_Fail_Spaces(string invalidToken)
     {
-        var dto = new TestDto { Token = token };
-        var results = ModelValidationHelper.Validate(dto);
-        Assert.Single(results);
-        Assert.Contains(nameof(dto.Token), results[0].MemberNames);
-        Assert.Contains("invalid format", results[0].ErrorMessage);
+        var model = new TestModel { Token = invalidToken };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Token), "invalid format");
+    }
+
+    [Theory]
+    [InlineData("TokenWith\tTabCharacterAndValidLengthAB")]
+    [InlineData("TokenWith\\nNewlineCharacterAndValidLen")]
+    [InlineData("TokenWith\\rReturnCharacterAndValidLen")]
+    [InlineData("Token\\u0001ControlChar")]
+    [InlineData("Token\\u001FUnitSeparator")]
+    public void Should_Fail_ControlCharacters(string invalidToken)
+    {
+        var model = new TestModel { Token = invalidToken };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Token), "invalid format");
+    }
+
+    // ==================== LENGTH ====================
+
+    [Fact]
+    public void Should_Fail_TooShort()
+    {
+        var model = new TestModel { Token = "abc" };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Token), "invalid format");
     }
 
     [Fact]
-    public void Should_Fail_When_Value_IsNotString()
+    public void Should_Pass_LongToken()
     {
-        var dto = new object();
+        var model = new TestModel { Token = new string('A', 100) };
+
+        var results = Validate(model);
+
+        AssertValid(results);
+    }
+
+    [Fact]
+    public void Should_Fail_TooLong()
+    {
+        var model = new TestModel { Token = new string('A', 129) };
+
+        var results = Validate(model);
+
+        AssertInvalid(results, nameof(TestModel.Token), "invalid format");
+    }
+
+    // ==================== TYPE VALIDATION ====================
+
+    [Fact]
+    public void Should_Fail_NonStringType()
+    {
         var attr = new SafeTokenAttribute();
-        var context = new ValidationContext(dto) { MemberName = "Token" };
+        var context = new ValidationContext(new object()) { MemberName = "Token" };
+
         var result = attr.GetValidationResult(123, context);
-        Assert.NotNull(result);
-        Assert.Contains("invalid format", result!.ErrorMessage);
+
+        AssertValidationFailure(result, "invalid format");
     }
 }
