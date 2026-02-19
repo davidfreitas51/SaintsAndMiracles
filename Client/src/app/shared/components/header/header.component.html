@@ -127,11 +127,12 @@
   </mat-menu>
 
   <!-- Progress bar -->
-  <mat-progress-bar
-    *ngIf="loading$ | async"
-    mode="indeterminate"
-    class="absolute bottom-0 left-0 w-full"
-  ></mat-progress-bar>
+  @if (loading$ | async) {
+    <mat-progress-bar
+      mode="indeterminate"
+      class="absolute bottom-0 left-0 w-full"
+    ></mat-progress-bar>
+  }
 </header>
 
 <div class="h-22"></div>

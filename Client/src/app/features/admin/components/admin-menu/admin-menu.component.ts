@@ -1,12 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { UserSessionService } from '../../../../core/services/user-session.service';
 
 @Component({
   selector: 'app-admin-menu',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './admin-menu.component.html',
   styleUrls: ['./admin-menu.component.scss'],
 })

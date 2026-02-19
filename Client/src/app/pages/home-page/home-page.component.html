@@ -88,7 +88,7 @@
     </div>
 
     <!-- Today's Saints -->
-    <ng-container *ngIf="universalFeastsOfTheDay.length > 0">
+    @if (universalFeastsOfTheDay.length > 0) {
       <div class="p-6 pt-12 w-full max-w-6xl mx-auto">
         <h2
           class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-200 mb-8"
@@ -104,134 +104,137 @@
             'grid-cols-1 md:grid-cols-2': universalFeastsOfTheDay.length > 1,
           }"
         >
-          <a
-            *ngFor="let saint of universalFeastsOfTheDay"
-            [routerLink]="['/saints', saint.slug]"
-            class="block w-full"
-            [ngClass]="{
-              'max-w-3xl': universalFeastsOfTheDay.length === 1,
-            }"
-          >
-            <mat-card
-              class="flex flex-col p-6 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer bg-white dark:bg-[#1e2022]"
+          @for (saint of universalFeastsOfTheDay; track saint.slug) {
+            <a
+              [routerLink]="['/saints', saint.slug]"
+              class="block w-full"
+              [ngClass]="{
+                'max-w-3xl': universalFeastsOfTheDay.length === 1,
+              }"
             >
-              <!-- Top content -->
-              <div class="flex flex-col sm:flex-row items-center">
-                <div class="flex justify-center mb-4 sm:mb-0 sm:mr-6">
-                  <img
-                    [src]="imageBaseUrl + saint.image"
-                    [alt]="saint.name"
-                    class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-full"
-                  />
+              <mat-card
+                class="flex flex-col p-6 rounded-2xl shadow-md hover:shadow-xl transition h-full cursor-pointer bg-white dark:bg-[#1e2022]"
+              >
+                <!-- Top content -->
+                <div class="flex flex-col sm:flex-row items-center">
+                  <div class="flex justify-center mb-4 sm:mb-0 sm:mr-6">
+                    <img
+                      [src]="imageBaseUrl + saint.image"
+                      [alt]="saint.name"
+                      class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-full"
+                    />
+                  </div>
+
+                  <div class="flex flex-col flex-1 text-center sm:text-left">
+                    <h3
+                      class="text-lg sm:text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100"
+                    >
+                      {{ saint.name }}
+                    </h3>
+
+                    <div
+                      class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-center sm:justify-start gap-1"
+                    >
+                      @if (saint.country | countryCode; as code) {
+                        <img
+                          [src]="'https://flagcdn.com/w20/' + code + '.webp'"
+                          [alt]="saint.country + ' flag'"
+                          class="w-4 h-4 object-contain"
+                        />
+                      }
+                      <span>
+                        {{ saint.country }} – {{ saint.century | roman }}
+                      </span>
+                    </div>
+
+                    <p
+                      class="text-sm text-gray-600 dark:text-gray-300 line-clamp-4"
+                    >
+                      {{ saint.description }}
+                    </p>
+                  </div>
                 </div>
 
-                <div class="flex flex-col flex-1 text-center sm:text-left">
-                  <h3
-                    class="text-lg sm:text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100"
+                <!-- Card footer -->
+                <div class="w-full flex justify-center mt-4">
+                  <span
+                    class="text-primary-app font-semibold text-sm hover:underline"
                   >
-                    {{ saint.name }}
-                  </h3>
+                    Read More
+                  </span>
+                </div>
+              </mat-card>
+            </a>
+          }
+        </div>
+      </div>
+    }
 
-                  <div
-                    class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-center sm:justify-start gap-1"
-                  >
+    <!-- Saints of This Month -->
+    @if (upcomingFeasts.length > 0) {
+      <div class="p-4 pb-10 pt-10 w-full max-w-screen-xl mx-auto">
+        <h2
+          class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6"
+        >
+          Upcoming Feasts
+        </h2>
+
+        <div
+          #scrollContainer
+          class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-2 sm:px-4 pb-5"
+        >
+          @for (saint of upcomingFeasts; track saint.slug) {
+            <mat-card
+              class="flex-shrink-0 w-56 sm:w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer bg-white dark:bg-[#1e2022]"
+              (click)="goToSaint(saint.slug)"
+            >
+              <div class="flex justify-center mb-2">
+                <img
+                  [src]="imageBaseUrl + saint.image"
+                  [alt]="saint.name"
+                  class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-full"
+                />
+              </div>
+
+              <div class="flex flex-col flex-1 text-center">
+                <h3
+                  class="text-sm font-semibold mb-1 text-gray-900 dark:text-gray-100"
+                >
+                  {{ saint.name }}
+                </h3>
+
+                <div
+                  class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center justify-center gap-1"
+                >
+                  @if (saint.country | countryCode; as code) {
                     <img
-                      *ngIf="saint.country | countryCode as code"
                       [src]="'https://flagcdn.com/w20/' + code + '.webp'"
                       [alt]="saint.country + ' flag'"
                       class="w-4 h-4 object-contain"
                     />
-                    <span>
-                      {{ saint.country }} – {{ saint.century | roman }}
-                    </span>
-                  </div>
-
-                  <p
-                    class="text-sm text-gray-600 dark:text-gray-300 line-clamp-4"
-                  >
-                    {{ saint.description }}
-                  </p>
+                  }
+                  <span>{{ saint.country }} – {{ saint.century | roman }}</span>
                 </div>
-              </div>
 
-              <!-- Card footer -->
-              <div class="w-full flex justify-center mt-4">
-                <span
-                  class="text-primary-app font-semibold text-sm hover:underline"
+                <p
+                  class="text-xs line-clamp-3 flex-1 text-gray-600 dark:text-gray-300"
+                >
+                  {{ saint.description }}
+                </p>
+
+                <a
+                  [routerLink]="['/saints', saint.slug]"
+                  class="text-primary-app font-semibold pt-3 text-xs hover:underline mt-auto inline-block self-center"
+                  (click)="$event.stopPropagation()"
                 >
                   Read More
-                </span>
+                </a>
               </div>
             </mat-card>
-          </a>
+          }
         </div>
       </div>
-    </ng-container>
-
-    <!-- Saints of This Month -->
-    <div
-      *ngIf="upcomingFeasts.length > 0"
-      class="p-4 pb-10 pt-10 w-full max-w-screen-xl mx-auto"
-    >
-      <h2
-        class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6"
-      >
-        Upcoming Feasts
-      </h2>
-
-      <div
-        #scrollContainer
-        class="flex overflow-x-auto space-x-4 scroll-smooth scrollbar-hide px-2 sm:px-4 pb-5"
-      >
-        <mat-card
-          *ngFor="let saint of upcomingFeasts"
-          class="flex-shrink-0 w-56 sm:w-64 flex flex-col items-center p-4 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer bg-white dark:bg-[#1e2022]"
-          (click)="goToSaint(saint.slug)"
-        >
-          <div class="flex justify-center mb-2">
-            <img
-              [src]="imageBaseUrl + saint.image"
-              [alt]="saint.name"
-              class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-full"
-            />
-          </div>
-
-          <div class="flex flex-col flex-1 text-center">
-            <h3
-              class="text-sm font-semibold mb-1 text-gray-900 dark:text-gray-100"
-            >
-              {{ saint.name }}
-            </h3>
-
-            <div
-              class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center justify-center gap-1"
-            >
-              <img
-                *ngIf="saint.country | countryCode as code"
-                [src]="'https://flagcdn.com/w20/' + code + '.webp'"
-                [alt]="saint.country + ' flag'"
-                class="w-4 h-4 object-contain"
-              />
-              <span>{{ saint.country }} – {{ saint.century | roman }}</span>
-            </div>
-
-            <p
-              class="text-xs line-clamp-3 flex-1 text-gray-600 dark:text-gray-300"
-            >
-              {{ saint.description }}
-            </p>
-
-            <a
-              [routerLink]="['/saints', saint.slug]"
-              class="text-primary-app font-semibold pt-3 text-xs hover:underline mt-auto inline-block self-center"
-              (click)="$event.stopPropagation()"
-            >
-              Read More
-            </a>
-          </div>
-        </mat-card>
-      </div>
-    </div>
+    }
   </main>
 
   <app-footer></app-footer>

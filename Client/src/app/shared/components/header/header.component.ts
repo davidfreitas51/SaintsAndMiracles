@@ -8,7 +8,7 @@ import { LoadingService } from '../../../core/services/loading.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
@@ -21,7 +21,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     MatIconModule,
     MatMenuModule,
     MatProgressBarModule,
-    CommonModule,
+    AsyncPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,7 +29,7 @@ export class HeaderComponent implements OnInit {
   private loadingService = inject(LoadingService);
   loading$ = this.loadingService.loading$;
 
-  isDarkMode = false; // controla o estado atual do tema
+  isDarkMode = false;
 
   ngOnInit(): void {
     this.applyDarkModePreference();
