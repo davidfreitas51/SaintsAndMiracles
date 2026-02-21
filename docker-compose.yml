@@ -1,0 +1,58 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Server/API/Dockerfile
+    container_name: saints-api-prod
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      Frontend__BaseUrl: ${Frontend__BaseUrl:-http://localhost:8080}
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection}
+      Smtp__Host: ${Smtp__Host}
+      Smtp__Port: ${Smtp__Port}
+      Smtp__User: ${Smtp__User}
+      Smtp__Pass: ${Smtp__Pass}
+      Smtp__From: ${Smtp__From}
+      Smtp__FromName: ${Smtp__FromName}
+      Bootstrap__Enabled: ${Bootstrap__Enabled:-false}
+      Bootstrap__TokenTtlHours: ${Bootstrap__TokenTtlHours:-1}
+      Bootstrap__LogPlainTokenToPersistentLogs: ${Bootstrap__LogPlainTokenToPersistentLogs:-false}
+      Bootstrap__WritePlainTokenToConsole: ${Bootstrap__WritePlainTokenToConsole:-false}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.1
+    container_name: ${MYSQL_CONTAINER_NAME:-saints-mysql-prod}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-saintsdb}
+      MYSQL_USER: ${MYSQL_USER:-saintsuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-u${MYSQL_USER:-saintsuser}",
+          "-p${MYSQL_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
