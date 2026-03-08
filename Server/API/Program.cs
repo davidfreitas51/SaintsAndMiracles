@@ -84,7 +84,20 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapControllers();
-app.MapFallbackToController("Index", "Fallback");
+
+var spaIndexPath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "index.html");
+if (File.Exists(spaIndexPath))
+{
+    app.MapFallbackToFile("index.html");
+}
+else
+{
+    app.MapFallback(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        await context.Response.WriteAsync("SPA entry point not found. Build the Angular app into wwwroot.");
+    });
+}
 
 app.Run();
 
