@@ -128,7 +128,7 @@ public class RegistrationController(
     {
         logger.LogInformation("Invite token generated. Role={Role}", request.Role);
         var token = await accountTokensService.GenerateInviteAsync(request.Role);
-        logger.LogInformation("Invite token created successfully. Role={Role}, Token={TokenValue}", request.Role, token);
+        logger.LogInformation("Invite token created successfully. Role={Role}", request.Role);
         return Ok(token);
     }
 

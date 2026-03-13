@@ -1,0 +1,15 @@
+.git
+.gitignore
+.github
+.vscode
+node_modules
+**/bin
+**/obj
+**/TestResults
+**/Logs
+Client/node_modules
+*.user
+*.suo
+*.swp
+.env
+.env.*

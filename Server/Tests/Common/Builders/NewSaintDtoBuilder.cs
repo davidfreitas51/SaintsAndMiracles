@@ -1,5 +1,3 @@
-using Core.DTOs;
-
 namespace Tests.Common.Builders;
 
 /// <summary>

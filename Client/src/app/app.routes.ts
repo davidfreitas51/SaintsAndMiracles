@@ -10,6 +10,7 @@ import { SaintsPageComponent } from './features/saints/pages/saints-page/saints-
 
 import { PrayersPageComponent } from './features/prayers/pages/prayers-page/prayers-page.component';
 import { PrayerDetailsPageComponent } from './features/prayers/pages/prayer-details-page/prayer-details-page.component';
+import { NotFoundPageComponent } from './pages/not-found-page/not-found-page.component';
 
 export const routes: Routes = [
   {
@@ -53,5 +54,13 @@ export const routes: Routes = [
     path: 'account',
     loadChildren: () =>
       import('./features/account/account-routes').then((r) => r.accountRoutes),
+  },
+  {
+    path: 'not-found',
+    component: NotFoundPageComponent,
+  },
+  {
+    path: '**',
+    redirectTo: 'not-found',
   },
 ];

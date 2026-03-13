@@ -52,6 +52,7 @@ describe('SaintsService', () => {
   it('formats feast days to and from ISO', () => {
     expect(service.formatFeastDayToIso('1/2')).toBe('0001-02-01');
     expect(service.formatFeastDayToIso('31-12')).toBe('0001-12-31');
+    expect(service.formatFeastDayToIso('0001-08-28')).toBe('0001-08-28');
     expect(service.formatFeastDayToIso('invalid')).toBeUndefined();
 
     expect(service.formatFeastDayFromIso('0001-12-25')).toBe('25/12');

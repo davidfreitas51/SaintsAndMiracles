@@ -27,4 +27,10 @@
     <Folder Include="wwwroot/prayers/prayer-to-st-michael/" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Helpers/EmailTemplates/**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

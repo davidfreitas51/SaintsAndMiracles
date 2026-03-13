@@ -42,28 +42,30 @@
   </div>
 
   <!-- Role descriptions -->
-  <div
-    *ngIf="selectedRole === 'Admin'"
-    class="p-3 border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-sm text-blue-800 dark:text-blue-300 rounded-md"
-  >
-    <strong>Admin Role:</strong> Admins can manage general content, update
-    records, and assist users. This role is suitable for trusted team members
-    who need operational control but not full system access.
-  </div>
+  @if (selectedRole === "Admin") {
+    <div
+      class="p-3 border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-sm text-blue-800 dark:text-blue-300 rounded-md"
+    >
+      <strong>Admin Role:</strong> Admins can manage general content, update
+      records, and assist users. This role is suitable for trusted team members
+      who need operational control but not full system access.
+    </div>
+  }
 
-  <div
-    *ngIf="selectedRole === 'SuperAdmin'"
-    class="p-3 border-l-4 border-red-500 bg-red-50 dark:bg-red-900/30 text-sm text-red-700 dark:text-red-300 rounded-md"
-  >
-    ⚠️ <strong>Super Admin privileges:</strong>
-    Super Admins hold unrestricted access — including creating or removing other
-    admins, managing sensitive configurations, and overseeing system-wide
-    permissions. Assign this role only to individuals with the highest level of
-    trust and accountability.
-  </div>
+  @if (selectedRole === "SuperAdmin") {
+    <div
+      class="p-3 border-l-4 border-red-500 bg-red-50 dark:bg-red-900/30 text-sm text-red-700 dark:text-red-300 rounded-md"
+    >
+      ⚠️ <strong>Super Admin privileges:</strong>
+      Super Admins hold unrestricted access — including creating or removing
+      other admins, managing sensitive configurations, and overseeing
+      system-wide permissions. Assign this role only to individuals with the
+      highest level of trust and accountability.
+    </div>
+  }
 
   <!-- Token display -->
-  <ng-container *ngIf="inviteToken">
+  @if (inviteToken) {
     <div
       class="p-3 border rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-between"
     >
@@ -83,7 +85,7 @@
       ⚠️ This token grants administrative access. Share it only through secure
       channels.
     </p>
-  </ng-container>
+  }
 
   <!-- Actions -->
   <div class="flex justify-end mt-4">

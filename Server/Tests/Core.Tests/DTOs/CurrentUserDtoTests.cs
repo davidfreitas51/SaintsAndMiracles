@@ -1,5 +1,4 @@
 using Core.DTOs;
-using Core.Validation.Attributes;
 using Xunit;
 
 namespace Core.Tests.DTOs;

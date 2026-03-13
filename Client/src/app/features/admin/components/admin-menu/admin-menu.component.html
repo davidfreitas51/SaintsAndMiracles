@@ -32,7 +32,7 @@
       Manage Prayers
     </a>
 
-    <ng-container *ngIf="isSuperAdmin">
+    @if (isSuperAdmin) {
       <a
         routerLink="/admin/accounts"
         routerLinkActive="bg-hover"
@@ -40,6 +40,6 @@
       >
         Manage Accounts
       </a>
-    </ng-container>
+    }
   </div>
 </main>

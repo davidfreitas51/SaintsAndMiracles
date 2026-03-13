@@ -13,7 +13,8 @@ namespace API.Controllers;
 public class SaintsController(
     ISaintsRepository saintsRepository,
     ISaintsService saintsService,
-    UserManager<AppUser> userManager) : ControllerBase
+    UserManager<AppUser> userManager
+) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAllSaints([FromQuery] SaintFilters filters)
@@ -30,7 +31,7 @@ public class SaintsController(
     }
 
     [HttpGet("{slug}")]
-    public async Task<IActionResult> GetSaintBySlug([FromRoute][SafeSlug] string slug)
+    public async Task<IActionResult> GetSaintBySlug([FromRoute] [SafeSlug] string slug)
     {
         var saint = await saintsRepository.GetBySlugAsync(slug);
         return saint is null ? NotFound() : Ok(saint);
@@ -41,7 +42,8 @@ public class SaintsController(
     public async Task<IActionResult> CreateSaint([FromBody] NewSaintDto newSaint)
     {
         var user = await userManager.GetUserAsync(User);
-        if (user is null) return Unauthorized();
+        if (user is null)
+            return Unauthorized();
 
         var created = await saintsService.CreateSaintAsync(newSaint, user.Id);
         if (!created.HasValue)
@@ -55,7 +57,8 @@ public class SaintsController(
     public async Task<IActionResult> UpdateSaint(int id, [FromBody] NewSaintDto updatedSaint)
     {
         var user = await userManager.GetUserAsync(User);
-        if (user is null) return Unauthorized();
+        if (user is null)
+            return Unauthorized();
 
         var updated = await saintsService.UpdateSaintAsync(id, updatedSaint, user.Id);
         return updated ? NoContent() : NotFound();
@@ -66,7 +69,8 @@ public class SaintsController(
     public async Task<IActionResult> DeleteSaint(int id)
     {
         var user = await userManager.GetUserAsync(User);
-        if (user is null) return Unauthorized();
+        if (user is null)
+            return Unauthorized();
 
         var saint = await saintsRepository.GetByIdAsync(id);
         if (saint is null)
@@ -86,7 +90,9 @@ public class SaintsController(
     [HttpGet("of-the-day")]
     public async Task<IActionResult> GetSaintsOfTheDay()
     {
-        var saints = await saintsRepository.GetSaintsOfTheDayAsync(DateOnly.FromDateTime(DateTime.UtcNow));
+        var saints = await saintsRepository.GetSaintsOfTheDayAsync(
+            DateOnly.FromDateTime(DateTime.UtcNow)
+        );
 
         return saints.Any() ? Ok(saints) : NoContent();
     }
@@ -94,7 +100,9 @@ public class SaintsController(
     [HttpGet("upcoming")]
     public async Task<IActionResult> GetUpcomingFeasts()
     {
-        var saints = await saintsRepository.GetUpcomingFeasts(DateOnly.FromDateTime(DateTime.UtcNow));
+        var saints = await saintsRepository.GetUpcomingFeasts(
+            DateOnly.FromDateTime(DateTime.UtcNow)
+        );
         return saints.Any() ? Ok(saints) : NoContent();
     }
 }
