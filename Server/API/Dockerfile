@@ -14,7 +14,7 @@ COPY ["Server/Infrastructure/Infrastructure.csproj", "Server/Infrastructure/"]
 RUN dotnet restore "Server/API/API.csproj"
 
 COPY . .
-COPY --from=frontend-build /src/Client/dist /src/Server/API/wwwroot
+COPY --from=frontend-build /src/Server/API/wwwroot /src/Server/API/wwwroot
 WORKDIR /src/Server/API
 RUN dotnet publish "API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
