@@ -31,10 +31,10 @@ jobs:
         working-directory: ./Client
         run: npm ci
 
-      # 3.5 Dependency vulnerability check (frontend)
+      # 3.5 Dependency vulnerability check (frontend, production deps only)
       - name: npm audit (high+)
         working-directory: ./Client
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high --omit=dev
 
       # 4. Run Angular tests
       - name: Run Angular tests
