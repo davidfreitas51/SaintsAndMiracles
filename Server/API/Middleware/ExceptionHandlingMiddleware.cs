@@ -1,5 +1,5 @@
 using System.Net;
-using System.Text.Json;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace API.Middleware;
 
@@ -56,6 +56,16 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 {
                     StatusCode = (int)HttpStatusCode.Unauthorized,
                     Message = "Unauthorized access: " + uaEx.Message,
+                    Timestamp = DateTime.UtcNow
+                };
+                break;
+
+            case AntiforgeryValidationException:
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response = new ErrorResponse
+                {
+                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    Message = "Invalid or missing CSRF token.",
                     Timestamp = DateTime.UtcNow
                 };
                 break;

@@ -1,5 +1,3 @@
-using Core.DTOs;
-
 namespace Tests.Common.Builders;
 
 public class NewMiracleDtoBuilder

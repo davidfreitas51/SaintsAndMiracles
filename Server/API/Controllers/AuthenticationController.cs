@@ -37,7 +37,7 @@ public class AuthenticationController(SignInManager<AppUser> signInManager, IEma
             return Unauthorized("Email not confirmed. A new confirmation email has been sent.");
         }
 
-        var result = await signInManager.PasswordSignInAsync(user, loginDto.Password, loginDto.RememberMe, lockoutOnFailure: false);
+        var result = await signInManager.PasswordSignInAsync(user, loginDto.Password, loginDto.RememberMe, lockoutOnFailure: true);
 
         if (!result.Succeeded)
         {

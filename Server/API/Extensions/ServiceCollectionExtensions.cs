@@ -99,6 +99,22 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddCsrfProtection(this IServiceCollection services, IHostEnvironment env)
+    {
+        services.AddAntiforgery(options =>
+        {
+            options.HeaderName = "X-CSRF-TOKEN";
+            options.Cookie.Name = env.IsDevelopment() ? "csrf" : "__Host-csrf";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = env.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+        });
+
+        return services;
+    }
+
     // ---------------- Application ----------------
 
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
@@ -173,7 +189,8 @@ public static class ServiceCollectionExtensions
             options.Password.RequireNonAlphanumeric = false;
 
             options.Lockout.MaxFailedAccessAttempts = 5;
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(20);
+            options.Lockout.AllowedForNewUsers = true;
         })
         .AddEntityFrameworkStores<DataContext>()
         .AddDefaultTokenProviders();

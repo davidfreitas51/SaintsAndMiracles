@@ -1,5 +1,7 @@
 using API.Extensions;
 using API.Middleware;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using Serilog.Events;
 
@@ -23,12 +25,25 @@ builder.Services.AddApiControllers();
 builder.Services.AddCorsPolicy(builder.Environment);
 builder.Services.AddRateLimiting();
 builder.Services.AddApplicationCookieConfig();
+builder.Services.AddCsrfProtection(builder.Environment);
+builder.Services.AddHsts(options =>
+{
+    options.Preload = false;
+    options.IncludeSubDomains = true;
+    options.MaxAge = TimeSpan.FromDays(180);
+});
 
 builder.Services.AddMemoryCacheWithLimit();
 builder.Services.AddApplicationServices();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddIdentityServices();
 builder.Services.AddAuthorization();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 var app = builder.Build();
 
@@ -65,7 +80,8 @@ app.UseSerilogRequestLogging(options =>
         return LogEventLevel.Debug;
     };
 
-    options.IncludeQueryInRequestPath = true;
+    // Avoid persisting sensitive query-string tokens (email confirmation/reset links) in logs.
+    options.IncludeQueryInRequestPath = false;
 });
 
 // Seed
@@ -74,14 +90,53 @@ await app.SeedDatabaseAsync();
 // Middleware pipeline
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-app.UseCors();
+app.UseForwardedHeaders();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+if (app.Configuration.GetValue("Security:UseHttpsRedirection", !app.Environment.IsDevelopment()))
+{
+    app.UseHttpsRedirection();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors();
+}
 app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Use(async (context, next) =>
+{
+    var method = context.Request.Method;
+    var path = context.Request.Path;
+
+    var isSafeMethod = HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method) || HttpMethods.IsTrace(method);
+    var isApiRequest = path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase);
+    var isCsrfTokenEndpoint = path.Equals("/api/security/csrf-token", StringComparison.OrdinalIgnoreCase);
+
+    if (isApiRequest && !isSafeMethod && !isCsrfTokenEndpoint)
+    {
+        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+        await antiforgery.ValidateRequestAsync(context);
+    }
+
+    await next();
+});
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.MapGet("/api/security/csrf-token", (HttpContext context, IAntiforgery antiforgery) =>
+{
+    var tokens = antiforgery.GetAndStoreTokens(context);
+    return Results.Ok(new { token = tokens.RequestToken });
+});
 
 app.MapControllers();
 

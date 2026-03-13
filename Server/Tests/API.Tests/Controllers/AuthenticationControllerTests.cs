@@ -2,7 +2,6 @@ using API.Controllers;
 using Core.DTOs;
 using Core.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Tests.Common;
 using Tests.Common.Builders;
@@ -73,7 +72,7 @@ public class AuthenticationControllerTests : ControllerTestBase<AuthenticationCo
             .ReturnsAsync(true);
 
         SignInManagerMock
-            .Setup(s => s.PasswordSignInAsync(user, dto.Password, dto.RememberMe, false))
+            .Setup(s => s.PasswordSignInAsync(user, dto.Password, dto.RememberMe, true))
             .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
 
         var result = await Controller.Login(dto);
@@ -132,7 +131,7 @@ public class AuthenticationControllerTests : ControllerTestBase<AuthenticationCo
 
         // PasswordSignInAsync should return LockedOut for locked-out users
         SignInManagerMock
-            .Setup(s => s.PasswordSignInAsync(user, dto.Password, dto.RememberMe, false))
+            .Setup(s => s.PasswordSignInAsync(user, dto.Password, dto.RememberMe, true))
             .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.LockedOut);
 
         var result = await Controller.Login(dto);
