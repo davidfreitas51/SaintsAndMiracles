@@ -20,7 +20,7 @@ services:
       Bootstrap__LogPlainTokenToPersistentLogs: ${Bootstrap__LogPlainTokenToPersistentLogs:-false}
       Bootstrap__WritePlainTokenToConsole: ${Bootstrap__WritePlainTokenToConsole:-false}
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
