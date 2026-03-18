@@ -71,6 +71,39 @@ jobs:
           dotnet test ./Server/Tests/Core.Tests/Core.Tests.csproj --framework net9.0 --verbosity normal
           dotnet test ./Server/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj --framework net9.0 --verbosity normal
 
+      # 10. Content persistence smoke test (PR only)
+      - name: Content persistence smoke test
+        if: github.event_name == 'pull_request'
+        run: |
+          cat > .env.ci << 'EOF'
+          ASPNETCORE_ENVIRONMENT=Development
+          ASPNETCORE_URLS=http://+:8080
+          Frontend__BaseUrl=http://localhost:8080
+          CONTENT_ROOT=./data/entities
+
+          MYSQL_CONTAINER_NAME=saints-mysql-ci
+          MYSQL_DATABASE=saintsdb
+          MYSQL_USER=saintsuser
+          MYSQL_PASSWORD=ci_password_123
+          MYSQL_ROOT_PASSWORD=ci_root_password_123
+          ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=saintsdb;User=saintsuser;Password=ci_password_123;SslMode=Preferred;
+
+          Smtp__Host=localhost
+          Smtp__Port=25
+          Smtp__User=ci-user
+          Smtp__Pass=ci-pass
+          Smtp__From=ci@example.com
+          Smtp__FromName=CI
+
+          Bootstrap__Enabled=false
+          Bootstrap__TokenTtlHours=1
+          Bootstrap__LogPlainTokenToPersistentLogs=false
+          Bootstrap__WritePlainTokenToConsole=false
+          EOF
+
+          chmod +x ./scripts/test-content-persistence.sh
+          bash ./scripts/test-content-persistence.sh .env.ci
+
   secret-scan:
     runs-on: ubuntu-latest
     permissions:

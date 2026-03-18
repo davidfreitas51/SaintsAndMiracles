@@ -1,7 +1,8 @@
 {
   "scripts": {
     "prepare": "husky",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:content-persistence": "bash ./scripts/test-content-persistence.sh"
   },
   "lint-staged": {
     "*.{js,ts,tsx,json,css,scss,html,md,yaml,yml}": [
