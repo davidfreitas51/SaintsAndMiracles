@@ -34,7 +34,7 @@ public class PrayersRepository(DataContext context, ICacheService cacheService, 
         var cacheKey = cacheService.BuildKey("prayer", $"id{id}", incrementVersion: false);
         return await cacheService.GetOrSetAsync(
             cacheKey,
-            () => context.Prayers.Include(p => p.Tags).FirstOrDefaultAsync(p => p.Id == id)
+            () => context.Prayers.Include(p => p.Tags.OrderBy(t => t.Name)).FirstOrDefaultAsync(p => p.Id == id)
         );
     }
 
@@ -43,7 +43,7 @@ public class PrayersRepository(DataContext context, ICacheService cacheService, 
         var cacheKey = cacheService.BuildKey("prayer", $"slug{slug}", incrementVersion: false);
         return await cacheService.GetOrSetAsync(
             cacheKey,
-            () => context.Prayers.Include(p => p.Tags).FirstOrDefaultAsync(p => p.Slug == slug)
+            () => context.Prayers.Include(p => p.Tags.OrderBy(t => t.Name)).FirstOrDefaultAsync(p => p.Slug == slug)
         );
     }
 
@@ -71,7 +71,7 @@ public class PrayersRepository(DataContext context, ICacheService cacheService, 
     public async Task<bool> UpdateAsync(Prayer prayer)
     {
         var trackedPrayer = await context.Prayers
-            .Include(p => p.Tags)
+            .Include(p => p.Tags.OrderBy(t => t.Name))
             .FirstOrDefaultAsync(p => p.Id == prayer.Id);
 
         if (trackedPrayer == null)
@@ -170,7 +170,7 @@ public class PrayersRepository(DataContext context, ICacheService cacheService, 
 
     private async Task<PagedResult<Prayer>> FetchPrayersFromDb(PrayerFilters filters)
     {
-        var query = context.Prayers.Include(p => p.Tags).AsQueryable();
+        var query = context.Prayers.Include(p => p.Tags.OrderBy(t => t.Name)).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filters.Search))
         {

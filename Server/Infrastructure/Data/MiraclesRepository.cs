@@ -34,7 +34,7 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService,
         var cacheKey = cacheService.BuildKey("miracle", $"id{id}", incrementVersion: false);
         return await cacheService.GetOrSetAsync(
             cacheKey,
-            () => context.Miracles.Include(m => m.Tags).FirstOrDefaultAsync(m => m.Id == id)
+            () => context.Miracles.Include(m => m.Tags.OrderBy(t => t.Name)).FirstOrDefaultAsync(m => m.Id == id)
         );
     }
 
@@ -43,7 +43,7 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService,
         var cacheKey = cacheService.BuildKey("miracle", $"slug{slug}", incrementVersion: false);
         return await cacheService.GetOrSetAsync(
             cacheKey,
-            () => context.Miracles.Include(m => m.Tags).FirstOrDefaultAsync(m => m.Slug == slug)
+            () => context.Miracles.Include(m => m.Tags.OrderBy(t => t.Name)).FirstOrDefaultAsync(m => m.Slug == slug)
         );
     }
 
@@ -71,7 +71,7 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService,
     public async Task<bool> UpdateAsync(Miracle miracle)
     {
         var trackedMiracle = await context.Miracles
-            .Include(m => m.Tags)
+            .Include(m => m.Tags.OrderBy(t => t.Name))
             .FirstOrDefaultAsync(m => m.Id == miracle.Id);
 
         if (trackedMiracle == null)
@@ -123,7 +123,7 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService,
     public async Task DeleteAsync(int id)
     {
         var miracle = await context.Miracles
-            .Include(m => m.Tags)
+            .Include(m => m.Tags.OrderBy(t => t.Name))
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (miracle is null)
@@ -156,6 +156,7 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService,
                 .Select(m => m.Country)
                 .Where(c => c != null && c != "")
                 .Distinct()
+                .OrderBy(c => c)
                 .ToListAsync()
         );
 
@@ -182,7 +183,7 @@ public class MiraclesRepository(DataContext context, ICacheService cacheService,
 
     private async Task<PagedResult<Miracle>> FetchMiraclesFromDb(MiracleFilters filters)
     {
-        var query = context.Miracles.Include(m => m.Tags).AsQueryable();
+        var query = context.Miracles.Include(m => m.Tags.OrderBy(t => t.Name)).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filters.Country))
             query = query.Where(m => m.Country == filters.Country);

@@ -80,7 +80,7 @@ export class AdvancedSearchSaintsDialogComponent implements OnInit {
       order: '',
     });
 
-    const tagFilters = new EntityFilters({ type: TagType.Saint });
+    const tagFilters = new EntityFilters({ type: TagType.Saint, pageSize: 99 });
     this.tagsService.getTags(tagFilters).subscribe({
       next: (res) => {
         this.tags = res.items;
