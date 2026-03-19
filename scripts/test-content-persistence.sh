@@ -51,6 +51,25 @@ fi
 
 echo "Detected prayers mount source: $prayers_source"
 
+# Ensure the mount source directory exists and is writable
+if [[ ! -d "$prayers_source" ]]; then
+  echo "Mount source directory does not exist: $prayers_source"
+  echo "Attempting to create it..."
+  mkdir -p "$prayers_source" || {
+    echo "ERROR: Failed to create mount source directory."
+    exit 1
+  }
+fi
+
+if [[ ! -w "$prayers_source" ]]; then
+  echo "ERROR: Mount source directory is not writable: $prayers_source"
+  echo "Attempting to fix permissions..."
+  chmod 755 "$prayers_source" || {
+    echo "ERROR: Failed to change permissions on mount source directory."
+    exit 1
+  }
+fi
+
 sentinel_slug="persistence-smoke-$(date +%s)"
 host_dir="$prayers_source/$sentinel_slug"
 host_file="$host_dir/markdown.md"
