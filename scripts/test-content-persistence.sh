@@ -64,7 +64,7 @@ fi
 if [[ ! -w "$prayers_source" ]]; then
   echo "ERROR: Mount source directory is not writable: $prayers_source"
   echo "Attempting to fix permissions..."
-  chmod 755 "$prayers_source" || {
+  chmod 777 "$prayers_source" || {
     echo "ERROR: Failed to change permissions on mount source directory."
     exit 1
   }
