@@ -8,7 +8,7 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
       Frontend__BaseUrl: ${Frontend__BaseUrl:-http://localhost:8080}
-      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection}
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:-Server=mysql;Port=3306;Database=saintsdb;User=saintsuser;Password=saintsdevpass;SslMode=Preferred;}
       Smtp__Host: ${Smtp__Host}
       Smtp__Port: ${Smtp__Port}
       Smtp__User: ${Smtp__User}
@@ -19,6 +19,10 @@ services:
       Bootstrap__TokenTtlHours: ${Bootstrap__TokenTtlHours:-1}
       Bootstrap__LogPlainTokenToPersistentLogs: ${Bootstrap__LogPlainTokenToPersistentLogs:-false}
       Bootstrap__WritePlainTokenToConsole: ${Bootstrap__WritePlainTokenToConsole:-false}
+    volumes:
+      - ${CONTENT_ROOT:-./data/entities}/saints:/app/wwwroot/saints
+      - ${CONTENT_ROOT:-./data/entities}/miracles:/app/wwwroot/miracles
+      - ${CONTENT_ROOT:-./data/entities}/prayers:/app/wwwroot/prayers
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
@@ -30,10 +34,10 @@ services:
     image: mysql:8.1
     container_name: ${MYSQL_CONTAINER_NAME:-saints-mysql-prod}
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-saintsdevroot}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-saintsdb}
       MYSQL_USER: ${MYSQL_USER:-saintsuser}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-saintsdevpass}
     healthcheck:
       test:
         [
@@ -43,7 +47,7 @@ services:
           "-h",
           "127.0.0.1",
           "-u${MYSQL_USER:-saintsuser}",
-          "-p${MYSQL_PASSWORD}",
+          "-p${MYSQL_PASSWORD:-saintsdevpass}",
         ]
       interval: 10s
       timeout: 5s

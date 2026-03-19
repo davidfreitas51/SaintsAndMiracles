@@ -55,7 +55,7 @@ export class AdvancedSearchMiraclesDialogComponent implements OnInit {
     });
 
     this.tagsService
-      .getTags(new EntityFilters({ type: TagType.Miracle }))
+      .getTags(new EntityFilters({ type: TagType.Miracle, pageSize: 99 }))
       .subscribe({
         next: (res) => {
           this.tags = res.items;

@@ -35,7 +35,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
         return await cacheService.GetOrSetAsync(
             cacheKey,
             () => context.Saints
-                .Include(s => s.Tags)
+                .Include(s => s.Tags.OrderBy(t => t.Name))
                 .Include(s => s.ReligiousOrder)
                 .FirstOrDefaultAsync(s => s.Id == id)
         );
@@ -47,7 +47,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
         return await cacheService.GetOrSetAsync(
             cacheKey,
             () => context.Saints
-                .Include(s => s.Tags)
+                .Include(s => s.Tags.OrderBy(t => t.Name))
                 .Include(s => s.ReligiousOrder)
                 .FirstOrDefaultAsync(s => s.Slug == slug)
         );
@@ -77,7 +77,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
     public async Task<bool> UpdateAsync(Saint saint)
     {
         var trackedSaint = await context.Saints
-            .Include(s => s.Tags)
+            .Include(s => s.Tags.OrderBy(t => t.Name))
             .Include(s => s.ReligiousOrder)
             .FirstOrDefaultAsync(s => s.Id == saint.Id);
 
@@ -132,7 +132,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
     public async Task DeleteAsync(int id)
     {
         var saint = await context.Saints
-            .Include(s => s.Tags)
+            .Include(s => s.Tags.OrderBy(t => t.Name))
             .Include(s => s.ReligiousOrder)
             .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -166,6 +166,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
                 .Select(s => s.Country)
                 .Where(c => c != null && c != "")
                 .Distinct()
+                .OrderBy(c => c)
                 .ToListAsync()
         );
 
@@ -203,7 +204,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
             async () =>
             {
                 var saints = await context.Saints
-                    .Include(s => s.Tags)
+                    .Include(s => s.Tags.OrderBy(t => t.Name))
                     .Include(s => s.ReligiousOrder)
                     .Where(s =>
                         s.FeastDay.HasValue &&
@@ -232,7 +233,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
             async () =>
             {
                 var saints = await context.Saints
-                    .Include(s => s.Tags)
+                    .Include(s => s.Tags.OrderBy(t => t.Name))
                     .Include(s => s.ReligiousOrder)
                     .Where(s => s.FeastDay.HasValue)
                     .ToListAsync();
@@ -267,7 +268,7 @@ public class SaintsRepository(DataContext context, ICacheService cacheService, I
     private async Task<PagedResult<Saint>> FetchSaintsFromDb(SaintFilters filters)
     {
         var query = context.Saints
-            .Include(s => s.Tags)
+            .Include(s => s.Tags.OrderBy(t => t.Name))
             .Include(s => s.ReligiousOrder)
             .AsQueryable();
 
