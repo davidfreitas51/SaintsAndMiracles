@@ -15,6 +15,15 @@ export class CsrfTokenService {
   }
 
   public async initializeToken(): Promise<void> {
+    this.token = await this.fetchToken();
+  }
+
+  public async refreshToken(): Promise<string | null> {
+    this.token = await this.fetchToken();
+    return this.token;
+  }
+
+  private async fetchToken(): Promise<string | null> {
     try {
       const response = await firstValueFrom(
         this.http.get<{ token?: string }>(
@@ -23,9 +32,9 @@ export class CsrfTokenService {
         ),
       );
 
-      this.token = response?.token ?? null;
+      return response?.token ?? null;
     } catch {
-      this.token = null;
+      return null;
     }
   }
 }

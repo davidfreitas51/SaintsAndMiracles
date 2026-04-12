@@ -138,6 +138,45 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs:
 - Rotate any secrets that may have been exposed.
 - Use environment variables or a secret manager for production.
 
+## Deployment Cache Behavior (No Hard Refresh Required)
+
+To prevent users from needing Ctrl+F5 after each deployment, the API now serves cache headers with this strategy:
+
+- `index.html` (and SPA fallback HTML): `Cache-Control: no-cache, no-store, must-revalidate`
+- Hashed Angular bundles (`*.js`, `*.css` with hash in filename): `Cache-Control: public, max-age=31536000, immutable`
+
+Why this works:
+
+- Angular production builds use hashed filenames (`outputHashing: all`), so new deploys generate new bundle names.
+- Browsers always revalidate/reload `index.html`, so they pick up new bundle names immediately.
+- Bundles stay highly cacheable for performance and are safely invalidated by filename changes.
+
+### How to test cache headers
+
+After deploying, verify headers from your public URL:
+
+```bash
+curl -sI https://your-domain/ | grep -iE 'cache-control|pragma|expires'
+curl -s https://your-domain/ | grep -oE '(main|polyfills|styles)-[A-Z0-9]+\.(js|css)' | head -n 1
+curl -sI https://your-domain/<bundle-from-previous-command> | grep -i 'cache-control'
+```
+
+Expected results:
+
+- `/` returns `no-cache, no-store, must-revalidate` (or equivalent no-store policy).
+- Hashed bundle returns `public, max-age=31536000, immutable`.
+
+### How to test deployment behavior end-to-end
+
+1. Open the app in a normal browser window (not incognito) and authenticate.
+2. Deploy a new release (`ng build` + docker image/container update as you already do).
+3. In the existing tab, do a regular refresh (F5) or navigate to another route and back.
+4. Confirm the app loads without Ctrl+F5.
+5. Confirm the auth session remains valid.
+6. Confirm unsaved form state is not lost due to forced hard refresh.
+
+If you still see old UI after deploy, check for an external cache/CDN layer overriding origin headers.
+
 ## Contributing
 
 Contributions are welcome.
