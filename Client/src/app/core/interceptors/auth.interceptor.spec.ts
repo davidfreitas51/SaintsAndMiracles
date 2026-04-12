@@ -98,6 +98,9 @@ describe('authInterceptor', () => {
       { status: 400, statusText: 'Bad Request' },
     );
 
+    // Retry is triggered via an async token refresh promise.
+    await Promise.resolve();
+
     const retryReq = httpMock.expectOne(`${environment.apiUrl}saints`);
     expect(retryReq.request.headers.get('X-CSRF-TOKEN')).toBe(
       'refreshed-csrf-token',
