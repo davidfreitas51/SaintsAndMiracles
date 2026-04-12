@@ -130,7 +130,10 @@ app.Use(async (context, next) =>
 });
 
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context => ApplySpaCacheHeaders(context.Context)
+});
 
 app.MapGet("/api/security/csrf-token", (HttpContext context, IAntiforgery antiforgery) =>
 {
@@ -143,7 +146,10 @@ app.MapControllers();
 var spaIndexPath = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "index.html");
 if (File.Exists(spaIndexPath))
 {
-    app.MapFallbackToFile("index.html");
+    app.MapFallbackToFile("index.html", new StaticFileOptions
+    {
+        OnPrepareResponse = context => ApplySpaCacheHeaders(context.Context)
+    });
 }
 else
 {
@@ -163,4 +169,57 @@ static bool IsStaticFile(string path)
 {
     var staticExtensions = new[] { ".png", ".jpg", ".jpeg", ".gif", ".css", ".js", ".woff", ".woff2", ".ttf", ".ico" };
     return staticExtensions.Any(ext => path.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
+}
+
+static void ApplySpaCacheHeaders(HttpContext context)
+{
+    var path = context.Request.Path.Value ?? string.Empty;
+    var headers = context.Response.Headers;
+
+    if (IsHtmlRequest(path))
+    {
+        // Always re-fetch HTML so clients get the latest hashed bundle references after deploy.
+        headers.CacheControl = "no-cache, no-store, must-revalidate";
+        headers.Pragma = "no-cache";
+        headers.Expires = "0";
+        return;
+    }
+
+    if (IsHashedSpaAsset(path))
+    {
+        headers.CacheControl = "public, max-age=31536000, immutable";
+    }
+}
+
+static bool IsHtmlRequest(string path)
+{
+    return string.Equals(path, "/", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith("/index.html", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".html", StringComparison.OrdinalIgnoreCase);
+}
+
+static bool IsHashedSpaAsset(string path)
+{
+    var fileName = Path.GetFileName(path);
+    if (string.IsNullOrWhiteSpace(fileName))
+    {
+        return false;
+    }
+
+    var isJsOrCss = fileName.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+        || fileName.EndsWith(".css", StringComparison.OrdinalIgnoreCase);
+    if (!isJsOrCss)
+    {
+        return false;
+    }
+
+    var dashIndex = fileName.LastIndexOf('-');
+    var dotIndex = fileName.LastIndexOf('.');
+    if (dashIndex < 0 || dotIndex <= dashIndex + 1)
+    {
+        return false;
+    }
+
+    var hashPart = fileName[(dashIndex + 1)..dotIndex];
+    return hashPart.Length >= 8 && hashPart.All(char.IsLetterOrDigit);
 }
