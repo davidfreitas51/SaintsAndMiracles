@@ -488,11 +488,13 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-
-
 /Server/API/wwwroot/*
 
 !/Server/API/wwwroot/miracles/
 !/Server/API/wwwroot/prayers/
 !/Server/API/wwwroot/saints/
 Server/API/appsettings.Development.json
+
+.local/dev/
+.env.dev
+.env.prod
