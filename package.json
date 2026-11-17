@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "prepare": "husky",
+    "prepare": "cd .. && husky Client/.husky",
     "format": "prettier --write .",
     "test:content-persistence": "bash ./scripts/test-content-persistence.sh"
   },

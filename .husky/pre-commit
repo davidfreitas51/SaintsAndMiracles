@@ -1,5 +1,2 @@
-#!/bin/sh
-
-npx lint-staged || exit 1
-
-gitleaks git --pre-commit || exit 1
+npx lint-staged
+gitleaks git --staged

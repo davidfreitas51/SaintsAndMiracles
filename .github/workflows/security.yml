@@ -2,11 +2,11 @@ name: Saints And Miracles Security
 
 on:
   push:
-    branches: [main,master]
+    branches: [main, master]
   pull_request:
-    branches: [main,master]
+    branches: [main, master]
 
-permissions: 
+permissions:
   contents: read
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       # 2 Run GitLeaks
-      - name: Install Gitleaks
-        uses: gitleaks/gitleaks-action@v4
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

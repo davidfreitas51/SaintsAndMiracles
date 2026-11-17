@@ -1,0 +1,72 @@
+title = "SaintsAndMiracles Secret Detection"
+
+[extend]
+useDefault = true
+
+# Senhas literais em configurações, YAML, JSON e código.
+[[rules]]
+id = "generic-password"
+description = "Detect literal passwords and passphrases"
+regex = '''(?i)\b(?:password|passwd|pwd|passphrase)\b\s*[:=]\s*["']([^"'\r\n]{8,})["']'''
+secretGroup = 1
+keywords = ["password", "passwd", "pwd", "passphrase"]
+tags = ["credentials", "password"]
+
+# Segredos de aplicações: API keys, client secrets e tokens.
+[[rules]]
+id = "application-secrets"
+description = "Detect literal application secrets"
+regex = '''(?i)\b(?:api[_-]?key|client[_-]?secret|clientsecret|access[_-]?token|refresh[_-]?token|auth[_-]?token|secret[_-]?key|signing[_-]?key|app[_-]?secret)\b\s*[:=]\s*["']([A-Za-z0-9_./+=:-]{12,})["']'''
+secretGroup = 1
+keywords = [
+    "api_key",
+    "apikey",
+    "client_secret",
+    "access_token",
+    "refresh_token",
+    "secret_key",
+    "app_secret"
+]
+tags = ["credentials", "application"]
+
+# Credenciais embutidas em URLs.
+[[rules]]
+id = "url-embedded-credentials"
+description = "Detect credentials embedded in URLs"
+regex = '''(?i)\b[a-z][a-z0-9+.-]*://[^:/@\s]+:([^@\s/]{8,})@'''
+secretGroup = 1
+tags = ["credentials", "url"]
+
+# Tokens Bearer.
+[[rules]]
+id = "bearer-token"
+description = "Detect Bearer authentication tokens"
+regex = '''(?i)\bBearer\s+([A-Za-z0-9._~+/=-]{16,})'''
+secretGroup = 1
+keywords = ["bearer"]
+tags = ["credentials", "authentication"]
+
+# Senhas em connection strings com contexto de servidor.
+[[rules]]
+id = "connection-string-password"
+description = "Detect passwords in database connection strings"
+regex = '''(?i)(?:Server|Host|Data Source)\s*=\s*[^;\r\n]+;[^;\r\n]*\b(?:Password|Pwd)\s*=\s*([^;\s"']{8,})'''
+secretGroup = 1
+keywords = ["server", "host", "data source"]
+tags = ["credentials", "database"]
+
+# Chaves privadas.
+[[rules]]
+id = "private-key-assignment"
+description = "Detect private key material"
+regex = '''-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----'''
+keywords = ["-----BEGIN"]
+tags = ["credentials", "private-key"]
+
+[allowlist]
+description = "Ignore known test credentials"
+regexTarget = "secret"
+regexes = [
+    '''^valid-password$''',
+    '''^Password123!$''',
+]
