@@ -25,3 +25,26 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install .NET dependencies
+        run: dotnet restore SaintsAndMiracles.sln
+
+      - name: Install Snyk CLI
+        run: npm install --global snyk
+
+      - name: Run Snyk SCA
+        run: snyk test --all-projects --severity-threshold=high
+        env: SNYK_TOKEN:${{ secrets.SNYK.TOKEN }}
