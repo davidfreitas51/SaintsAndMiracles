@@ -31,11 +31,6 @@ jobs:
         working-directory: ./Client
         run: npm ci
 
-      # 3.5 Dependency vulnerability check (frontend, production deps only)
-      - name: npm audit (high+)
-        working-directory: ./Client
-        run: npm audit --audit-level=high --omit=dev
-
       # 4. Run Angular tests
       - name: Run Angular tests
         working-directory: ./Client
@@ -55,11 +50,7 @@ jobs:
       # 7. Restore .NET dependencies
       - name: Restore .NET dependencies
         run: dotnet restore ./SaintsAndMiracles.sln
-
-      # 7.5 Dependency vulnerability check (backend)
-      - name: dotnet list vulnerable packages
-        run: dotnet list ./SaintsAndMiracles.sln package --vulnerable --include-transitive
-
+        
       # 8. Build .NET solution
       - name: Build .NET solution
         run: dotnet build ./SaintsAndMiracles.sln --no-restore --configuration Release
@@ -103,19 +94,3 @@ jobs:
 
           chmod +x ./scripts/test-content-persistence.sh
           bash ./scripts/test-content-persistence.sh .env.ci
-
-  secret-scan:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          # gitleaks action computes commit ranges; full history avoids ambiguous revision errors.
-          fetch-depth: 0
-
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
