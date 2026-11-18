@@ -9,7 +9,7 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
 {
     private readonly string _wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
     
-    const int maxImageSize = 5 * 1024 * 1024; // 5 MB
+    const int maxImageSize = 10 * 1024 * 1024; // 10 MB
 
     public string GenerateSlug(string name)
         => Regex.Replace(name.ToLower(), @"[^a-z0-9]+", "-").Trim('-');

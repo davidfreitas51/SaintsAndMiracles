@@ -32,7 +32,6 @@ import { ReligiousOrdersService } from '../../../../core/services/religious-orde
 import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
 import { CountryCodePipe } from '../../../../shared/pipes/country-code.pipe';
 import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNumbersValidator';
-import { CropDialogComponent } from '../../../../shared/components/crop-dialog/crop-dialog.component';
 
 import { environment } from '../../../../../environments/environment';
 import { ReligiousOrder } from '../../../../interfaces/religious-order';
@@ -64,7 +63,6 @@ import { feastDayValidator } from '../../../../shared/validators/feast-day.valid
     MarkdownComponent,
     RomanPipe,
     CountryCodePipe,
-    ReactiveFormsModule,
     MatInputModule,
   ],
   providers: [provideMarkdown()],
@@ -241,20 +239,28 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
       .map((t) => t.id);
   }
 
-  onFileSelected(event: Event, input: HTMLInputElement): void {
-    const dialogRef = this.dialog.open(CropDialogComponent, {
-      height: '600px',
-      width: '600px',
-      data: { imageChangedEvent: event },
-    });
+  async onFileSelected(event: Event, input: HTMLInputElement): Promise<void> {
+    try {
+      const { CropDialogComponent } =
+        await import('../../../../shared/components/crop-dialog/crop-dialog.component');
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (typeof result === 'string' && result.startsWith('data:image/')) {
-        this.form.controls.image.setValue(result);
-      }
+      const dialogRef = this.dialog.open(CropDialogComponent, {
+        height: '600px',
+        width: '600px',
+        data: { imageChangedEvent: event },
+      });
 
+      dialogRef.afterClosed().subscribe((result: string | null) => {
+        if (result?.startsWith('data:image/')) {
+          this.form.controls.image.setValue(result);
+        }
+
+        input.value = '';
+      });
+    } catch {
+      this.snackBarService.error('Error loading image cropper');
       input.value = '';
-    });
+    }
   }
 
   autoResizeOnLoad(): void {
