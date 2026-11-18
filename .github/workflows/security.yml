@@ -39,7 +39,7 @@ jobs:
 
       # Dependências Angular
       - name: Install npm dependencies
-        #working-directory: Client
+        working-directory: Client
         run: npm ci
 
       # Dependências .NET
