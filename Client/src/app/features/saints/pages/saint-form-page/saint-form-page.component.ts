@@ -10,7 +10,6 @@ import {
 import {
   FormBuilder,
   FormControl,
-  FormGroup,
   Validators,
   FormsModule,
   ReactiveFormsModule,
@@ -161,7 +160,7 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
           },
           error: () => {
             this.snackBarService.error('Error loading saint for update');
-            this.router.navigate(['admin/saints']);
+            void this.router.navigate(['admin/saints']);
           },
         });
       } else {
@@ -195,7 +194,7 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
             ? 'Saint successfully updated'
             : 'Saint successfully created',
         );
-        this.router.navigate(['admin/saints']);
+        void this.router.navigate(['admin/saints']);
       },
       error: (err) => {
         const errorMessage =
