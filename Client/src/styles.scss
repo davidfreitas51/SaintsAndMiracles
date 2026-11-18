@@ -79,13 +79,13 @@ button[disabled] {
 /* ----------------- Snackbar ----------------- */
 .mat-mdc-snack-bar-container {
   &.snack-error {
-    --mdc-snackbar-container-color: red;
+    --mat-snackbar-container-color: red;
   }
   &.snack-success {
-    --mdc-snackbar-container-color: green;
+    --mat-snackbar-container-color: green;
   }
   --mat-snack-bar-button-color: #fff;
-  --mdc-snackbar-supporting-text-color: #fff;
+  --mat-snackbar-supporting-text-color: #fff;
 }
 
 /* ----------------- Markdown ----------------- */
@@ -278,7 +278,7 @@ blockquote {
   }
 
   .mdc-text-field--filled {
-    --mdc-filled-text-field-container-color: #26292b !important;
+    --mat-form-field-filled-container-color: #26292b !important;
   }
 
   /* Suffix icons inside inputs */
@@ -300,7 +300,7 @@ blockquote {
 
   /* ----------------- Dialogs ----------------- */
   .mat-mdc-dialog-container {
-    --mdc-dialog-container-color: #1a1c1e; /* dialog background */
+    --mat-dialog-container-color: #1a1c1e; /* dialog background */
   }
 
   /* ----------------- Paginator ----------------- */

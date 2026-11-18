@@ -1,8 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
+using SkiaSharp;
 
 namespace Infrastructure.Services;
 
@@ -101,11 +100,18 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
                     if (match.Success)
                     {
                         var bytes = Convert.FromBase64String(match.Groups["data"].Value);
-
-                        using var img = Image.Load(bytes);
+                    
+                        using var bitmap = SKBitmap.Decode(bytes);
+                        using var img = SKImage.FromBitmap(bitmap);
+                        using var data = img.Encode(SKEncodedImageFormat.Webp, 80);
+                    
                         var webpPath = Path.Combine(folder, "image.webp");
-                        await img.SaveAsync(webpPath, new WebpEncoder { Quality = 80 });
-
+                    
+                        await using (var stream = File.Create(webpPath))
+                        {
+                            await data.AsStream().CopyToAsync(stream);
+                        }
+                    
                         relativeImagePath = $"/{folderName}/{slug}/image.webp";
                         logger.LogInformation("Image file converted and saved as WebP: {ImagePath}", relativeImagePath);
                     }
