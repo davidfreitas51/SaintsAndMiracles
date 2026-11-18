@@ -8,7 +8,7 @@ namespace Infrastructure.Services;
 public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService> logger) : IFileStorageService
 {
     private readonly string _wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
-    
+
     const int maxImageSize = 10 * 1024 * 1024; // 10 MB
 
     public string GenerateSlug(string name)
@@ -103,11 +103,9 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
                     {
                         if (match.Groups["data"].Value.Length > maxImageSize * 4 / 3 + 4)
                             throw new InvalidDataException("Image exceeds the maximum allowed size.");
-                        
-                        var bytes = Convert.FromBase64String(match.Groups["data"].Value);
 
-                        using var bitmap = SKBitmap.Decode(bytes)
-                            ?? throw new InvalidDataException("Invalid image.");
+                        var bytes = Convert.FromBase64String(match.Groups["data"].Value);
+                        using var bitmap = DecodeImage(bytes);
                         using var img = SKImage.FromBitmap(bitmap);
                         using var data = img.Encode(SKEncodedImageFormat.Webp, 80);
 
@@ -178,12 +176,26 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
 
     private static string GetSafePath(string baseDirectory, params string[] paths)
     {
+        foreach (var path in paths)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new UnauthorizedAccessException("Invalid file path.");
+    
+            var segments = path.Split(
+                ['/', '\\'],
+                StringSplitOptions.RemoveEmptyEntries
+            );
+    
+            if (Path.IsPathRooted(path) ||
+                path.StartsWith('/') ||
+                path.StartsWith('\\') ||
+                segments.Any(segment => segment is "." or ".."))
+            {
+                throw new UnauthorizedAccessException("Invalid file path.");
+            }
+        }
+    
         var fullBaseDirectory = Path.GetFullPath(baseDirectory);
-    
-        var pathWithSeparator = Path.EndsInDirectorySeparator(fullBaseDirectory)
-            ? fullBaseDirectory
-            : fullBaseDirectory + Path.DirectorySeparatorChar;
-    
         var combinedPath = Path.Combine(fullBaseDirectory, Path.Combine(paths));
         var fullPath = Path.GetFullPath(combinedPath);
     
@@ -191,9 +203,29 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
     
-        if (!fullPath.StartsWith(pathWithSeparator, comparison))
+        var relativePath = Path.GetRelativePath(fullBaseDirectory, fullPath);
+    
+        if (relativePath == "." ||
+            relativePath == ".." ||
+            relativePath.StartsWith($"..{Path.DirectorySeparatorChar}", comparison) ||
+            Path.IsPathRooted(relativePath))
+        {
             throw new UnauthorizedAccessException("Invalid file path.");
+        }
     
         return fullPath;
+    }
+
+    private static SKBitmap DecodeImage(byte[] bytes)
+    {
+        try
+        {
+            return SKBitmap.Decode(bytes)
+                ?? throw new InvalidDataException("Invalid image.");
+        }
+        catch (ArgumentNullException ex)
+        {
+            throw new InvalidDataException("Invalid image.", ex);
+        }
     }
 }

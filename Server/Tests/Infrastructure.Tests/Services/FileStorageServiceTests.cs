@@ -8,7 +8,7 @@ namespace Infrastructure.Tests.Services;
 
 public class FileStorageServiceTests
 {
-    private const int MaxImageSize = 5 * 1024 * 1024;
+    private const int MaxImageSize = 10 * 1024 * 1024;
 
     private static FileStorageService CreateService(string contentRootPath)
     {
