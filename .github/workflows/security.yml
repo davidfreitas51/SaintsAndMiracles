@@ -14,13 +14,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
+      # Checkout
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2 Run GitLeaks
+      # Secret Scanning
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
