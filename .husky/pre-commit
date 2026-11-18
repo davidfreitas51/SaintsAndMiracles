@@ -1,2 +1,11 @@
 npx lint-staged
+
+echo "Checking staged files with Prettier..."
+
+git diff --cached --name-only --diff-filter=ACMR -z -- \
+  '*.js' '*.ts' '*.tsx' '*.json' '*.css' '*.scss' '*.html' '*.md' '*.yaml' '*.yml' |
+  xargs -0 -r npx prettier --write --
+
+echo "Scanning staged files with Gitleaks..."
+
 gitleaks git --staged
