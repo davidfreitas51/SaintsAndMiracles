@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  secret_scan:
+  security:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,21 +37,24 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      # Dependências
+      # Dependências Angular
       - name: Install npm dependencies
+        working-directory: Client
         run: npm ci
 
+      # Dependências .NET
       - name: Restore .NET dependencies
         run: dotnet restore SaintsAndMiracles.sln
 
-      # SCA nativo
+      # SCA native
       - name: Run npm audit
+        #working-directory: Client
         run: npm audit --audit-level=high
 
       - name: Run NuGet vulnerability audit
         run: dotnet list SaintsAndMiracles.sln package --vulnerable --include-transitive
 
-      # SCA complementar
+      # SCA with Snyk
       - name: Install Snyk CLI
         run: npm install --global snyk
 
@@ -59,3 +62,28 @@ jobs:
         run: snyk test --all-projects --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # SAST - SonarQube Cloud (.NET)
+      - name: Install SonarScanner for .NET
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: SonarScanner Begin
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"davidfreitas51_SaintsAndMiracles" \
+            /o:"davidfreitas51" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.scanner.scanAll=true
+
+      - name: Build solution
+        run: dotnet build SaintsAndMiracles.sln --configuration Release --no-restore
+
+      - name: SonarScanner End
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner end \
+            /d:sonar.token="$SONAR_TOKEN"
