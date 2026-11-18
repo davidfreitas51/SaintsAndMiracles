@@ -8,7 +8,7 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
       Frontend__BaseUrl: ${Frontend__BaseUrl:-http://localhost:8080}
-      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:-Server=mysql;Port=3306;Database=saintsdb;User=saintsuser;Password=saintsdevpass;SslMode=Preferred;}
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:?ConnectionStrings__DefaultConnection must be set}
       Smtp__Host: ${Smtp__Host}
       Smtp__Port: ${Smtp__Port}
       Smtp__User: ${Smtp__User}
@@ -34,10 +34,10 @@ services:
     image: mysql:8.1
     container_name: ${MYSQL_CONTAINER_NAME:-saints-mysql-prod}
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-saintsdevroot}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-saintsdb}
-      MYSQL_USER: ${MYSQL_USER:-saintsuser}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-saintsdevpass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD must be set}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?MYSQL_DATABASE must be set}
+      MYSQL_USER: ${MYSQL_USER:?MYSQL_USER must be set}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set}
     healthcheck:
       test:
         [

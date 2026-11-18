@@ -1,7 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatDividerModule } from '@angular/material/divider';
 import { marked } from 'marked';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
@@ -16,11 +15,10 @@ import { PrayersService } from '../../../../core/services/prayers.service';
 export class PrayerDetailsPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private prayersService = inject(PrayersService);
-  private sanitizer = inject(DomSanitizer);
 
   imageBaseUrl = environment.assetsUrl;
   public prayer: any = null;
-  markdownContent!: SafeHtml;
+  markdownContent = '';
   headings: { id: string; text: string }[] = [];
 
   ngOnInit(): void {
@@ -47,8 +45,7 @@ export class PrayerDetailsPageComponent implements OnInit {
           return `<h${depth}>${text}</h${depth}>`;
         };
 
-        const rawHtml = await marked.parse(data.markdown, { renderer });
-        this.markdownContent = this.sanitizer.bypassSecurityTrustHtml(rawHtml);
+        this.markdownContent = await marked.parse(data.markdown, { renderer });
       },
       error: (err) => {
         console.error('Error loading prayer: ', err);

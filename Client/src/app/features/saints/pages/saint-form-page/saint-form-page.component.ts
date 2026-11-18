@@ -250,11 +250,10 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (typeof result === 'string') {
-        this.croppedImage = result;
-        this.form.patchValue({ image: result });
-        this.form.get('image')?.updateValueAndValidity();
+      if (typeof result === 'string' && result.startsWith('data:image/')) {
+        this.form.controls.image.setValue(result);
       }
+
       input.value = '';
     });
   }
@@ -277,11 +276,12 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
   }
 
   getImagePreview(): string {
-    const img = this.form.get('image')?.value;
-    if (!img) return '';
-    return img.startsWith('data:image') || img.startsWith('http')
-      ? img
-      : this.imageBaseUrl + img;
+    const image = this.form.controls.image.value;
+    if (!image) return '';
+
+    return image.startsWith('data:image/') || image.startsWith('http')
+      ? image
+      : this.imageBaseUrl + image;
   }
 
   addTag(tag: string): void {
