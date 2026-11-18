@@ -4,6 +4,8 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { AuthenticationService } from './authentication.service';
 import { UserSessionService } from './user-session.service';
 import { environment } from '../../../environments/environment';
@@ -12,14 +14,18 @@ import { createCurrentUser } from '../../../testing/test-fixtures';
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
   let httpMock: HttpTestingController;
-  let session: jasmine.SpyObj<UserSessionService>;
+  let session: {
+    setUser: ReturnType<typeof vi.fn>;
+    fetchUserRole: ReturnType<typeof vi.fn>;
+    clearSession: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
-    session = jasmine.createSpyObj<UserSessionService>('UserSessionService', [
-      'setUser',
-      'fetchUserRole',
-      'clearSession',
-    ]);
+    session = {
+      setUser: vi.fn(),
+      fetchUserRole: vi.fn(),
+      clearSession: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -48,9 +54,11 @@ describe('AuthenticationService', () => {
     const req = httpMock.expectOne(
       (request) => request.url === `${environment.apiUrl}authentication/login`,
     );
+
     expect(req.request.method).toBe('POST');
-    expect(req.request.withCredentials).toBeTrue();
+    expect(req.request.withCredentials).toBe(true);
     expect(req.request.params.get('useCookies')).toBe('true');
+
     req.flush(user);
 
     expect(session.setUser).toHaveBeenCalledWith(user);
@@ -63,8 +71,10 @@ describe('AuthenticationService', () => {
     const req = httpMock.expectOne(
       (request) => request.url === `${environment.apiUrl}authentication/logout`,
     );
+
     expect(req.request.method).toBe('POST');
-    expect(req.request.withCredentials).toBeTrue();
+    expect(req.request.withCredentials).toBe(true);
+
     req.flush(null);
 
     expect(session.clearSession).toHaveBeenCalled();

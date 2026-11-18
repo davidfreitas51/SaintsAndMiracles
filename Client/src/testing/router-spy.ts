@@ -1,6 +1,8 @@
+import { vi } from 'vitest';
+
 export const createRouterSpy = (
-  url: string = '/',
-): { url: string; navigate: jasmine.Spy } => ({
+  url = '/',
+): { url: string; navigate: ReturnType<typeof vi.fn> } => ({
   url,
-  navigate: jasmine.createSpy('navigate'),
+  navigate: vi.fn(),
 });

@@ -4,6 +4,8 @@ import {
   provideHttpClientTesting,
   HttpTestingController,
 } from '@angular/common/http/testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { SaintsService } from './saints.service';
 import { SaintFilters } from '../../features/saints/interfaces/saint-filter';
 import { environment } from '../../../environments/environment';
@@ -37,6 +39,7 @@ describe('SaintsService', () => {
     const req = httpMock.expectOne(
       (request) => request.url === `${environment.apiUrl}saints`,
     );
+
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('country')).toBe('Italy');
     expect(req.request.params.get('century')).toBe('3');
@@ -44,7 +47,7 @@ describe('SaintsService', () => {
     expect(req.request.params.get('pageSize')).toBe('10');
     expect(req.request.params.get('religiousOrderId')).toBe('5');
     expect(req.request.params.getAll('tagIds')).toEqual(['1', '2']);
-    expect(req.request.params.has('search')).toBeFalse();
+    expect(req.request.params.has('search')).toBe(false);
 
     req.flush({ items: [], totalCount: 0 });
   });

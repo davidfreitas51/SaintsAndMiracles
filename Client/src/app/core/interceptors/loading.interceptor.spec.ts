@@ -8,6 +8,8 @@ import {
   provideHttpClientTesting,
   HttpTestingController,
 } from '@angular/common/http/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { loadingInterceptor } from './loading.interceptor';
 import { LoadingService } from '../services/loading.service';
 import { environment } from '../../../environments/environment';
@@ -15,13 +17,16 @@ import { environment } from '../../../environments/environment';
 describe('loadingInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
-  let loading: jasmine.SpyObj<LoadingService>;
+  let loading: {
+    show: ReturnType<typeof vi.fn>;
+    hide: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
-    loading = jasmine.createSpyObj<LoadingService>('LoadingService', [
-      'show',
-      'hide',
-    ]);
+    loading = {
+      show: vi.fn(),
+      hide: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -41,6 +46,7 @@ describe('loadingInterceptor', () => {
     http.get(`${environment.apiUrl}saints`).subscribe();
 
     const req = httpMock.expectOne(`${environment.apiUrl}saints`);
+
     expect(loading.show).toHaveBeenCalledTimes(1);
 
     req.flush([]);

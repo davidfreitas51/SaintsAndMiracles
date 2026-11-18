@@ -8,8 +8,10 @@ import {
   provideHttpClientTesting,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { authInterceptor } from './auth.interceptor';
 import { Router } from '@angular/router';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { authInterceptor } from './auth.interceptor';
 import { createRouterSpy } from '../../../testing/router-spy';
 import { environment } from '../../../environments/environment';
 import { CsrfTokenService } from '../services/csrf-token.service';
@@ -66,7 +68,9 @@ describe('authInterceptor', () => {
     http.get(`${environment.apiUrl}saints`).subscribe();
 
     const req = httpMock.expectOne(`${environment.apiUrl}saints`);
-    expect(req.request.withCredentials).toBeTrue();
+
+    expect(req.request.withCredentials).toBe(true);
+
     req.flush([]);
   });
 
@@ -76,7 +80,9 @@ describe('authInterceptor', () => {
     http.post(`${environment.apiUrl}saints`, { name: 'test' }).subscribe();
 
     const req = httpMock.expectOne(`${environment.apiUrl}saints`);
+
     expect(req.request.headers.get('X-CSRF-TOKEN')).toBe('initial-csrf-token');
+
     req.flush({});
   });
 
@@ -90,21 +96,24 @@ describe('authInterceptor', () => {
     });
 
     const firstReq = httpMock.expectOne(`${environment.apiUrl}saints`);
+
     expect(firstReq.request.headers.get('X-CSRF-TOKEN')).toBe(
       'stale-csrf-token',
     );
+
     firstReq.flush(
       { message: 'Invalid or missing CSRF token.' },
       { status: 400, statusText: 'Bad Request' },
     );
 
-    // Retry is triggered via an async token refresh promise.
     await Promise.resolve();
 
     const retryReq = httpMock.expectOne(`${environment.apiUrl}saints`);
+
     expect(retryReq.request.headers.get('X-CSRF-TOKEN')).toBe(
       'refreshed-csrf-token',
     );
+
     retryReq.flush({});
 
     await responsePromise;
@@ -114,7 +123,11 @@ describe('authInterceptor', () => {
     http.get(`${environment.apiUrl}saints`).subscribe({ error: () => {} });
 
     const req = httpMock.expectOne(`${environment.apiUrl}saints`);
-    req.flush('fail', { status: 401, statusText: 'Unauthorized' });
+
+    req.flush('fail', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
 
     expect(router.navigate).toHaveBeenCalledWith(['/account/login'], {
       queryParams: { returnUrl: '/admin' },

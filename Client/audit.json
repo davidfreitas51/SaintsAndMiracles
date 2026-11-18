@@ -1,0 +1,600 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@angular-devkit/architect": {
+      "name": "@angular-devkit/architect",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["@angular-devkit/core"],
+      "effects": [],
+      "range": "0.1000.0-next.0 - 0.1000.0-rc.1 || >=0.1602.1",
+      "nodes": ["node_modules/@angular-devkit/architect"],
+      "fixAvailable": true
+    },
+    "@angular-devkit/core": {
+      "name": "@angular-devkit/core",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["picomatch"],
+      "effects": [
+        "@angular-devkit/architect",
+        "@angular-devkit/schematics",
+        "@angular/cli",
+        "@schematics/angular"
+      ],
+      "range": ">=16.2.1",
+      "nodes": ["node_modules/@angular-devkit/core"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@angular-devkit/schematics": {
+      "name": "@angular-devkit/schematics",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["@angular-devkit/core"],
+      "effects": [],
+      "range": ">=16.2.1",
+      "nodes": ["node_modules/@angular-devkit/schematics"],
+      "fixAvailable": true
+    },
+    "@angular/build": {
+      "name": "@angular/build",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular-devkit/architect",
+        "karma",
+        "picomatch",
+        "tinyglobby",
+        "vite"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": ["node_modules/@angular/build"],
+      "fixAvailable": false
+    },
+    "@angular/cli": {
+      "name": "@angular/cli",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@angular-devkit/architect",
+        "@angular-devkit/core",
+        "@angular-devkit/schematics",
+        "@schematics/angular",
+        "pacote"
+      ],
+      "effects": [],
+      "range": "10.0.0-next.0 - 10.0.0-rc.1 || 14.1.0-next.0 - 14.1.0-rc.3 || >=16.2.1",
+      "nodes": ["node_modules/@angular/cli"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@npmcli/package-json": {
+      "name": "@npmcli/package-json",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["glob"],
+      "effects": ["@npmcli/run-script", "pacote"],
+      "range": "3.1.0 - 8.0.0",
+      "nodes": ["node_modules/@npmcli/package-json"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@npmcli/run-script": {
+      "name": "@npmcli/run-script",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["@npmcli/package-json", "node-gyp"],
+      "effects": ["pacote"],
+      "range": ">=7.0.4",
+      "nodes": ["node_modules/@npmcli/run-script"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@parcel/watcher": {
+      "name": "@parcel/watcher",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["picomatch"],
+      "effects": [],
+      "range": ">=2.5.4",
+      "nodes": ["node_modules/@parcel/watcher"],
+      "fixAvailable": true
+    },
+    "@schematics/angular": {
+      "name": "@schematics/angular",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["@angular-devkit/core", "@angular-devkit/schematics"],
+      "effects": [],
+      "range": ">=16.2.1",
+      "nodes": ["node_modules/@schematics/angular"],
+      "fixAvailable": true
+    },
+    "@sigstore/sign": {
+      "name": "@sigstore/sign",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["make-fetch-happen"],
+      "effects": ["sigstore"],
+      "range": "2.0.0 - 4.1.1",
+      "nodes": ["node_modules/@sigstore/sign"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@sigstore/tuf": {
+      "name": "@sigstore/tuf",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["tuf-js"],
+      "effects": ["sigstore"],
+      "range": "*",
+      "nodes": ["node_modules/@sigstore/tuf"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tufjs/models": {
+      "name": "@tufjs/models",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["minimatch"],
+      "effects": ["tuf-js"],
+      "range": ">=1.0.1",
+      "nodes": ["node_modules/@tufjs/models"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "anymatch": {
+      "name": "anymatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["picomatch"],
+      "effects": [],
+      "range": ">=3.0.0",
+      "nodes": ["node_modules/anymatch"],
+      "fixAvailable": true
+    },
+    "cacache": {
+      "name": "cacache",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["glob"],
+      "effects": ["make-fetch-happen", "pacote"],
+      "range": "17.0.5 - 21.0.1",
+      "nodes": ["node_modules/cacache"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "chokidar": {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["anymatch", "readdirp"],
+      "effects": ["karma"],
+      "range": "3.0.0 - 3.6.0",
+      "nodes": ["node_modules/karma/node_modules/chokidar"],
+      "fixAvailable": {
+        "name": "karma-jasmine",
+        "version": "4.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "fdir": {
+      "name": "fdir",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["picomatch"],
+      "effects": ["vite"],
+      "range": ">=5.2.1",
+      "nodes": ["node_modules/fdir"],
+      "fixAvailable": false
+    },
+    "glob": {
+      "name": "glob",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1244013,
+          "name": "glob",
+          "dependency": "glob",
+          "title": "Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal",
+          "url": "https://github.com/advisories/GHSA-3g3m-2fjr-6pw4",
+          "severity": "moderate",
+          "cwe": ["CWE-400"],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=9.0.0 <=14.0.1"
+        },
+        "minimatch"
+      ],
+      "effects": ["@npmcli/package-json", "cacache"],
+      "range": "9.0.0 - 14.0.1",
+      "nodes": [
+        "node_modules/@npmcli/package-json/node_modules/glob",
+        "node_modules/cacache/node_modules/glob"
+      ],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "ignore-walk": {
+      "name": "ignore-walk",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["minimatch"],
+      "effects": ["npm-packlist"],
+      "range": "6.0.2 - 9.0.0",
+      "nodes": ["node_modules/ignore-walk"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "karma": {
+      "name": "karma",
+      "severity": "high",
+      "isDirect": true,
+      "via": ["chokidar"],
+      "effects": [
+        "@angular/build",
+        "karma-jasmine",
+        "karma-jasmine-html-reporter"
+      ],
+      "range": ">=4.2.0",
+      "nodes": ["node_modules/karma"],
+      "fixAvailable": {
+        "name": "karma-jasmine",
+        "version": "4.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "karma-jasmine": {
+      "name": "karma-jasmine",
+      "severity": "high",
+      "isDirect": true,
+      "via": ["karma"],
+      "effects": [],
+      "range": ">=5.0.0",
+      "nodes": ["node_modules/karma-jasmine"],
+      "fixAvailable": {
+        "name": "karma-jasmine",
+        "version": "4.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "karma-jasmine-html-reporter": {
+      "name": "karma-jasmine-html-reporter",
+      "severity": "high",
+      "isDirect": true,
+      "via": ["karma", "karma-jasmine"],
+      "effects": [],
+      "range": ">=2.0.0",
+      "nodes": ["node_modules/karma-jasmine-html-reporter"],
+      "fixAvailable": {
+        "name": "karma-jasmine-html-reporter",
+        "version": "1.7.0",
+        "isSemVerMajor": true
+      }
+    },
+    "katex": {
+      "name": "katex",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241206,
+          "name": "katex",
+          "dependency": "katex",
+          "title": "KaTeX: Existing prototype pollution can bypass trust restrictions",
+          "url": "https://github.com/advisories/GHSA-238p-pmpm-9mq7",
+          "severity": "low",
+          "cwe": ["CWE-807"],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=0.11.0 <0.18.2"
+        }
+      ],
+      "effects": ["mermaid", "ngx-markdown"],
+      "range": "0.11.0 - 0.18.1",
+      "nodes": ["node_modules/katex"],
+      "fixAvailable": {
+        "name": "ngx-markdown",
+        "version": "22.1.1",
+        "isSemVerMajor": true
+      }
+    },
+    "make-fetch-happen": {
+      "name": "make-fetch-happen",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["cacache"],
+      "effects": ["@sigstore/sign", "npm-registry-fetch", "tuf-js"],
+      "range": "13.0.0 - 15.0.6",
+      "nodes": ["node_modules/make-fetch-happen"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "mermaid": {
+      "name": "mermaid",
+      "severity": "low",
+      "isDirect": false,
+      "via": ["katex"],
+      "effects": [],
+      "range": "10.9.0-rc.1 - 12.1.0",
+      "nodes": ["node_modules/mermaid"],
+      "fixAvailable": true
+    },
+    "minimatch": {
+      "name": "minimatch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1244623,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has potential denial of service via globparts amplification",
+          "url": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+          "severity": "moderate",
+          "cwe": ["CWE-405"],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=7.0.0 <11.0.1"
+        }
+      ],
+      "effects": ["@tufjs/models", "glob", "ignore-walk"],
+      "range": "7.0.0 - 11.0.0",
+      "nodes": [
+        "node_modules/@npmcli/package-json/node_modules/minimatch",
+        "node_modules/@tufjs/models/node_modules/minimatch",
+        "node_modules/cacache/node_modules/minimatch",
+        "node_modules/ignore-walk/node_modules/minimatch"
+      ],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "ngx-markdown": {
+      "name": "ngx-markdown",
+      "severity": "low",
+      "isDirect": true,
+      "via": ["katex"],
+      "effects": [],
+      "range": "8.2.0 - 22.1.0",
+      "nodes": ["node_modules/ngx-markdown"],
+      "fixAvailable": {
+        "name": "ngx-markdown",
+        "version": "22.1.1",
+        "isSemVerMajor": true
+      }
+    },
+    "node-gyp": {
+      "name": "node-gyp",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["tinyglobby"],
+      "effects": ["@npmcli/run-script"],
+      "range": ">=11.2.0",
+      "nodes": ["node_modules/node-gyp"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "npm-packlist": {
+      "name": "npm-packlist",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["ignore-walk"],
+      "effects": ["pacote"],
+      "range": "8.0.1 - 10.0.4",
+      "nodes": ["node_modules/npm-packlist"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "npm-registry-fetch": {
+      "name": "npm-registry-fetch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["make-fetch-happen"],
+      "effects": ["pacote"],
+      "range": "16.0.0 - 19.1.1",
+      "nodes": ["node_modules/npm-registry-fetch"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "pacote": {
+      "name": "pacote",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@npmcli/package-json",
+        "@npmcli/run-script",
+        "cacache",
+        "npm-packlist",
+        "npm-registry-fetch",
+        "sigstore"
+      ],
+      "effects": ["@angular/cli"],
+      "range": "17.0.0 - 21.5.3",
+      "nodes": ["node_modules/pacote"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "picomatch": {
+      "name": "picomatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1247710,
+          "name": "picomatch",
+          "dependency": "picomatch",
+          "title": "picomatch vulnerable to ReDoS through single-branch repeated extglobs",
+          "url": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+          "severity": "high",
+          "cwe": ["CWE-1333"],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=4.0.7"
+        }
+      ],
+      "effects": [
+        "@angular-devkit/core",
+        "@angular/build",
+        "@parcel/watcher",
+        "anymatch",
+        "fdir",
+        "readdirp",
+        "tinyglobby",
+        "vite"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/anymatch/node_modules/picomatch",
+        "node_modules/karma/node_modules/picomatch",
+        "node_modules/picomatch"
+      ],
+      "fixAvailable": {
+        "name": "karma-jasmine",
+        "version": "4.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "readdirp": {
+      "name": "readdirp",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["picomatch"],
+      "effects": ["chokidar"],
+      "range": "3.0.0 - 3.6.0",
+      "nodes": ["node_modules/karma/node_modules/readdirp"],
+      "fixAvailable": {
+        "name": "karma-jasmine",
+        "version": "4.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "sigstore": {
+      "name": "sigstore",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["@sigstore/sign", "@sigstore/tuf"],
+      "effects": ["pacote"],
+      "range": ">=1.6.0",
+      "nodes": ["node_modules/sigstore"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "tinyglobby": {
+      "name": "tinyglobby",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["fdir", "picomatch"],
+      "effects": ["@angular/build", "node-gyp"],
+      "range": "*",
+      "nodes": [
+        "node_modules/tinyglobby",
+        "node_modules/vite/node_modules/tinyglobby"
+      ],
+      "fixAvailable": false
+    },
+    "tuf-js": {
+      "name": "tuf-js",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": ["@tufjs/models", "make-fetch-happen"],
+      "effects": ["@sigstore/tuf"],
+      "range": ">=1.1.2",
+      "nodes": ["node_modules/tuf-js"],
+      "fixAvailable": {
+        "name": "@angular/cli",
+        "version": "16.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "vite": {
+      "name": "vite",
+      "severity": "high",
+      "isDirect": false,
+      "via": ["fdir", "picomatch", "tinyglobby"],
+      "effects": ["@angular/build"],
+      "range": ">=6.3.0-beta.0",
+      "nodes": ["node_modules/vite"],
+      "fixAvailable": false
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 3,
+      "moderate": 14,
+      "high": 19,
+      "critical": 0,
+      "total": 36
+    },
+    "dependencies": {
+      "prod": 57,
+      "dev": 612,
+      "optional": 245,
+      "peer": 1,
+      "peerOptional": 0,
+      "total": 810
+    }
+  }
+}

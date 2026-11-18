@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { of } from 'rxjs';
 
 import { EmailConfirmedPageComponent } from './email-confirmed-page.component';
@@ -14,7 +15,9 @@ describe('EmailConfirmedPageComponent', () => {
       providers: [
         {
           provide: ActivatedRoute,
-          useValue: { queryParams: of({ success: 'true', logout: 'false' }) },
+          useValue: {
+            queryParams: of({ success: 'true', logout: 'false' }),
+          },
         },
       ],
     }).compileComponents();
