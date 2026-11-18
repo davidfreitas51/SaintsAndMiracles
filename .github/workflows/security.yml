@@ -78,6 +78,7 @@ jobs:
             /d:sonar.qualitygate.wait=true \
             /d:sonar.scanner.scanAll=true
 
+      # Test
       - name: Build solution
         run: dotnet build SaintsAndMiracles.sln --configuration Release --no-restore
 
