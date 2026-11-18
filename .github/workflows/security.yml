@@ -26,6 +26,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Preparação
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,15 +37,25 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      # Dependências
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Install .NET dependencies
+      - name: Restore .NET dependencies
         run: dotnet restore SaintsAndMiracles.sln
 
+      # SCA nativo
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
+      - name: Run NuGet vulnerability audit
+        run: dotnet list SaintsAndMiracles.sln package --vulnerable --include-transitive
+
+      # SCA complementar
       - name: Install Snyk CLI
         run: npm install --global snyk
 
       - name: Run Snyk SCA
         run: snyk test --all-projects --severity-threshold=high
-        env: SNYK_TOKEN:${{ secrets.SNYK.TOKEN }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
