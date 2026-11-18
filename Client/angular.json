@@ -100,7 +100,7 @@
           "options": {
             "buildTarget": "Client:build",
             "runner": "vitest",
-            "setupFiles": ["src/test-setup.ts"],
+            "setupFiles": ["src/test.setup.ts"],
             "tsConfig": "tsconfig.spec.json"
           }
         }
