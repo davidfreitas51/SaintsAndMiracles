@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MiraclesService } from '../../../../core/services/miracles.service';
 import { environment } from '../../../../../environments/environment';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatDividerModule } from '@angular/material/divider';
 import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
 import countries from 'i18n-iso-countries';
@@ -30,10 +29,9 @@ countries.registerLocale(enLocale);
 export class MiracleDetailsPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private miraclesService = inject(MiraclesService);
-  private sanitizer = inject(DomSanitizer);
   imageBaseUrl = environment.assetsUrl;
   public miracle: any = null;
-  markdownContent!: SafeHtml;
+  markdownContent = '';
   headings: { id: string; text: string }[] = [];
 
   ngOnInit(): void {
@@ -59,8 +57,7 @@ export class MiracleDetailsPageComponent implements OnInit {
           return `<h${depth}>${text}</h${depth}>`;
         };
 
-        const rawHtml = await marked.parse(data.markdown, { renderer });
-        this.markdownContent = this.sanitizer.bypassSecurityTrustHtml(rawHtml);
+        this.markdownContent = await marked.parse(data.markdown, { renderer });
       },
       error: (err) => {
         console.error('Error loading miracle: ', err);

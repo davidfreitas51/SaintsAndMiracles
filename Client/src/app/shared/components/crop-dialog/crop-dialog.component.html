@@ -1,4 +1,5 @@
 <h2 mat-dialog-title>Crop your image</h2>
+
 <mat-dialog-content>
   <image-cropper
     [imageChangedEvent]="imageChangedEvent"
@@ -11,7 +12,14 @@
 
 <mat-dialog-actions>
   <button mat-button class="text-red-700" (click)="onNoClick()">Cancel</button>
-  <button mat-flat-button color="primary" (click)="onCrop()" cdkFocusInitial>
+
+  <button
+    mat-flat-button
+    color="primary"
+    (click)="onCrop()"
+    [disabled]="!croppedImage"
+    cdkFocusInitial
+  >
     Crop
   </button>
 </mat-dialog-actions>

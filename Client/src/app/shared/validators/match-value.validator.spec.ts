@@ -11,7 +11,7 @@ describe('matchValueValidator', () => {
     const validator = matchValueValidator('password', 'confirmPassword');
 
     expect(validator(group)).toEqual({ mismatch: true });
-    expect(group.get('confirmPassword')?.hasError('mismatch')).toBeTrue();
+    expect(group.get('confirmPassword')?.hasError('mismatch')).toBe(true);
   });
 
   it('clears mismatch error when values match', () => {
@@ -23,6 +23,6 @@ describe('matchValueValidator', () => {
     const validator = matchValueValidator('password', 'confirmPassword');
 
     expect(validator(group)).toBeNull();
-    expect(group.get('confirmPassword')?.hasError('mismatch')).toBeFalse();
+    expect(group.get('confirmPassword')?.hasError('mismatch')).toBe(false);
   });
 });

@@ -9,6 +9,8 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
 {
     private readonly string _wwwroot = Path.Combine(env.ContentRootPath, "wwwroot");
 
+    const int maxImageSize = 10 * 1024 * 1024; // 10 MB
+
     public string GenerateSlug(string name)
         => Regex.Replace(name.ToLower(), @"[^a-z0-9]+", "-").Trim('-');
 
@@ -16,7 +18,7 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
     {
         try
         {
-            var folder = Path.Combine(_wwwroot, folderName, slug);
+            var folder = GetSafePath(_wwwroot, folderName, slug);
             if (Directory.Exists(folder))
             {
                 Directory.Delete(folder, recursive: true);
@@ -46,9 +48,9 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
                 return;
             }
 
-            var baseFolder = Path.Combine(_wwwroot, folderName);
-            var oldFolder = Path.Combine(baseFolder, oldSlug);
-            var newFolder = Path.Combine(baseFolder, newSlug);
+            var baseFolder = GetSafePath(_wwwroot, folderName);
+            var oldFolder = GetSafePath(baseFolder, oldSlug);
+            var newFolder = GetSafePath(baseFolder, newSlug);
 
             if (Directory.Exists(oldFolder))
             {
@@ -79,10 +81,10 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
     {
         try
         {
-            var folder = Path.Combine(_wwwroot, folderName, slug);
+            var folder = GetSafePath(_wwwroot, folderName, slug);
             Directory.CreateDirectory(folder);
 
-            var markdownPath = Path.Combine(folder, "markdown.md");
+            var markdownPath = GetSafePath(folder, "markdown.md");
             await File.WriteAllTextAsync(markdownPath, markdownContent);
             var relativeMarkdownPath = $"/{folderName}/{slug}/markdown.md";
             logger.LogInformation("Markdown file saved: {MarkdownPath}", relativeMarkdownPath);
@@ -94,34 +96,36 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
                 if (image.StartsWith("data:image/"))
                 {
                     if (!string.IsNullOrWhiteSpace(existingImagePath))
-                        TryDeleteFile(Path.Combine(_wwwroot, existingImagePath.TrimStart('/')));
+                        TryDeleteFile(GetSafePath(_wwwroot, existingImagePath.TrimStart('/')));
 
                     var match = Regex.Match(image, @"data:image/(?<type>.+?);base64,(?<data>.+)");
                     if (match.Success)
                     {
+                        if (match.Groups["data"].Value.Length > maxImageSize * 4 / 3 + 4)
+                            throw new InvalidDataException("Image exceeds the maximum allowed size.");
+
                         var bytes = Convert.FromBase64String(match.Groups["data"].Value);
-                    
-                        using var bitmap = SKBitmap.Decode(bytes);
+                        using var bitmap = DecodeImage(bytes);
                         using var img = SKImage.FromBitmap(bitmap);
                         using var data = img.Encode(SKEncodedImageFormat.Webp, 80);
-                    
-                        var webpPath = Path.Combine(folder, "image.webp");
-                    
+
+                        var webpPath = GetSafePath(folder, "image.webp");
+
                         await using (var stream = File.Create(webpPath))
                         {
                             await data.AsStream().CopyToAsync(stream);
                         }
-                    
+
                         relativeImagePath = $"/{folderName}/{slug}/image.webp";
                         logger.LogInformation("Image file converted and saved as WebP: {ImagePath}", relativeImagePath);
                     }
                 }
                 else
                 {
-                    var oldImageFullPath = Path.Combine(_wwwroot, image.TrimStart('/'));
+                    var oldImageFullPath = GetSafePath(_wwwroot, image.TrimStart('/'));
                     if (File.Exists(oldImageFullPath))
                     {
-                        var newImagePath = Path.Combine(folder, Path.GetFileName(oldImageFullPath));
+                        var newImagePath = GetSafePath(folder, Path.GetFileName(oldImageFullPath));
                         if (!string.Equals(oldImageFullPath, newImagePath, StringComparison.OrdinalIgnoreCase))
                             File.Copy(oldImageFullPath, newImagePath, overwrite: true);
 
@@ -132,10 +136,10 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
             }
             else if (!string.IsNullOrWhiteSpace(existingImagePath))
             {
-                var oldImageFullPath = Path.Combine(_wwwroot, existingImagePath.TrimStart('/'));
+                var oldImageFullPath = GetSafePath(_wwwroot, existingImagePath.TrimStart('/'));
                 if (File.Exists(oldImageFullPath))
                 {
-                    var newImagePath = Path.Combine(folder, Path.GetFileName(oldImageFullPath));
+                    var newImagePath = GetSafePath(folder, Path.GetFileName(oldImageFullPath));
                     if (!string.Equals(oldImageFullPath, newImagePath, StringComparison.OrdinalIgnoreCase))
                         File.Move(oldImageFullPath, newImagePath);
 
@@ -167,6 +171,61 @@ public class FileStorageService(IHostEnvironment env, ILogger<FileStorageService
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to delete file: {FilePath}", path);
+        }
+    }
+
+    private static string GetSafePath(string baseDirectory, params string[] paths)
+    {
+        foreach (var path in paths)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new UnauthorizedAccessException("Invalid file path.");
+    
+            var segments = path.Split(
+                ['/', '\\'],
+                StringSplitOptions.RemoveEmptyEntries
+            );
+    
+            if (Path.IsPathRooted(path) ||
+                path.StartsWith('/') ||
+                path.StartsWith('\\') ||
+                segments.Any(segment => segment is "." or ".."))
+            {
+                throw new UnauthorizedAccessException("Invalid file path.");
+            }
+        }
+    
+        var fullBaseDirectory = Path.GetFullPath(baseDirectory);
+        var combinedPath = Path.Combine(fullBaseDirectory, Path.Combine(paths));
+        var fullPath = Path.GetFullPath(combinedPath);
+    
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+    
+        var relativePath = Path.GetRelativePath(fullBaseDirectory, fullPath);
+    
+        if (relativePath == "." ||
+            relativePath == ".." ||
+            relativePath.StartsWith($"..{Path.DirectorySeparatorChar}", comparison) ||
+            Path.IsPathRooted(relativePath))
+        {
+            throw new UnauthorizedAccessException("Invalid file path.");
+        }
+    
+        return fullPath;
+    }
+
+    private static SKBitmap DecodeImage(byte[] bytes)
+    {
+        try
+        {
+            return SKBitmap.Decode(bytes)
+                ?? throw new InvalidDataException("Invalid image.");
+        }
+        catch (ArgumentNullException ex)
+        {
+            throw new InvalidDataException("Invalid image.", ex);
         }
     }
 }

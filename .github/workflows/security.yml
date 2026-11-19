@@ -48,7 +48,7 @@ jobs:
 
       # SCA native
       - name: Run npm audit
-        #working-directory: Client
+        working-directory: Client
         run: npm audit --audit-level=high
 
       - name: Run NuGet vulnerability audit

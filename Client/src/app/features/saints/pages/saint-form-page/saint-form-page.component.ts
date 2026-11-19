@@ -10,7 +10,6 @@ import {
 import {
   FormBuilder,
   FormControl,
-  FormGroup,
   Validators,
   FormsModule,
   ReactiveFormsModule,
@@ -33,7 +32,6 @@ import { ReligiousOrdersService } from '../../../../core/services/religious-orde
 import { RomanPipe } from '../../../../shared/pipes/roman.pipe';
 import { CountryCodePipe } from '../../../../shared/pipes/country-code.pipe';
 import { notOnlyNumbersValidator } from '../../../../shared/validators/notOnlyNumbersValidator';
-import { CropDialogComponent } from '../../../../shared/components/crop-dialog/crop-dialog.component';
 
 import { environment } from '../../../../../environments/environment';
 import { ReligiousOrder } from '../../../../interfaces/religious-order';
@@ -65,7 +63,6 @@ import { feastDayValidator } from '../../../../shared/validators/feast-day.valid
     MarkdownComponent,
     RomanPipe,
     CountryCodePipe,
-    ReactiveFormsModule,
     MatInputModule,
   ],
   providers: [provideMarkdown()],
@@ -161,7 +158,7 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
           },
           error: () => {
             this.snackBarService.error('Error loading saint for update');
-            this.router.navigate(['admin/saints']);
+            void this.router.navigate(['admin/saints']);
           },
         });
       } else {
@@ -195,7 +192,7 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
             ? 'Saint successfully updated'
             : 'Saint successfully created',
         );
-        this.router.navigate(['admin/saints']);
+        void this.router.navigate(['admin/saints']);
       },
       error: (err) => {
         const errorMessage =
@@ -242,21 +239,28 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
       .map((t) => t.id);
   }
 
-  onFileSelected(event: Event, input: HTMLInputElement): void {
-    const dialogRef = this.dialog.open(CropDialogComponent, {
-      height: '600px',
-      width: '600px',
-      data: { imageChangedEvent: event },
-    });
+  async onFileSelected(event: Event, input: HTMLInputElement): Promise<void> {
+    try {
+      const { CropDialogComponent } =
+        await import('../../../../shared/components/crop-dialog/crop-dialog.component');
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (typeof result === 'string') {
-        this.croppedImage = result;
-        this.form.patchValue({ image: result });
-        this.form.get('image')?.updateValueAndValidity();
-      }
+      const dialogRef = this.dialog.open(CropDialogComponent, {
+        height: '600px',
+        width: '600px',
+        data: { imageChangedEvent: event },
+      });
+
+      dialogRef.afterClosed().subscribe((result: string | null) => {
+        if (result?.startsWith('data:image/')) {
+          this.form.controls.image.setValue(result);
+        }
+
+        input.value = '';
+      });
+    } catch {
+      this.snackBarService.error('Error loading image cropper');
       input.value = '';
-    });
+    }
   }
 
   autoResizeOnLoad(): void {
@@ -277,11 +281,12 @@ export class SaintFormPageComponent implements OnInit, AfterViewInit {
   }
 
   getImagePreview(): string {
-    const img = this.form.get('image')?.value;
-    if (!img) return '';
-    return img.startsWith('data:image') || img.startsWith('http')
-      ? img
-      : this.imageBaseUrl + img;
+    const image = this.form.controls.image.value;
+    if (!image) return '';
+
+    return image.startsWith('data:image/') || image.startsWith('http')
+      ? image
+      : this.imageBaseUrl + image;
   }
 
   addTag(tag: string): void {

@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: Client/package-lock.json
 
@@ -34,7 +34,7 @@ jobs:
       # 4. Run Angular tests
       - name: Run Angular tests
         working-directory: ./Client
-        run: npm test -- --watch=false --browsers=ChromeHeadless
+        run: npm test -- --watch=false
 
       # 5. Build Angular client
       - name: Build Angular Client
@@ -50,7 +50,7 @@ jobs:
       # 7. Restore .NET dependencies
       - name: Restore .NET dependencies
         run: dotnet restore ./SaintsAndMiracles.sln
-        
+
       # 8. Build .NET solution
       - name: Build .NET solution
         run: dotnet build ./SaintsAndMiracles.sln --no-restore --configuration Release

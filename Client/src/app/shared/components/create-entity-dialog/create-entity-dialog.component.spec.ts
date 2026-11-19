@@ -1,22 +1,27 @@
 import { TestBed } from '@angular/core/testing';
-import { CreateEntityDialogComponent } from './create-entity-dialog.component';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
+
+import { CreateEntityDialogComponent } from './create-entity-dialog.component';
 import { EntityDialogData } from '../../../interfaces/entity-dialog-data';
 
 describe('CreateEntityDialogComponent', () => {
   let component: CreateEntityDialogComponent;
-  let dialogRef: jasmine.SpyObj<MatDialogRef<CreateEntityDialogComponent>>;
+  let dialogRef: { close: ReturnType<typeof vi.fn> };
   let data: EntityDialogData;
 
   beforeEach(() => {
-    dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
+    dialogRef = {
+      close: vi.fn(),
+    };
+
     data = {
       entityName: 'Tag',
-      getAllFn: jasmine.createSpy('getAllFn'),
-      updateFn: jasmine.createSpy('updateFn'),
-      deleteFn: jasmine.createSpy('deleteFn'),
-      createFn: jasmine.createSpy('createFn').and.returnValue(of(void 0)),
+      getAllFn: vi.fn(),
+      updateFn: vi.fn(),
+      deleteFn: vi.fn(),
+      createFn: vi.fn().mockReturnValue(of(void 0)),
     };
 
     TestBed.configureTestingModule({
@@ -51,7 +56,7 @@ describe('CreateEntityDialogComponent', () => {
   });
 
   it('keeps dialog open on create failure', () => {
-    (data.createFn as jasmine.Spy).and.returnValue(
+    vi.mocked(data.createFn).mockReturnValue(
       throwError(() => new Error('fail')),
     );
 
@@ -60,6 +65,6 @@ describe('CreateEntityDialogComponent', () => {
     component.create();
 
     expect(dialogRef.close).not.toHaveBeenCalled();
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
   });
 });

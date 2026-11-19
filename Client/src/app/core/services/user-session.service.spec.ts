@@ -4,6 +4,8 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { UserSessionService } from './user-session.service';
 import { environment } from '../../../environments/environment';
 import { createCurrentUser } from '../../../testing/test-fixtures';
@@ -32,13 +34,15 @@ describe('UserSessionService', () => {
     const userReq = httpMock.expectOne(
       `${environment.apiUrl}accountManagement/current-user`,
     );
-    expect(userReq.request.withCredentials).toBeTrue();
+
+    expect(userReq.request.withCredentials).toBe(true);
     userReq.flush(user);
 
     const roleReq = httpMock.expectOne(
       `${environment.apiUrl}accountManagement/user-role`,
     );
-    expect(roleReq.request.withCredentials).toBeTrue();
+
+    expect(roleReq.request.withCredentials).toBe(true);
     roleReq.flush({ role: 'Admin' });
 
     expect(result).toEqual(user);
@@ -52,7 +56,11 @@ describe('UserSessionService', () => {
     const userReq = httpMock.expectOne(
       `${environment.apiUrl}accountManagement/current-user`,
     );
-    userReq.flush('fail', { status: 401, statusText: 'Unauthorized' });
+
+    userReq.flush('fail', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
 
     expect(service.getCurrentUser()).toBeNull();
     expect(service.getUserRole()).toBeNull();
@@ -62,11 +70,13 @@ describe('UserSessionService', () => {
     const retryReq = httpMock.expectOne(
       `${environment.apiUrl}accountManagement/current-user`,
     );
+
     retryReq.flush(createCurrentUser());
 
     const roleReq = httpMock.expectOne(
       `${environment.apiUrl}accountManagement/user-role`,
     );
+
     roleReq.flush({ role: 'User' });
   });
 });

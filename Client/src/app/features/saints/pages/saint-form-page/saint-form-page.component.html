@@ -21,45 +21,9 @@
               class="object-cover w-full h-full rounded"
             />
           } @else {
-            @if (croppedImage) {
-              <div class="flex items-center justify-center">
-                <img
-                  [src]="croppedImage"
-                  alt="Selected image"
-                  class="object-cover w-full h-full rounded"
-                />
-              </div>
-            } @else {
-              <div class="flex items-center justify-center w-full h-full"></div>
-            }
+            <mat-icon fontIcon="add_a_photo"></mat-icon>
           }
-          @if (croppedImage) {
-            <div class="flex items-center justify-center">
-              <img
-                [src]="croppedImage"
-                alt="Selected image"
-                class="object-cover w-full h-full rounded"
-              />
-            </div>
-          } @else {
-            <div class="flex items-center justify-center">
-              <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-[var(--color-accent-dark)] dark:text-[var(--color-accent)]"
-                fontIcon="add_a_photo"
-              ></mat-icon>
-            </div>
-          }
-
-          <ng-template #placeholderIcon>
-            <div class="flex items-center justify-center">
-              <mat-icon
-                class="!text-[150px] sm:!text-[330px] w-[150px] sm:w-[330px] h-[150px] sm:h-[330px] leading-none text-[var(--color-accent-dark)] dark:text-[var(--color-accent)]"
-                fontIcon="add_a_photo"
-              ></mat-icon>
-            </div>
-          </ng-template>
         </label>
-
         <input
           id="imageInput"
           #fileInput

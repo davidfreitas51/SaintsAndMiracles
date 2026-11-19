@@ -96,25 +96,12 @@
           "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "node_modules/ace-builds/src-noconflict",
-                "output": "assets/ace-builds"
-              },
-              "src/assets",
-              "src/favicon.ico"
-            ],
-            "styles": [
-              "@angular/material/prebuilt-themes/azure-blue.css",
-              "src/styles.scss"
-            ],
-            "scripts": []
+            "buildTarget": "Client:build",
+            "runner": "vitest",
+            "setupFiles": ["src/test.setup.ts"],
+            "tsConfig": "tsconfig.spec.json"
           }
         }
       }
